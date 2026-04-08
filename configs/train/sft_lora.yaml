@@ -1,0 +1,40 @@
+manifest_path: data/manifests/sft_manifest.jsonl
+eval_manifest_path: data/manifests/local_holdout_eval.jsonl
+output_dir: outputs/sft/qwen3-vl-4b-lora
+seed: 17
+per_device_train_batch_size: 1
+per_device_eval_batch_size: 1
+gradient_accumulation_steps: 8
+num_train_epochs: 1
+learning_rate: 2.0e-4
+weight_decay: 0.01
+warmup_ratio: 0.03
+max_grad_norm: 1.0
+logging_steps: 5
+save_steps: 100
+eval_steps: 100
+save_total_limit: 2
+bf16: true
+fp16: false
+gradient_checkpointing: true
+use_peft: true
+report_to: []
+dry_run: false
+smoke_max_samples: 8
+freeze:
+  freeze_vision_encoder: true
+  freeze_projector: false
+  trainable_text_modules: []
+lora:
+  r: 16
+  alpha: 32
+  dropout: 0.05
+  bias: none
+  target_modules:
+    - q_proj
+    - k_proj
+    - v_proj
+    - o_proj
+    - gate_proj
+    - up_proj
+    - down_proj

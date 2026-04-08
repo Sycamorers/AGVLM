@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+PYTHON_BIN="${PYTHON_BIN:-python3}"
+export PYTHONPATH="${PYTHONPATH:-src}"
+
+"${PYTHON_BIN}" scripts/data/prepare_manual_dataset_slots.py --with-smoke-data
+"${PYTHON_BIN}" scripts/data/build_sft_manifest.py --config configs/data/sft_build.yaml
+"${PYTHON_BIN}" scripts/data/build_rl_manifest.py --config configs/data/rl_build.yaml
+"${PYTHON_BIN}" scripts/data/build_eval_manifest.py --config configs/data/eval_build.yaml
+"${PYTHON_BIN}" scripts/train/train_sft.py \
+  --model-config configs/model/qwen_vlm_4b.yaml \
+  --train-config configs/train/sft_lora.yaml \
+  --dry-run
+"${PYTHON_BIN}" scripts/train/train_rl_grpo.py \
+  --model-config configs/model/qwen_vlm_4b.yaml \
+  --train-config configs/train/rl_grpo_lora.yaml \
+  --dry-run
+"${PYTHON_BIN}" scripts/eval/eval_local_holdout.py \
+  --model-config configs/model/qwen_vlm_4b.yaml \
+  --eval-config configs/eval/local_holdout.yaml \
+  --prediction-mode oracle
+
+echo "Smoke pipeline completed."

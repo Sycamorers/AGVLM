@@ -1,0 +1,18 @@
+sources:
+  agmmu: data/interim/agmmu.jsonl
+  mirage: data/interim/mirage.jsonl
+  plantdoc: data/interim/plantdoc.jsonl
+  ip102: data/interim/ip102.jsonl
+  plantvillage_vqa: data/interim/plantvillage_vqa.jsonl
+output_paths:
+  agmmu: data/manifests/agmmu_eval.jsonl
+  mirage_mmst: data/manifests/mirage_mmst_eval.jsonl
+  mirage_mmmt: data/manifests/mirage_mmmt_eval.jsonl
+  local_holdout: data/manifests/local_holdout_eval.jsonl
+holdout_ratio: 0.1
+holdout_datasets:
+  - plantdoc
+  - ip102
+  - plantvillage_vqa
+group_by_image: true
+salt: agri-vlm-v1-holdout

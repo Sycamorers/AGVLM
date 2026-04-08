@@ -1,0 +1,57 @@
+datasets:
+  - name: plantvillage
+    task_family: classification
+    raw_dir: data/raw/plantvillage
+    interim_path: data/interim/plantvillage.jsonl
+    download_mode: manual
+    manual_url: https://github.com/spMohanty/PlantVillage-Dataset
+    notes: Original ground-level leaf disease classification dataset.
+  - name: plantdoc
+    task_family: classification
+    raw_dir: data/raw/plantdoc
+    interim_path: data/interim/plantdoc.jsonl
+    download_mode: manual
+    manual_url: https://github.com/pratikkayal/PlantDoc-Dataset
+    notes: Field-image disease dataset with realistic backgrounds.
+  - name: ip102
+    task_family: classification
+    raw_dir: data/raw/ip102
+    interim_path: data/interim/ip102.jsonl
+    download_mode: manual
+    manual_url: https://github.com/xpwu95/IP102
+    notes: Insect pest classification dataset with official train/val/test files.
+  - name: plantvillage_vqa
+    task_family: vqa
+    raw_dir: data/raw/plantvillage_vqa
+    interim_path: data/interim/plantvillage_vqa.jsonl
+    download_mode: manual
+    manual_url: PLACEHOLDER_PLANTVILLAGE_VQA_SOURCE
+    notes: Manual slot until an approved source is provided locally.
+  - name: agbase
+    task_family: consultation
+    raw_dir: data/raw/agbase
+    interim_path: data/interim/agbase.jsonl
+    download_mode: manual
+    manual_url: PLACEHOLDER_AGBASE_SOURCE
+    notes: Development-side resources only; document license before use.
+  - name: mirage
+    task_family: consultation
+    raw_dir: data/raw/mirage
+    interim_path: data/interim/mirage.jsonl
+    download_mode: manual
+    manual_url: PLACEHOLDER_MIRAGE_SOURCE
+    notes: Manual slot for MIRAGE-MMST and MIRAGE-MMMT data exports.
+  - name: agrillava
+    task_family: consultation
+    raw_dir: data/raw/agrillava
+    interim_path: data/interim/agrillava.jsonl
+    download_mode: manual
+    manual_url: PLACEHOLDER_AGRILLAVA_SOURCE
+    notes: Optional data source; verify licensing before use.
+  - name: agmmu
+    task_family: eval
+    raw_dir: data/raw/agmmu
+    interim_path: data/interim/agmmu.jsonl
+    download_mode: manual
+    manual_url: PLACEHOLDER_AGMMU_SOURCE
+    notes: Evaluation-only slot. Keep benchmark test data out of training.
