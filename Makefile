@@ -1,8 +1,10 @@
 PYTHON ?= python3
 NPROC_PER_NODE ?=
 MASTER_PORT ?= 29500
+DATA_DOWNLOAD_MODE ?= partial
+DATA_FRACTION ?= 0.1
 
-.PHONY: help bootstrap verify verify-dist smoke prepare-slots build-sft-manifest build-rl-manifest build-eval-manifest sft sft-dist rl rl-dist eval eval-local test
+.PHONY: help bootstrap verify verify-dist smoke prepare-slots download-data normalize-all data-partial data-full data-report build-sft-manifest build-rl-manifest build-eval-manifest sft sft-dist rl rl-dist eval eval-local test
 
 help:
 	@echo "Targets:"
@@ -10,7 +12,12 @@ help:
 	@echo "  verify               Verify runtime and package prerequisites"
 	@echo "  verify-dist          Verify a distributed torchrun environment"
 	@echo "  smoke                Run the smoke test pipeline"
-	@echo "  prepare-slots        Create manual dataset slots and smoke data"
+	@echo "  prepare-slots        Create subset-tagged dataset slots and smoke raw data"
+	@echo "  download-data        Download dataset subsets into raw storage"
+	@echo "  normalize-all        Normalize all available datasets for the active subset tag"
+	@echo "  data-partial         Download, normalize, build manifests, and report for the default 10 percent subset"
+	@echo "  data-full            Download, normalize, build manifests, and report for the full dataset pass"
+	@echo "  data-report          Generate the dataset report for the active subset tag"
 	@echo "  build-sft-manifest   Build the SFT manifest"
 	@echo "  build-rl-manifest    Build the RL manifest"
 	@echo "  build-eval-manifest  Build evaluation manifests"
@@ -34,16 +41,59 @@ verify-dist:
 		scripts/verify_environment.py
 
 prepare-slots:
-	PYTHONPATH=src $(PYTHON) scripts/data/prepare_manual_dataset_slots.py --with-smoke-data
+	PYTHONPATH=src $(PYTHON) scripts/data/prepare_manual_dataset_slots.py \
+		--download-mode $(DATA_DOWNLOAD_MODE) \
+		--fraction $(DATA_FRACTION) \
+		--with-smoke-data
+
+download-data:
+	PYTHONPATH=src $(PYTHON) scripts/data/download_public_datasets.py \
+		--download-mode $(DATA_DOWNLOAD_MODE) \
+		--fraction $(DATA_FRACTION)
+
+normalize-all:
+	PYTHONPATH=src $(PYTHON) scripts/data/normalize_all.py \
+		--download-mode $(DATA_DOWNLOAD_MODE) \
+		--fraction $(DATA_FRACTION)
+
+data-partial:
+	$(MAKE) download-data DATA_DOWNLOAD_MODE=partial DATA_FRACTION=0.1
+	$(MAKE) normalize-all DATA_DOWNLOAD_MODE=partial DATA_FRACTION=0.1
+	$(MAKE) build-sft-manifest DATA_DOWNLOAD_MODE=partial DATA_FRACTION=0.1
+	$(MAKE) build-rl-manifest DATA_DOWNLOAD_MODE=partial DATA_FRACTION=0.1
+	$(MAKE) build-eval-manifest DATA_DOWNLOAD_MODE=partial DATA_FRACTION=0.1
+	$(MAKE) data-report DATA_DOWNLOAD_MODE=partial DATA_FRACTION=0.1
+
+data-full:
+	$(MAKE) download-data DATA_DOWNLOAD_MODE=full DATA_FRACTION=1.0
+	$(MAKE) normalize-all DATA_DOWNLOAD_MODE=full DATA_FRACTION=1.0
+	$(MAKE) build-sft-manifest DATA_DOWNLOAD_MODE=full DATA_FRACTION=1.0
+	$(MAKE) build-rl-manifest DATA_DOWNLOAD_MODE=full DATA_FRACTION=1.0
+	$(MAKE) build-eval-manifest DATA_DOWNLOAD_MODE=full DATA_FRACTION=1.0
+	$(MAKE) data-report DATA_DOWNLOAD_MODE=full DATA_FRACTION=1.0
 
 build-sft-manifest:
-	PYTHONPATH=src $(PYTHON) scripts/data/build_sft_manifest.py --config configs/data/sft_build.yaml
+	PYTHONPATH=src $(PYTHON) scripts/data/build_sft_manifest.py \
+		--config configs/data/sft_build.yaml \
+		--download-mode $(DATA_DOWNLOAD_MODE) \
+		--fraction $(DATA_FRACTION)
 
 build-rl-manifest:
-	PYTHONPATH=src $(PYTHON) scripts/data/build_rl_manifest.py --config configs/data/rl_build.yaml
+	PYTHONPATH=src $(PYTHON) scripts/data/build_rl_manifest.py \
+		--config configs/data/rl_build.yaml \
+		--download-mode $(DATA_DOWNLOAD_MODE) \
+		--fraction $(DATA_FRACTION)
 
 build-eval-manifest:
-	PYTHONPATH=src $(PYTHON) scripts/data/build_eval_manifest.py --config configs/data/eval_build.yaml
+	PYTHONPATH=src $(PYTHON) scripts/data/build_eval_manifest.py \
+		--config configs/data/eval_build.yaml \
+		--download-mode $(DATA_DOWNLOAD_MODE) \
+		--fraction $(DATA_FRACTION)
+
+data-report:
+	PYTHONPATH=src $(PYTHON) scripts/data/dataset_report.py \
+		--download-mode $(DATA_DOWNLOAD_MODE) \
+		--fraction $(DATA_FRACTION)
 
 sft:
 	PYTHONPATH=src $(PYTHON) scripts/train/train_sft.py \

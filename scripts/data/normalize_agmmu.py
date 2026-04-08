@@ -1,32 +1,39 @@
 #!/usr/bin/env python3
-"""Normalize AgMMU exports into the unified JSONL schema."""
+"""Normalize AgMMU for the active subset tag."""
 
 from __future__ import annotations
 
 import argparse
 from pathlib import Path
 
-from agri_vlm.data.manifest_io import write_manifest
-from agri_vlm.data.normalizers import normalize_vqa_like_dataset
+from agri_vlm.data.pipeline import normalize_dataset_spec, resolve_runtime_settings
+from agri_vlm.data.registry import load_dataset_registry
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--raw-dir", default="data/raw/agmmu")
-    parser.add_argument("--output", default="data/interim/agmmu.jsonl")
+    parser.add_argument("--config", default="configs/data/datasets.yaml")
+    parser.add_argument("--download-mode", choices=["partial", "full"], default=None)
+    parser.add_argument("--fraction", type=float, default=None)
+    parser.add_argument("--subset-tag", default=None)
+    parser.add_argument("--data-root", default=None)
     return parser.parse_args()
 
 
 def main() -> int:
     args = parse_args()
     repo_root = Path(__file__).resolve().parents[2]
-    rows = normalize_vqa_like_dataset(
-        raw_dir=repo_root / args.raw_dir,
+    registry = load_dataset_registry(repo_root / args.config)
+    runtime = resolve_runtime_settings(registry, repo_root, args.subset_tag, args.download_mode, args.fraction, args.data_root)
+    rows = normalize_dataset_spec(
+        spec=registry.specs["agmmu"],
+        registry=registry,
         repo_root=repo_root,
-        dataset_name="agmmu",
-        default_task_type="vqa",
+        subset_tag=runtime["subset_tag"],
+        data_root=str(runtime["data_root"]),
+        download_mode=runtime["download_mode"],
+        sample_fraction=runtime["sample_fraction"],
     )
-    write_manifest(repo_root / args.output, rows)
     print("normalized agmmu rows=%s" % len(rows))
     return 0
 

@@ -1,260 +1,298 @@
 #!/usr/bin/env python3
-"""Create manual dataset slots and optional synthetic smoke data."""
+"""Create subset-tagged dataset slots and optional synthetic raw smoke data."""
 
 from __future__ import annotations
 
 import argparse
+import json
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, Iterable, List
 
-from agri_vlm.data.registry import create_manual_slot, load_dataset_registry
-from agri_vlm.data.manifest_io import write_manifest
+from agri_vlm.data.pipeline import resolve_runtime_settings
+from agri_vlm.data.registry import create_manual_slot, load_dataset_registry, write_download_info
 from agri_vlm.utils.image import save_solid_image
+from agri_vlm.utils.io import ensure_dir
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument(
-        "--config",
-        default="configs/data/datasets.yaml",
-        help="Dataset registry configuration file.",
-    )
-    parser.add_argument(
-        "--with-smoke-data",
-        action="store_true",
-        help="Create tiny synthetic interim manifests and images for smoke testing.",
-    )
+    parser.add_argument("--config", default="configs/data/datasets.yaml")
+    parser.add_argument("--download-mode", choices=["partial", "full"], default=None)
+    parser.add_argument("--fraction", type=float, default=None)
+    parser.add_argument("--subset-tag", default=None)
+    parser.add_argument("--data-root", default=None)
+    parser.add_argument("--with-smoke-data", action="store_true")
     return parser.parse_args()
 
 
-def _sample(
-    sample_id: str,
-    dataset: str,
-    task_type: str,
-    split: str,
-    image_path: str,
-    prompt: str,
-    answer: str,
-    verifier: Dict[str, object],
-    metadata: Dict[str, object],
-    target_extra: Dict[str, object] = None,
-    reward_meta: Dict[str, object] = None,
-) -> Dict[str, object]:
-    target = {"answer_text": answer}
-    target.update(target_extra or {})
-    return {
-        "sample_id": sample_id,
-        "source_dataset": dataset,
-        "task_type": task_type,
-        "split": split,
-        "images": [image_path],
-        "messages": [
-            {
-                "role": "system",
-                "content": [
-                    {
-                        "type": "text",
-                        "text": "You are an agricultural assistant focused on crop disease and pest analysis.",
-                    }
-                ],
-            },
-            {
-                "role": "user",
-                "content": [
-                    {"type": "image", "image": image_path},
-                    {"type": "text", "text": prompt},
-                ],
-            },
-        ],
-        "target": target,
-        "metadata": metadata,
-        "verifier": verifier,
-        "reward_meta": reward_meta or {"weights": {}},
-    }
+def _write_jsonl(path: Path, rows: Iterable[Dict[str, object]]) -> None:
+    ensure_dir(path.parent)
+    with path.open("w", encoding="utf-8") as handle:
+        for row in rows:
+            handle.write(json.dumps(row, ensure_ascii=False, sort_keys=True))
+            handle.write("\n")
 
 
-def build_smoke_rows(repo_root: Path) -> Dict[str, List[Dict[str, object]]]:
-    smoke_root = repo_root / "data" / "raw" / "_smoke"
-    image_specs = {
-        "plantdoc_leaf.png": (120, 40, 40),
-        "ip102_insect.png": (40, 120, 40),
-        "vqa_leaf.png": (40, 40, 120),
-        "mirage_leaf.png": (120, 120, 40),
-        "agbase_leaf.png": (120, 70, 120),
-        "agrillava_leaf.png": (70, 120, 120),
-        "agmmu_leaf.png": (90, 90, 90),
-    }
-    for file_name, color in image_specs.items():
-        save_solid_image(smoke_root / file_name, color)
+def _rel(path: Path, base_dir: Path) -> str:
+    return str(path.relative_to(base_dir)).replace("\\", "/")
 
-    def rel(name: str) -> str:
-        return "data/raw/_smoke/%s" % name
 
-    return {
-        "plantdoc": [
-            _sample(
-                sample_id="plantdoc-smoke-1",
-                dataset="plantdoc",
-                task_type="classification",
-                split="train",
-                image_path=rel("plantdoc_leaf.png"),
-                prompt="Identify the disease in this field image.",
-                answer="tomato early blight",
-                verifier={"mode": "label", "accepted_labels": ["tomato early blight"]},
-                metadata={"crop": "tomato", "disease": "early blight", "source_image_id": "plantdoc_leaf.png"},
-                target_extra={"canonical_label": "tomato early blight"},
-                reward_meta={"weights": {"normalized_label": 1.0}},
-            )
-        ],
-        "ip102": [
-            _sample(
-                sample_id="ip102-smoke-1",
-                dataset="ip102",
-                task_type="classification",
-                split="train",
-                image_path=rel("ip102_insect.png"),
-                prompt="Identify the insect or pest in this image.",
-                answer="rice leaf roller",
-                verifier={"mode": "label", "accepted_labels": ["rice leaf roller"]},
-                metadata={"pest": "rice leaf roller", "source_image_id": "ip102_insect.png"},
-                target_extra={"canonical_label": "rice leaf roller"},
-                reward_meta={"weights": {"normalized_label": 1.0}},
-            )
-        ],
-        "plantvillage_vqa": [
-            _sample(
-                sample_id="plantvillage-vqa-smoke-1",
-                dataset="plantvillage_vqa",
-                task_type="vqa",
-                split="train",
-                image_path=rel("vqa_leaf.png"),
-                prompt="Is the leaf healthy? Answer yes or no.",
-                answer="no",
-                verifier={"mode": "exact_match", "accepted_answers": ["no"]},
-                metadata={"crop": "tomato", "source_image_id": "vqa_leaf.png"},
-                reward_meta={"weights": {"exact_match": 1.0}},
-            )
-        ],
-        "mirage": [
-            _sample(
-                sample_id="mirage-smoke-1",
-                dataset="mirage",
-                task_type="clarify_or_respond",
-                split="validation",
-                image_path=rel("mirage_leaf.png"),
-                prompt="What should I spray right now?",
-                answer="Please upload a sharper close-up image and share the crop and affected organ before spraying anything.",
-                verifier={"mode": "clarify", "expected_decision": "clarify", "accepted_answers": ["please upload a sharper close-up image and share the crop and affected organ before spraying anything"]},
-                metadata={"benchmark_track": "mmmt", "source_image_id": "mirage_leaf.png"},
-                target_extra={"decision": "clarify"},
-                reward_meta={"weights": {"clarify_vs_respond": 1.0}},
-            ),
-            _sample(
-                sample_id="mirage-smoke-2",
-                dataset="mirage",
-                task_type="consultation",
-                split="validation",
-                image_path=rel("mirage_leaf.png"),
-                prompt="Provide a concise diagnosis and management plan.",
-                answer="Diagnosis: probable leaf spot\nEvidence: visible spotting on the leaf\nUncertainty: confirm with a closer image and field spread\nManagement: isolate affected leaves; monitor spread; avoid unnecessary broad-spectrum spraying\nFollow-up: capture both sides of the leaf and nearby plants",
-                verifier={
-                    "mode": "structured",
-                    "accepted_labels": ["probable leaf spot"],
-                    "required_sections": ["Diagnosis", "Evidence", "Uncertainty", "Management", "Follow-up"],
+def _seed_public_slot(raw_dir: Path, dataset_name: str, subset_tag: str, download_mode: str, sample_fraction: float) -> None:
+    write_download_info(
+        raw_dir,
+        {
+            "dataset_name": dataset_name,
+            "subset_tag": subset_tag,
+            "download_mode": download_mode,
+            "sample_fraction": sample_fraction,
+            "source_type": "hf_dataset",
+            "materialized": False,
+            "manual_required": False,
+        },
+    )
+
+
+def _build_smoke_raw_data(raw_dir: Path, dataset_name: str, subset_tag: str, download_mode: str, sample_fraction: float) -> None:
+    images_dir = raw_dir / "images"
+    ensure_dir(images_dir)
+
+    def image(name: str, color: List[int]) -> str:
+        path = images_dir / name
+        save_solid_image(path, color)
+        return _rel(path, raw_dir)
+
+    if dataset_name == "plantvillage":
+        _write_jsonl(
+            raw_dir / "records.jsonl",
+            [
+                {
+                    "id": "plantvillage-smoke-1",
+                    "image": image("plantvillage_smoke_1.png", [120, 40, 40]),
+                    "label": "Tomato___Early_blight",
+                    "split": "train",
+                    "crop": "tomato",
+                    "disease": "early blight",
+                }
+            ],
+        )
+    elif dataset_name == "plantdoc":
+        _write_jsonl(
+            raw_dir / "records.jsonl",
+            [
+                {
+                    "id": "plantdoc-smoke-1",
+                    "image": image("plantdoc_smoke_1.png", [80, 120, 40]),
+                    "label": "Tomato Early Blight",
+                    "all_labels": ["Tomato Early Blight", "Tomato Early Blight"],
+                    "split": "train",
+                }
+            ],
+        )
+    elif dataset_name == "ip102":
+        pest_dir = raw_dir / "images" / "rice_leaf_roller"
+        pest_path = pest_dir / "ip102_smoke_1.png"
+        save_solid_image(pest_path, [40, 120, 40])
+        ensure_dir(raw_dir)
+        (raw_dir / "classes.txt").write_text("rice leaf roller\n", encoding="utf-8")
+        (raw_dir / "train.txt").write_text(
+            "%s 0\n" % _rel(pest_path, raw_dir),
+            encoding="utf-8",
+        )
+    elif dataset_name == "plantvillage_vqa":
+        _write_jsonl(
+            raw_dir / "records.jsonl",
+            [
+                {
+                    "id": "plantvillage-vqa-smoke-1",
+                    "image": image("plantvillage_vqa_smoke_1.png", [40, 40, 120]),
+                    "question": "Is the leaf healthy? Answer yes or no.",
+                    "answer": "no",
+                    "split": "train",
+                    "crop": "tomato",
+                }
+            ],
+        )
+    elif dataset_name == "agbase":
+        _write_jsonl(
+            raw_dir / "records.jsonl",
+            [
+                {
+                    "id": "agbase-smoke-1",
+                    "image": image("agbase_smoke_1.png", [120, 70, 120]),
+                    "question": "Provide an expert diagnosis and management plan.",
+                    "diagnosis": "tomato early blight",
+                    "management_steps": ["remove affected leaves", "improve airflow"],
+                    "uncertainty": "moderate because there is only one image",
+                    "split": "train",
+                    "crop": "tomato",
+                }
+            ],
+        )
+    elif dataset_name == "mirage":
+        _write_jsonl(
+            raw_dir / "records.jsonl",
+            [
+                {
+                    "id": "mirage-smoke-mmmt-1",
+                    "images": [
+                        image("mirage_smoke_1.png", [120, 120, 40]),
+                        image("mirage_smoke_2.png", [120, 100, 50]),
+                    ],
+                    "question": "What should I spray right now?",
+                    "answer": "Please share a sharper close-up image and the crop before spraying anything.",
+                    "decision": "clarify",
+                    "task_type": "clarify_or_respond",
+                    "benchmark_track": "mmmt",
+                    "split": "dev",
+                },
+                {
+                    "id": "mirage-smoke-mmst-1",
+                    "image": image("mirage_smoke_3.png", [150, 100, 40]),
+                    "question": "Provide a concise diagnosis and management plan.",
+                    "answer": "Diagnosis: probable leaf spot\nEvidence: visible spotting on the leaf\nUncertainty: confirm with a closer image and field spread\nManagement: isolate affected leaves; monitor spread\nFollow-up: capture both sides of the leaf",
+                    "task_type": "consultation",
                     "management_keywords": ["isolate affected leaves", "monitor spread"],
-                    "uncertainty_required": True,
+                    "benchmark_track": "mmst",
+                    "split": "dev",
                 },
-                metadata={"benchmark_track": "mmst", "source_image_id": "mirage_leaf.png"},
-                target_extra={"canonical_label": "probable leaf spot"},
-                reward_meta={"weights": {"structured_format": 1.0, "management_coverage": 1.0}},
-            ),
-        ],
-        "agbase": [
-            _sample(
-                sample_id="agbase-smoke-1",
-                dataset="agbase",
-                task_type="consultation",
-                split="train",
-                image_path=rel("agbase_leaf.png"),
-                prompt="Provide an expert-style diagnosis and management recommendation.",
-                answer="Diagnosis: tomato early blight\nEvidence: dark lesions consistent with early blight\nUncertainty: moderate because only one image is available\nManagement: remove heavily affected leaves; improve airflow; avoid overhead irrigation\nFollow-up: verify stem symptoms and disease spread in neighboring plants",
-                verifier={
-                    "mode": "structured",
-                    "accepted_labels": ["tomato early blight"],
-                    "required_sections": ["Diagnosis", "Evidence", "Uncertainty", "Management", "Follow-up"],
-                    "management_keywords": ["remove heavily affected leaves", "improve airflow"],
-                    "uncertainty_required": True,
-                },
-                metadata={"crop": "tomato", "disease": "early blight", "source_image_id": "agbase_leaf.png"},
-                target_extra={"canonical_label": "tomato early blight"},
-                reward_meta={"weights": {"structured_format": 1.0, "management_coverage": 1.0}},
-            )
-        ],
-        "agrillava": [
-            _sample(
-                sample_id="agrillava-smoke-1",
-                dataset="agrillava",
-                task_type="consultation",
-                split="train",
-                image_path=rel("agrillava_leaf.png"),
-                prompt="What is the most likely issue and what should the grower do next?",
-                answer="Diagnosis: possible nutrient deficiency\nEvidence: diffuse discoloration rather than distinct lesions\nUncertainty: high because cultivar and recent fertilization history are unknown\nManagement: check recent fertilization; inspect newer and older leaves separately; avoid immediate pesticide use\nFollow-up: share soil, irrigation, and fertilization context",
-                verifier={
-                    "mode": "structured",
-                    "required_sections": ["Diagnosis", "Evidence", "Uncertainty", "Management", "Follow-up"],
-                    "management_keywords": ["check recent fertilization", "avoid immediate pesticide use"],
-                    "uncertainty_required": True,
-                },
-                metadata={"source_image_id": "agrillava_leaf.png"},
-                reward_meta={"weights": {"structured_format": 1.0, "uncertainty_calibration": 1.0}},
-            )
-        ],
-        "agmmu": [
-            _sample(
-                sample_id="agmmu-smoke-1",
-                dataset="agmmu",
-                task_type="vqa",
-                split="test",
-                image_path=rel("agmmu_leaf.png"),
-                prompt="Question: Which option best matches the symptom? Options: A) healthy B) leaf spot C) pest-free D) nutrient burn",
-                answer="B) leaf spot",
-                verifier={"mode": "exact_match", "accepted_answers": ["B) leaf spot", "leaf spot"]},
-                metadata={"benchmark_track": "agmmu", "source_image_id": "agmmu_leaf.png"},
-                reward_meta={"weights": {"exact_match": 1.0}},
-            )
-        ],
-        "plantvillage": [
-            _sample(
-                sample_id="plantvillage-smoke-1",
-                dataset="plantvillage",
-                task_type="classification",
-                split="train",
-                image_path=rel("plantdoc_leaf.png"),
-                prompt="Identify the crop issue in this image.",
-                answer="tomato early blight",
-                verifier={"mode": "label", "accepted_labels": ["tomato early blight"]},
-                metadata={"crop": "tomato", "disease": "early blight", "source_image_id": "plantdoc_leaf.png"},
-                target_extra={"canonical_label": "tomato early blight"},
-                reward_meta={"weights": {"normalized_label": 1.0}},
-            )
-        ],
-    }
+            ],
+        )
+    elif dataset_name == "agrillava":
+        _write_jsonl(
+            raw_dir / "records.jsonl",
+            [
+                {
+                    "id": "agrillava-smoke-1",
+                    "image": image("agrillava_smoke_1.png", [70, 120, 120]),
+                    "question": "What is the most likely issue and what should the grower do next?",
+                    "diagnosis": "possible nutrient deficiency",
+                    "management_steps": ["check recent fertilization", "avoid immediate pesticide use"],
+                    "uncertainty": "high because cultivar and fertilization history are unknown",
+                    "split": "train",
+                }
+            ],
+        )
+    elif dataset_name == "agmmu":
+        _write_jsonl(
+            raw_dir / "records.jsonl",
+            [
+                {
+                    "id": "agmmu-smoke-1",
+                    "image": image("agmmu_smoke_1.png", [90, 90, 90]),
+                    "question": "Which option best matches the symptom? A) healthy B) leaf spot C) pest-free D) nutrient burn",
+                    "answer": "B) leaf spot",
+                    "split": "train",
+                    "task_type": "vqa",
+                }
+            ],
+        )
+    elif dataset_name == "agrobench":
+        _write_jsonl(
+            raw_dir / "records.jsonl",
+            [
+                {
+                    "id": "agrobench-smoke-1",
+                    "image": image("agrobench_smoke_1.png", [100, 80, 130]),
+                    "question": "Which answer best matches the observed crop symptom?",
+                    "answer": "leaf spot",
+                    "options": {"A": "healthy", "B": "leaf spot", "C": "no crop"},
+                    "split": "train",
+                    "task_type": "vqa",
+                }
+            ],
+        )
+    else:
+        raise ValueError("Unsupported smoke dataset: %s" % dataset_name)
+
+    write_download_info(
+        raw_dir,
+        {
+            "dataset_name": dataset_name,
+            "subset_tag": subset_tag,
+            "download_mode": download_mode,
+            "sample_fraction": sample_fraction,
+            "source_type": "synthetic_smoke",
+            "materialized": True,
+            "manual_required": False,
+            "saved_rows": 1,
+        },
+    )
 
 
 def main() -> int:
     args = parse_args()
     repo_root = Path(__file__).resolve().parents[2]
     registry = load_dataset_registry(repo_root / args.config)
-    for spec in registry.values():
-        create_manual_slot(spec, repo_root=repo_root)
-        print("prepared_slot=%s" % spec.raw_dir)
+    runtime = resolve_runtime_settings(
+        registry=registry,
+        repo_root=repo_root,
+        subset_tag=args.subset_tag,
+        download_mode=args.download_mode,
+        sample_fraction=args.fraction,
+        data_root=args.data_root,
+    )
+
+    for spec in registry.specs.values():
+        raw_dir = spec.raw_dir(
+            repo_root=repo_root,
+            defaults=registry.defaults,
+            subset_tag=runtime["subset_tag"],
+            data_root=str(runtime["data_root"]),
+            download_mode=runtime["download_mode"],
+            sample_fraction=runtime["sample_fraction"],
+        )
+        ensure_dir(raw_dir)
+        if spec.source_type != "hf_dataset" or spec.access == "gated":
+            create_manual_slot(
+                spec=spec,
+                repo_root=repo_root,
+                defaults=registry.defaults,
+                subset_tag=runtime["subset_tag"],
+                data_root=str(runtime["data_root"]),
+                download_mode=runtime["download_mode"],
+                sample_fraction=runtime["sample_fraction"],
+                reason="Manual or authenticated dataset staging is still required for this dataset.",
+            )
+        else:
+            _seed_public_slot(
+                raw_dir=raw_dir,
+                dataset_name=spec.name,
+                subset_tag=runtime["subset_tag"],
+                download_mode=runtime["download_mode"],
+                sample_fraction=runtime["sample_fraction"],
+            )
+        print("prepared_slot=%s" % raw_dir)
 
     if args.with_smoke_data:
-        smoke_rows = build_smoke_rows(repo_root)
-        for dataset_name, rows in smoke_rows.items():
-            output_path = repo_root / "data" / "interim" / ("%s.jsonl" % dataset_name)
-            write_manifest(output_path, rows)
-            print("wrote_smoke_manifest=%s rows=%s" % (output_path, len(rows)))
+        smoke_datasets = [
+            "plantvillage",
+            "plantdoc",
+            "ip102",
+            "plantvillage_vqa",
+            "agbase",
+            "mirage",
+            "agrillava",
+            "agmmu",
+            "agrobench",
+        ]
+        for dataset_name in smoke_datasets:
+            spec = registry.specs[dataset_name]
+            raw_dir = spec.raw_dir(
+                repo_root=repo_root,
+                defaults=registry.defaults,
+                subset_tag=runtime["subset_tag"],
+                data_root=str(runtime["data_root"]),
+                download_mode=runtime["download_mode"],
+                sample_fraction=runtime["sample_fraction"],
+            )
+            _build_smoke_raw_data(
+                raw_dir=raw_dir,
+                dataset_name=dataset_name,
+                subset_tag=runtime["subset_tag"],
+                download_mode=runtime["download_mode"],
+                sample_fraction=runtime["sample_fraction"],
+            )
+            print("wrote_smoke_raw=%s" % raw_dir)
 
     return 0
 

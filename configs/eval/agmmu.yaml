@@ -1,4 +1,4 @@
-manifest_path: data/manifests/agmmu_eval.jsonl
+manifest_path: data/manifests/partial_10pct/agmmu_eval.jsonl
 output_path: outputs/eval/agmmu_metrics.json
 batch_size: 1
 max_new_tokens: 128

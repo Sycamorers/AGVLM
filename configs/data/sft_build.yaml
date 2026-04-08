@@ -1,18 +1,17 @@
-sources:
-  - data/interim/plantvillage.jsonl
-  - data/interim/plantdoc.jsonl
-  - data/interim/ip102.jsonl
-  - data/interim/plantvillage_vqa.jsonl
-  - data/interim/agbase.jsonl
-  - data/interim/mirage.jsonl
-  - data/interim/agrillava.jsonl
+datasets:
+  - plantvillage
+  - plantdoc
+  - ip102
+  - plantvillage_vqa
+  - agbase
+  - mirage
+  - agrillava
+output_path: "{data_root}/manifests/{subset_tag}/sft_manifest.jsonl"
 allowed_task_types:
   - classification
   - vqa
-  - symptom_explanation
   - consultation
+  - symptom_explanation
   - clarify_or_respond
 exclude_splits:
   - test
-output_path: data/manifests/sft_manifest.jsonl
-max_samples_per_source: null

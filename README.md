@@ -1,178 +1,169 @@
 # agri-vlm-v1
 
-Research codebase for an agriculture-specialized vision-language model focused on ground-level RGB disease, pest, symptom, and consultation tasks.
+Research codebase for a ground-level RGB agriculture VLM focused on disease, pest, symptom, consultation, and clarify-vs-respond tasks.
 
-## Target
+## Target Environment
 
+- Cluster: UF HiPerGator
+- Modules: `module load conda` and `module load cuda/12.9.1`
+- Python: `3.11`
 - GPUs: NVIDIA B200 class
-- CUDA toolkit assumption: 12.9.1
-- Multi-GPU: single-node `torchrun` is the primary training path
-- Python: 3.11
-- Default precision: bf16
+- Training: single-node multi-GPU `torchrun`
+- Default precision: `bf16`
 - Default base model: `Qwen/Qwen3-VL-4B-Instruct`
-
-The repo supports:
-- dataset normalization into one multimodal JSONL schema
-- supervised fine-tuning
-- GRPO post-training
-- evaluation
-- smoke validation
 
 ## Quick Setup
 
-Create a virtual environment and install the CUDA 12.9 wheel stack:
-
 ```bash
-PYTHON_BIN=python3.11 bash scripts/bootstrap_env.sh
+cd /blue/hmedeiros/qinruoyao/agvlm
+module load conda
+module load cuda/12.9.1
+bash scripts/hpc/prepare_env.sh
+source "$(conda info --base)/etc/profile.d/conda.sh"
+conda activate agri-vlm-v1
 ```
 
-The bootstrap script installs:
-- PyTorch `2.8.0` from the official `cu129` wheel index
-- editable project dependencies
-- optional `qwen-vl-utils`
+Recommended environment variables:
 
-Optional:
-- `INSTALL_FLASH_ATTN=1` installs `flash-attn`, but this path still needs validation on the target CUDA 12.9.1 / B200 image.
+```bash
+export AGRI_VLM_DATA_ROOT="$PWD/data"
+export HF_HOME="$PWD/.cache/huggingface"
+export TRANSFORMERS_CACHE="$HF_HOME/transformers"
+export HUGGINGFACE_HUB_CACHE="$HF_HOME/hub"
+export TMPDIR="$PWD/.tmp"
+mkdir -p "$AGRI_VLM_DATA_ROOT" "$HF_HOME" "$TRANSFORMERS_CACHE" "$HUGGINGFACE_HUB_CACHE" "$TMPDIR"
+```
 
 ## Verify Environment
 
-Single process:
-
 ```bash
-PYTHONPATH=src python3.11 scripts/verify_environment.py
+PYTHONPATH=src python scripts/verify_environment.py
 ```
 
-Distributed sanity check on a multi-GPU host:
-
-```bash
-PYTHONPATH=src python3.11 scripts/launch_torchrun.py \
-  --nproc-per-node 8 \
-  scripts/verify_environment.py
-```
-
-The verifier prints:
-- Python version
-- torch version
-- CUDA availability
-- CUDA version reported by torch
-- `nvcc` / `nvidia-smi` details if available
-- GPU names and count
-- bf16 support
-- distributed backend info when launched under `torchrun`
+This prints Python, torch, CUDA availability, GPU inventory, bf16 support, distributed state, and the dataset/cache environment variables.
 
 ## Data Preparation
 
-Create manual dataset slots:
+Default behavior is a deterministic prefix download of the first 10% of each supported split. The output tag is `partial_10pct`.
+
+Public datasets with automatic partial download:
+- PlantVillage
+- PlantDoc
+- PlantVillageVQA
+- MIRAGE
+- AgMMU
+
+Manual or authenticated datasets:
+- IP102: manual drop-in
+- AgBase resources: manual drop-in
+- Agri-LLaVA / Agri-400K: manual drop-in
+- AgroBench: gated Hugging Face access; otherwise manual slot
+
+Prepare the 10% subset:
 
 ```bash
-PYTHONPATH=src python3.11 scripts/data/prepare_manual_dataset_slots.py
+PYTHONPATH=src python scripts/data/download_public_datasets.py --download-mode partial --fraction 0.1
+PYTHONPATH=src python scripts/data/normalize_all.py --download-mode partial --fraction 0.1
+PYTHONPATH=src python scripts/data/build_sft_manifest.py --download-mode partial --fraction 0.1
+PYTHONPATH=src python scripts/data/build_rl_manifest.py --download-mode partial --fraction 0.1
+PYTHONPATH=src python scripts/data/build_eval_manifest.py --download-mode partial --fraction 0.1
+PYTHONPATH=src python scripts/data/dataset_report.py --download-mode partial --fraction 0.1
 ```
 
-Place approved raw data under `data/raw/<dataset>/`, then run the matching normalizer:
+Cluster wrapper:
 
 ```bash
-PYTHONPATH=src python3.11 scripts/data/normalize_plantvillage.py
-PYTHONPATH=src python3.11 scripts/data/normalize_plantdoc.py
-PYTHONPATH=src python3.11 scripts/data/normalize_ip102.py
-PYTHONPATH=src python3.11 scripts/data/normalize_plantvillage_vqa.py
-PYTHONPATH=src python3.11 scripts/data/normalize_agbase.py
-PYTHONPATH=src python3.11 scripts/data/normalize_mirage.py
-PYTHONPATH=src python3.11 scripts/data/normalize_agrillava.py
-PYTHONPATH=src python3.11 scripts/data/normalize_agmmu.py
+DOWNLOAD_MODE=partial SAMPLE_FRACTION=0.1 bash scripts/hpc/run_data_prep.sh
 ```
 
-Build manifests:
+Generated outputs:
+
+- raw subsets: `data/raw/<dataset>/<subset_tag>/`
+- normalized per-dataset manifests: `data/interim/<subset_tag>/`
+- merged manifests: `data/manifests/<subset_tag>/`
+- dataset report: `data/manifests/<subset_tag>/dataset_report.json` and `.md`
+
+## Full Rerun Later
+
+No code changes are required. Switch the data mode to full and rerun the same workflow.
 
 ```bash
-PYTHONPATH=src python3.11 scripts/data/build_sft_manifest.py --config configs/data/sft_build.yaml
-PYTHONPATH=src python3.11 scripts/data/build_rl_manifest.py --config configs/data/rl_build.yaml
-PYTHONPATH=src python3.11 scripts/data/build_eval_manifest.py --config configs/data/eval_build.yaml
+PYTHONPATH=src python scripts/data/download_public_datasets.py --download-mode full --fraction 1.0
+PYTHONPATH=src python scripts/data/normalize_all.py --download-mode full --fraction 1.0
+PYTHONPATH=src python scripts/data/build_sft_manifest.py --download-mode full --fraction 1.0
+PYTHONPATH=src python scripts/data/build_rl_manifest.py --download-mode full --fraction 1.0
+PYTHONPATH=src python scripts/data/build_eval_manifest.py --download-mode full --fraction 1.0
+PYTHONPATH=src python scripts/data/dataset_report.py --download-mode full --fraction 1.0
+```
+
+Equivalent Make targets:
+
+```bash
+make data-partial
+make data-full
+make data-report
 ```
 
 ## Training
 
-Smoke validation:
+Smoke pipeline:
 
 ```bash
 bash scripts/run_smoke_test.sh
 ```
 
-Single-process SFT:
-
-```bash
-PYTHONPATH=src python3.11 scripts/train/train_sft.py \
-  --model-config configs/model/qwen_vlm_4b.yaml \
-  --train-config configs/train/sft_lora.yaml
-```
-
 Multi-GPU SFT:
 
 ```bash
-PYTHONPATH=src python3.11 scripts/launch_torchrun.py \
+PYTHONPATH=src python scripts/launch_torchrun.py \
   --nproc-per-node 8 \
   scripts/train/train_sft.py -- \
   --model-config configs/model/qwen_vlm_4b.yaml \
   --train-config configs/train/sft_lora_b200_multigpu.yaml
 ```
 
-Single-process RL:
-
-```bash
-PYTHONPATH=src python3.11 scripts/train/train_rl_grpo.py \
-  --model-config configs/model/qwen_vlm_4b.yaml \
-  --train-config configs/train/rl_grpo_lora.yaml
-```
-
 Multi-GPU RL:
 
 ```bash
-PYTHONPATH=src python3.11 scripts/launch_torchrun.py \
+PYTHONPATH=src python scripts/launch_torchrun.py \
   --nproc-per-node 8 \
   scripts/train/train_rl_grpo.py -- \
   --model-config configs/model/qwen_vlm_4b.yaml \
   --train-config configs/train/rl_grpo_b200_multigpu.yaml
 ```
 
-Convenience targets:
-
-```bash
-make smoke
-make sft-dist NPROC_PER_NODE=8
-make rl-dist NPROC_PER_NODE=8
-make eval
-```
-
 ## Evaluation
 
 ```bash
-PYTHONPATH=src python3.11 scripts/eval/eval_local_holdout.py \
+PYTHONPATH=src python scripts/eval/eval_local_holdout.py \
   --model-config configs/model/qwen_vlm_4b.yaml \
   --eval-config configs/eval/local_holdout.yaml
 ```
 
-## Repo Structure
+AgroBench and AgMMU use separate eval manifests under `data/manifests/partial_10pct/`.
+
+## Repo Layout
 
 ```text
 configs/        model, data, train, and eval configs
-data/           raw slots, normalized data, and manifests
+data/           raw subsets, normalized data, merged manifests
 docs/           short project docs and decision log
-scripts/        setup, launch, data prep, train, and eval entrypoints
+scripts/        setup, HPC wrappers, data prep, train, and eval entrypoints
 src/agri_vlm/   library code
-tests/          smoke and unit tests
+tests/          unit tests and smoke checks
 ```
 
 ## Known Limitations
 
-- This repository assumes a CUDA 12.9.1-compatible system image, but the current host used for validation is not that target environment.
-- Multi-GPU launch wiring is implemented, but full B200 runtime validation still needs to be performed on real hardware.
-- `flash-attn` is optional and not enabled by default because the build path still needs explicit CUDA 12.9.1 validation.
-- No Dockerfile is included yet.
+- The current host used for this pass is Python `3.9`, so `scripts/verify_environment.py` correctly fails here until a Python `3.11` environment is activated.
+- AgMMU and AgroBench automatic adapters need runtime validation on real HiPerGator hardware and a real authenticated Hugging Face session for AgroBench.
+- IP102, AgBase resources, and Agri-LLaVA still require manual staging because this repo does not accept full-archive downloads just to keep 10%.
+- `flash-attn` remains optional until it is validated against the target CUDA 12.9.1 image.
 
 ## TODO Summary
 
-Top open items are tracked in [TODO.md](/blue/hmedeiros/qinruoyao/agvlm/TODO.md).
+Top open items are tracked in [TODO.md](/blue/hmedeiros/qinruoyao/agvlm/TODO.md). Current P0 items are:
 
-Current P0 items:
-- validate `flash-attn` on the target CUDA 12.9.1 / B200 image
-- run a real multi-GPU SFT and RL checkpoint/resume test on B200 hardware
-- validate distributed RL throughput and stability before enabling optional faster rollout paths
+- validate the automatic AgMMU and authenticated AgroBench download paths on HiPerGator
+- stage manual IP102, AgBase, and Agri-LLaVA subsets under the new subset-tagged raw layout
+- run one real partial-to-full data rerun on the target cluster and record any path or cache issues

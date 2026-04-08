@@ -1,0 +1,5 @@
+manifest_path: data/manifests/partial_10pct/agrobench_eval.jsonl
+output_path: outputs/eval/agrobench_metrics.json
+batch_size: 1
+max_new_tokens: 128
+prediction_mode: oracle

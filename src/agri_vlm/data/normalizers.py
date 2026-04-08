@@ -1,5 +1,6 @@
 """Dataset normalization functions."""
 
+from collections import Counter
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional
 
@@ -11,6 +12,7 @@ from agri_vlm.constants import (
     TASK_TYPE_VQA,
 )
 from agri_vlm.data.loaders import read_records, require_records_file
+from agri_vlm.data.registry import read_download_info
 from agri_vlm.data.split_utils import assign_hash_split
 from agri_vlm.data.transforms import (
     build_structured_consultation_answer,
@@ -21,6 +23,7 @@ from agri_vlm.data.transforms import (
     parse_ip102_label,
     parse_plant_label,
     relative_posix_path,
+    normalize_split_name,
     slugify,
 )
 from agri_vlm.utils.image import collect_image_paths
@@ -49,7 +52,10 @@ def _base_sample(
     metadata: Optional[Dict[str, Any]] = None,
     verifier: Optional[Dict[str, Any]] = None,
     reward_meta: Optional[Dict[str, Any]] = None,
+    provenance: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
+    merged_metadata = dict(provenance or {})
+    merged_metadata.update(metadata or {})
     return {
         "sample_id": sample_id,
         "source_dataset": source_dataset,
@@ -58,10 +64,25 @@ def _base_sample(
         "images": image_paths,
         "messages": _build_messages(question=question, image_paths=image_paths),
         "target": target,
-        "metadata": metadata or {},
+        "metadata": merged_metadata,
         "verifier": verifier or {"mode": "none"},
         "reward_meta": reward_meta or {"weights": {}},
     }
+
+
+def load_provenance_metadata(raw_dir: Path) -> Dict[str, Any]:
+    payload = read_download_info(raw_dir)
+    if not payload:
+        return {}
+    keys = [
+        "subset_tag",
+        "download_mode",
+        "sample_fraction",
+        "source_type",
+        "access",
+        "source_repo_id",
+    ]
+    return {key: payload[key] for key in keys if payload.get(key) is not None}
 
 
 def normalize_classification_directory_dataset(
@@ -71,6 +92,7 @@ def normalize_classification_directory_dataset(
     salt: str,
     pest_mode: bool = False,
     license_name: Optional[str] = None,
+    provenance: Optional[Dict[str, Any]] = None,
 ) -> List[Dict[str, Any]]:
     image_paths = collect_image_paths(raw_dir)
     if not image_paths:
@@ -112,12 +134,84 @@ def normalize_classification_directory_dataset(
                 metadata=metadata,
                 verifier=verifier,
                 reward_meta=reward_meta,
+                provenance=provenance,
             )
         )
     return rows
 
 
-def normalize_ip102_dataset(raw_dir: Path, repo_root: Path, license_name: Optional[str] = None) -> List[Dict[str, Any]]:
+def normalize_classification_records_dataset(
+    raw_dir: Path,
+    repo_root: Path,
+    dataset_name: str,
+    pest_mode: bool = False,
+    license_name: Optional[str] = None,
+    provenance: Optional[Dict[str, Any]] = None,
+) -> List[Dict[str, Any]]:
+    records_path = require_records_file(raw_dir)
+    records = read_records(records_path)
+    rows: List[Dict[str, Any]] = []
+    for index, row in enumerate(records):
+        image_paths = _extract_image_paths(row, raw_dir=raw_dir, repo_root=repo_root)
+        split = normalize_split_name(row.get("split")) or assign_hash_split(
+            "%s-%s" % (dataset_name, index), salt=dataset_name
+        )
+        raw_labels = row.get("all_labels") or row.get("labels") or row.get("categories") or []
+        if isinstance(raw_labels, str):
+            raw_labels = [raw_labels]
+        label_name = str(row.get("label") or row.get("category") or "").strip()
+        if not label_name:
+            if raw_labels:
+                counts = Counter(str(item) for item in raw_labels if str(item).strip())
+                label_name = counts.most_common(1)[0][0]
+            else:
+                raise ValueError("Classification record is missing a label in %s" % records_path)
+        canonical_candidates = [str(item) for item in raw_labels if str(item).strip()] or [label_name]
+        canonical_labels = [
+            parse_ip102_label(item) if pest_mode else normalize_label(item) for item in canonical_candidates
+        ]
+        canonical_label = canonical_labels[0]
+        crop_name, disease_name = parse_plant_label(label_name)
+        metadata = metadata_with_license(
+            {
+                "crop": row.get("crop") or crop_name,
+                "disease": row.get("disease") or (disease_name if not pest_mode else None),
+                "pest": row.get("pest") or (canonical_label if pest_mode else None),
+                "original_label": label_name,
+                "original_labels": canonical_candidates,
+                "normalized_label": canonical_label,
+                "normalized_labels": canonical_labels,
+                "source_image_id": row.get("image") or row.get("id") or str(index),
+                "template_origin": row.get("template_origin", "source_authored"),
+            },
+            license_name=license_name,
+        )
+        rows.append(
+            _base_sample(
+                sample_id="%s-%s" % (dataset_name, row.get("id") or index),
+                source_dataset=dataset_name,
+                task_type=TASK_TYPE_CLASSIFICATION,
+                split=split,
+                image_paths=image_paths,
+                question=build_user_message_text(TASK_TYPE_CLASSIFICATION, row.get("question")),
+                target={"answer_text": canonical_label, "canonical_label": canonical_label},
+                metadata=metadata,
+                verifier={"mode": "label", "accepted_labels": canonical_labels},
+                reward_meta={"weights": {"normalized_label": 1.0, "hallucination_penalty": 1.0}},
+                provenance=provenance,
+            )
+        )
+    if not rows:
+        raise ValueError("No classification rows were parsed from %s" % records_path)
+    return rows
+
+
+def normalize_ip102_dataset(
+    raw_dir: Path,
+    repo_root: Path,
+    license_name: Optional[str] = None,
+    provenance: Optional[Dict[str, Any]] = None,
+) -> List[Dict[str, Any]]:
     split_files = {
         "train": raw_dir / "train.txt",
         "validation": raw_dir / "val.txt",
@@ -131,6 +225,7 @@ def normalize_ip102_dataset(raw_dir: Path, repo_root: Path, license_name: Option
             salt="ip102-fallback",
             pest_mode=True,
             license_name=license_name,
+            provenance=provenance,
         )
 
     label_lookup = {}
@@ -183,6 +278,7 @@ def normalize_ip102_dataset(raw_dir: Path, repo_root: Path, license_name: Option
                     metadata=metadata,
                     verifier={"mode": "label", "accepted_labels": [canonical_label]},
                     reward_meta={"weights": {"normalized_label": 1.0, "hallucination_penalty": 1.0}},
+                    provenance=provenance,
                 )
             )
     if not rows:
@@ -215,14 +311,16 @@ def normalize_vqa_like_dataset(
     dataset_name: str,
     default_task_type: str = TASK_TYPE_VQA,
     license_name: Optional[str] = None,
+    provenance: Optional[Dict[str, Any]] = None,
 ) -> List[Dict[str, Any]]:
     records_path = require_records_file(raw_dir)
     records = read_records(records_path)
     rows = []
     for index, row in enumerate(records):
         image_paths = _extract_image_paths(row, raw_dir=raw_dir, repo_root=repo_root)
-        split = row.get("split") or assign_hash_split("%s-%s" % (dataset_name, index), salt=dataset_name)
-        split = str(split).replace("val", "validation")
+        split = normalize_split_name(row.get("split")) or assign_hash_split(
+            "%s-%s" % (dataset_name, index), salt=dataset_name
+        )
         question = row.get("question") or row.get("query") or row.get("instruction")
         if not question:
             raise ValueError("VQA-like row is missing a question field in %s" % records_path)
@@ -253,13 +351,15 @@ def normalize_vqa_like_dataset(
                 metadata=metadata_with_license(
                     {
                         "crop": row.get("crop"),
-                        "disease": row.get("disease"),
-                        "pest": row.get("pest"),
-                        "source_image_id": row.get("image") or row.get("id") or str(index),
-                        "template_origin": row.get("template_origin", "human_or_source_authored"),
-                    },
-                    license_name=license_name,
-                ),
+                    "disease": row.get("disease"),
+                    "pest": row.get("pest"),
+                    "source_image_id": row.get("image") or row.get("id") or str(index),
+                    "template_origin": row.get("template_origin", "human_or_source_authored"),
+                    "benchmark_track": row.get("benchmark_track"),
+                    "options": row.get("options"),
+                },
+                license_name=license_name,
+            ),
                 verifier={
                     "mode": verifier_mode,
                     "accepted_answers": [str(answer)],
@@ -267,6 +367,7 @@ def normalize_vqa_like_dataset(
                     "management_keywords": row.get("management_keywords") or [],
                 },
                 reward_meta={"weights": row.get("reward_weights") or {}},
+                provenance=provenance,
             )
         )
     if not rows:
@@ -275,14 +376,20 @@ def normalize_vqa_like_dataset(
 
 
 def normalize_consultation_dataset(
-    raw_dir: Path, repo_root: Path, dataset_name: str, license_name: Optional[str] = None
+    raw_dir: Path,
+    repo_root: Path,
+    dataset_name: str,
+    license_name: Optional[str] = None,
+    provenance: Optional[Dict[str, Any]] = None,
 ) -> List[Dict[str, Any]]:
     records_path = require_records_file(raw_dir)
     records = read_records(records_path)
     rows = []
     for index, row in enumerate(records):
         image_paths = _extract_image_paths(row, raw_dir=raw_dir, repo_root=repo_root)
-        split = row.get("split") or assign_hash_split("%s-%s" % (dataset_name, index), salt=dataset_name)
+        split = normalize_split_name(row.get("split")) or assign_hash_split(
+            "%s-%s" % (dataset_name, index), salt=dataset_name
+        )
         diagnosis = str(row.get("diagnosis") or row.get("answer") or row.get("label") or "").strip()
         if not diagnosis:
             raise ValueError("Consultation row is missing diagnosis/answer text in %s" % records_path)
@@ -320,6 +427,7 @@ def normalize_consultation_dataset(
                         "pest": row.get("pest"),
                         "source_image_id": row.get("image") or row.get("id") or str(index),
                         "template_origin": row.get("template_origin", "human_or_source_authored"),
+                        "benchmark_track": row.get("benchmark_track"),
                     },
                     license_name=license_name,
                 ),
@@ -342,6 +450,7 @@ def normalize_consultation_dataset(
                     },
                     "structured_output_required": True,
                 },
+                provenance=provenance,
             )
         )
     if not rows:

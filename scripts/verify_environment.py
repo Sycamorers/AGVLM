@@ -16,6 +16,13 @@ from typing import Any, Dict, List, Optional
 
 REQUIRED_PACKAGES = ["yaml", "pydantic", "PIL"]
 OPTIONAL_PACKAGES = ["torch", "transformers", "datasets", "accelerate", "peft", "trl", "bitsandbytes"]
+DATA_ENV_VARS = [
+    "AGRI_VLM_DATA_ROOT",
+    "HF_HOME",
+    "TRANSFORMERS_CACHE",
+    "HUGGINGFACE_HUB_CACHE",
+    "TMPDIR",
+]
 
 
 def try_import(name: str) -> str:
@@ -112,6 +119,9 @@ def main() -> int:
     print("repo_root=%s" % repo_root)
     print("python=%s" % sys.version.replace("\n", " "))
     print("platform=%s" % platform.platform())
+    print("conda_env=%s" % (os.environ.get("CONDA_DEFAULT_ENV") or ""))
+    for env_name in DATA_ENV_VARS:
+        print("env[%s]=%s" % (env_name, os.environ.get(env_name) or ""))
 
     if sys.version_info[:2] != (3, 11):
         print("ERROR: Python 3.11 is the standardized environment for this repository.")

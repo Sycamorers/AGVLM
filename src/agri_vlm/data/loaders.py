@@ -45,7 +45,23 @@ def read_records(path: Path) -> List[Dict[str, Any]]:
 
 
 def find_first_records_file(root: Path) -> Optional[Path]:
+    preferred_names = [
+        "records.jsonl",
+        "records.json",
+        "annotations.jsonl",
+        "annotations.json",
+        "dataset.jsonl",
+        "dataset.json",
+    ]
+    for preferred_name in preferred_names:
+        candidate = root / preferred_name
+        if candidate.exists():
+            return candidate
+
+    ignored_names = {"DOWNLOAD_INFO.json", "MANIFEST.stub.json"}
     for candidate in sorted(root.rglob("*")):
+        if candidate.name in ignored_names:
+            continue
         if candidate.suffix.lower() in {".json", ".jsonl", ".csv", ".tsv"}:
             return candidate
     return None

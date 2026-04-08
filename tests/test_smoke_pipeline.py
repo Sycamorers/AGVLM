@@ -2,8 +2,12 @@ import os
 import subprocess
 from pathlib import Path
 
+import pytest
+
 
 def test_smoke_pipeline_runs() -> None:
+    pytest.importorskip("torch")
+    pytest.importorskip("transformers")
     repo_root = Path(__file__).resolve().parents[1]
     env = dict(os.environ)
     env["PYTHONPATH"] = "src"

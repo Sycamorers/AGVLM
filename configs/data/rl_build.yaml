@@ -1,21 +1,22 @@
-sources:
-  - data/interim/plantvillage.jsonl
-  - data/interim/ip102.jsonl
-  - data/interim/plantvillage_vqa.jsonl
-  - data/interim/agbase.jsonl
-  - data/interim/mirage.jsonl
+datasets:
+  - plantvillage
+  - plantdoc
+  - ip102
+  - plantvillage_vqa
+  - agbase
+  - mirage
+output_path: "{data_root}/manifests/{subset_tag}/rl_manifest.jsonl"
 allowed_task_types:
   - classification
   - vqa
   - consultation
   - clarify_or_respond
+exclude_splits:
+  - test
 allowed_verifier_modes:
-  - exact_match
   - label
+  - exact_match
   - synonym
   - structured
   - clarify
-exclude_splits:
-  - test
-output_path: data/manifests/rl_manifest.jsonl
-max_answer_words: 160
+max_answer_words: 80

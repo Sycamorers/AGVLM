@@ -1,71 +1,66 @@
 # Data Plan
 
-## V1 source coverage
+## Source Policy
 
-SFT core sources:
+The repo now uses a hybrid source model:
+
+- automatic partial download when a selective public Hugging Face path is available
+- authenticated partial download when a gated Hugging Face path exists
+- manual subset-tagged raw-data slots when selective remote download is not practical
+
+Default acquisition mode:
+- `download_mode: partial`
+- `sample_fraction: 0.1`
+- subset tag: `partial_10pct`
+
+Full rerun mode:
+- `download_mode: full`
+- `sample_fraction: 1.0`
+- subset tag: `full`
+
+## Dataset Coverage
+
+Automatic partial download:
 - PlantVillage
 - PlantDoc
-- IP102
 - PlantVillageVQA
-- AgBase resources when placed locally
-- MIRAGE resources when placed locally
-- Agri-LLaVA resources when placed locally
-
-RL core sources:
-- PlantVillage label-grounded classification tasks
-- IP102 pest classification tasks
-- short-answer PlantVillageVQA tasks
-- MIRAGE-MMMT clarify-vs-respond tasks
-- MIRAGE-MMST structured consultation tasks
-- optional AgBase exact or semi-structured tasks
-
-Evaluation:
+- MIRAGE
 - AgMMU
-- MIRAGE-MMST
-- MIRAGE-MMMT
-- local holdout from PlantDoc, IP102, and PlantVillageVQA
 
-## Default source policy
+Authenticated partial download:
+- AgroBench
 
-The repo uses manual raw-data slots by default.
+Manual staging:
+- IP102
+- AgBase resources
+- Agri-LLaVA / Agri-400K
 
-Reason:
-- dataset licensing and stable source URLs vary
-- some widely used mirrors are community-hosted rather than canonical
-- the repo should not silently change provenance by picking an arbitrary mirror
+## Storage Layout
 
-Current slot behavior:
-- `scripts/data/prepare_manual_dataset_slots.py` creates `README.manual.md` and `MANIFEST.stub.json` for each dataset
-- normalization scripts expect the engineer to place approved raw exports inside each slot
-- smoke data is synthetic and exists only to exercise the pipeline
+- raw: `data/raw/<dataset_name>/<subset_tag>/`
+- normalized: `data/interim/<subset_tag>/<dataset_name>.jsonl`
+- merged manifests: `data/manifests/<subset_tag>/`
 
-## Normalization policy
-
-Every normalized row must include:
+Every normalized row preserves:
+- source dataset
+- split
+- original labels
+- normalized labels when available
 - image paths
-- chat-style messages
-- canonical target fields
-- source metadata
-- verifier metadata
-- reward metadata
+- license metadata when known
+- subset tag and download provenance
 
-Rules:
-- preserve original labels when possible
-- also store normalized labels
-- preserve split provenance
-- separate templated supervision from human-authored supervision in metadata
-- avoid test-set leakage into SFT or RL manifests
+## Holdout Policy
 
-## Local holdout policy
+The local holdout stays conservative:
 
-Local holdout is built conservatively:
-- only from PlantDoc, IP102, and PlantVillageVQA
-- grouped by image identity to avoid near-duplicate leakage across splits
-- official benchmark test data remains outside train and RL manifests
+- source datasets: PlantDoc, IP102, PlantVillageVQA
+- grouped by image identity when available
+- official benchmark test data stays out of SFT and RL manifests
 
-## Manual steps
+## Current Constraints
 
-Expected manual steps before full training:
-- place approved raw datasets under `data/raw/<dataset_name>/`
-- run the matching normalization script
-- verify license and usage restrictions for AgBase, MIRAGE, Agri-LLaVA, and AgMMU exports
+- AgMMU and AgroBench still need runtime validation on real HiPerGator runs
+- AgroBench requires gated access
+- IP102, AgBase resources, and Agri-LLaVA still need manual staging
+- PlantDoc currently reduces multi-label annotations to one deterministic primary label per image

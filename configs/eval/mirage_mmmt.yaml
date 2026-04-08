@@ -1,4 +1,4 @@
-manifest_path: data/manifests/mirage_mmmt_eval.jsonl
+manifest_path: data/manifests/partial_10pct/mirage_mmmt_eval.jsonl
 output_path: outputs/eval/mirage_mmmt_metrics.json
 batch_size: 1
 max_new_tokens: 128

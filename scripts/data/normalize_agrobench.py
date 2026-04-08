@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Normalize AgBase-style records for the active subset tag."""
+"""Normalize AgroBench for the active subset tag."""
 
 from __future__ import annotations
 
@@ -26,7 +26,7 @@ def main() -> int:
     registry = load_dataset_registry(repo_root / args.config)
     runtime = resolve_runtime_settings(registry, repo_root, args.subset_tag, args.download_mode, args.fraction, args.data_root)
     rows = normalize_dataset_spec(
-        spec=registry.specs["agbase"],
+        spec=registry.specs["agrobench"],
         registry=registry,
         repo_root=repo_root,
         subset_tag=runtime["subset_tag"],
@@ -34,7 +34,7 @@ def main() -> int:
         download_mode=runtime["download_mode"],
         sample_fraction=runtime["sample_fraction"],
     )
-    print("normalized agbase rows=%s" % len(rows))
+    print("normalized agrobench rows=%s" % len(rows))
     return 0
 
 

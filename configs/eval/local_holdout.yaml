@@ -1,4 +1,4 @@
-manifest_path: data/manifests/local_holdout_eval.jsonl
+manifest_path: data/manifests/partial_10pct/local_holdout_eval.jsonl
 output_path: outputs/eval/local_holdout_metrics.json
 batch_size: 1
 max_new_tokens: 256

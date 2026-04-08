@@ -2,46 +2,51 @@
 
 ## P0 Critical
 
-- Validate `flash-attn` build against CUDA 12.9.1 on the target B200 image.
-  - Action: install with `INSTALL_FLASH_ATTN=1`, run `scripts/verify_environment.py`, then complete at least one real SFT step and one RL step.
-  - Files: `scripts/bootstrap_env.sh`, `README.md`, `pyproject.toml`
-  - Rationale: the repo documents `flash-attn` as optional because the build has not been verified on the target environment yet.
+- Validate AgMMU automatic partial download on HiPerGator.
+  - Action: run `scripts/data/download_public_datasets.py --download-mode partial --fraction 0.1 --datasets agmmu` inside the Python 3.11 conda env, confirm that the first 10% of the train split is materialized without a full archive download, then normalize and build the AgMMU eval manifest.
+  - Files: `src/agri_vlm/data/hf_download.py`, `scripts/data/download_public_datasets.py`, `scripts/data/normalize_agmmu.py`
+  - Rationale: the adapter is implemented against the public Hugging Face dataset, but it still needs a real cluster validation run.
 
-- Run end-to-end multi-GPU checkpoint and resume validation on B200 hardware.
-  - Action: launch `configs/train/sft_lora_b200_multigpu.yaml` and `configs/train/rl_grpo_b200_multigpu.yaml` with `scripts/launch_torchrun.py`, interrupt after at least one save, then resume from the saved checkpoint.
-  - Files: `scripts/train/train_sft.py`, `scripts/train/train_rl_grpo.py`, `src/agri_vlm/training/`, `configs/train/`
-  - Rationale: the distributed code path is wired and smoke-tested, but not yet exercised on real target hardware.
+- Validate AgroBench gated download with a real authenticated Hugging Face session.
+  - Action: request access to `risashinoda/AgroBench`, authenticate on HiPerGator, rerun the partial download path, and confirm the eval manifest is produced without leaking benchmark-only data into training manifests.
+  - Files: `configs/data/datasets.yaml`, `src/agri_vlm/data/hf_download.py`, `scripts/data/normalize_agrobench.py`
+  - Rationale: AgroBench is now first-class in the registry, but the public environment used for this pass cannot verify gated access.
 
-- Confirm the SFT checkpoint handoff into RL with a real adapter checkpoint.
-  - Action: produce a real LoRA SFT checkpoint, then verify `load_sft_checkpoint_model()` resumes it correctly inside GRPO training.
-  - Files: `src/agri_vlm/modeling/model_factory.py`, `src/agri_vlm/training/rl_trainer.py`
-  - Rationale: the adapter-aware RL load path is implemented but still needs hardware validation against an actual saved checkpoint.
+- Stage manual subset-tagged raw data for IP102, AgBase resources, and Agri-LLaVA.
+  - Action: place approved raw data under `data/raw/<dataset>/<subset_tag>/`, rerun `scripts/data/normalize_all.py`, and confirm the merged SFT and RL manifests include the expected rows.
+  - Files: `configs/data/datasets.yaml`, `scripts/data/prepare_manual_dataset_slots.py`, `scripts/data/normalize_all.py`
+  - Rationale: these sources do not have a verified selective remote-download path, so the repo now makes the missing manual step explicit.
+
+- Run one real partial-to-full rerun on HiPerGator.
+  - Action: execute the full data workflow once with `partial/0.1` and once with `full/1.0`, then compare row counts and verify that raw, interim, manifest, and report outputs remain isolated by subset tag.
+  - Files: `scripts/data/*.py`, `scripts/hpc/run_data_prep.sh`, `scripts/hpc/run_data_prep.slurm`
+  - Rationale: the code supports `partial_10pct` and `full`, but the upgrade still needs an end-to-end cluster validation run.
 
 ## P1 Important
 
-- Add an integration test that launches `scripts/verify_environment.py` under `torchrun` when at least 2 GPUs are visible.
-  - Action: gate the test on GPU availability and assert backend, world size, and local rank reporting.
-  - Files: `tests/`, `scripts/verify_environment.py`
-  - Rationale: current automated coverage only validates launcher command construction, not a live distributed process group.
+- Improve PlantDoc multi-label handling.
+  - Action: replace the current “most frequent category per image” heuristic with a better deterministic policy or multi-target representation after reviewing the official annotation distribution.
+  - Files: `src/agri_vlm/data/hf_download.py`, `src/agri_vlm/data/normalizers.py`
+  - Rationale: the current mapping is explicit and usable, but it compresses multi-object annotations into one label.
 
-- Add a containerized environment path for CUDA 12.9.1.
-  - Action: add a `Dockerfile` and a short build/run note once the exact base image and optional `flash-attn` flow are validated.
-  - Files: `Dockerfile`, `README.md`, `scripts/bootstrap_env.sh`
-  - Rationale: the repo currently standardizes the local bootstrap path only.
+- Add a small integration test for authenticated and gated dataset failure modes.
+  - Action: mock gated Hugging Face failures and assert that manual slots, placeholder manifests, and report statuses are emitted correctly.
+  - Files: `src/agri_vlm/data/hf_download.py`, `tests/`
+  - Rationale: manual fallback behavior is important and currently covered only indirectly.
 
-- Improve rank-aware metrics persistence for RL runs.
-  - Action: add a JSONL metrics sink for GRPO similar to SFT and verify only global rank 0 writes artifacts.
-  - Files: `src/agri_vlm/training/rl_trainer.py`, `src/agri_vlm/training/callbacks.py`
-  - Rationale: training logs are readable now, but RL artifact logging is still lighter than the SFT path.
+- Validate `flash-attn` against the CUDA 12.9.1 HiPerGator image.
+  - Action: install with `INSTALL_FLASH_ATTN=1`, run `scripts/verify_environment.py`, and confirm at least one real SFT launch on B200 hardware.
+  - Files: `scripts/hpc/prepare_env.sh`, `scripts/bootstrap_env.sh`, `README.md`
+  - Rationale: the repo keeps `flash-attn` optional until the target image is confirmed.
 
 ## P2 Nice-to-Have
 
-- Add an optional advanced distributed config path.
-  - Action: add a clean DeepSpeed or FSDP example only after the primary `torchrun` path is validated on target hardware.
-  - Files: `configs/`, `README.md`
-  - Rationale: the repo should keep one primary distributed path until the basic B200 workflow is confirmed.
+- Add a dedicated `make data-smoke` target.
+  - Action: expose the synthetic raw-data pipeline used in tests as a top-level Make target.
+  - Files: `Makefile`, `scripts/data/prepare_manual_dataset_slots.py`, `scripts/data/normalize_all.py`
+  - Rationale: the repo already has the pieces; a named target would make local validation easier.
 
-- Add a small benchmark note for recommended per-GPU batch sizes on 4B and 8B checkpoints.
-  - Action: record memory observations and stable batch/accumulation settings after real B200 runs.
+- Add measured HiPerGator cache and scratch recommendations.
+  - Action: record stable values for `HF_HOME`, `TMPDIR`, and dataset scratch usage after real cluster runs.
   - Files: `README.md`, `docs/decision_log.md`
-  - Rationale: current B200 configs are sensible starting points, not measured performance baselines.
+  - Rationale: the current environment guidance is correct but not yet tuned with real cluster usage data.

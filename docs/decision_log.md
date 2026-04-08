@@ -1,48 +1,51 @@
 # Decision Log
 
-## 2026-04-08 Audit
+## 2026-04-08 Dataset Audit
 
-Already working:
-- dataset normalization, manifest building, evaluation scripts, and smoke/unit test scaffolding
-- SFT entrypoint built on `transformers.Trainer`
-- RL entrypoint built on `trl.GRPOTrainer`
-- base-model selection already documented around `Qwen/Qwen3-VL-4B-Instruct`
+Already working before this pass:
+- unified JSONL schema, manifest builders, and smoke/unit-test scaffolding
+- subset-agnostic training and evaluation entrypoints
+- B200-oriented multi-GPU training path
 
 Missing before this pass:
-- no explicit multi-GPU launch path
-- `device_map="auto"` made distributed training unsafe
-- no rank-aware logging or artifact handling
-- weak environment verification
-- README was too long and did not standardize CUDA / Python / launch assumptions
+- dataset registry was manual-slot only
+- no partial-vs-full download policy
+- no subset-tagged raw/interim/manifest layout
+- no AgroBench entry
+- no HiPerGator-oriented data-prep scripts
+- no dataset summary report
 
 ## 2026-04-08 This Upgrade Pass
 
 Changed:
-- standardized the repo on Python `3.11`
-- standardized setup around PyTorch `2.8.0` `cu129` wheels and CUDA 12.9.1 assumptions
-- added `scripts/launch_torchrun.py` as the primary distributed launcher
-- added distributed runtime helpers for rank, device, and logging behavior
-- patched SFT and RL paths for distributed-safe model loading, main-rank-only artifact writes, and resume control
-- added B200-oriented multi-GPU train configs and 1-GPU smoke configs
-- rewrote `README.md`
-- added explicit top-level `TODO.md`
-- upgraded `scripts/verify_environment.py` to report CUDA, GPUs, bf16, and distributed sanity
+- added a hybrid dataset registry with public, gated, and manual source modes
+- added first-class AgroBench support as an eval-only dataset entry
+- standardized dataset outputs around `partial_10pct` and `full` subset tags
+- added Hugging Face materializers for PlantVillage, PlantDoc, PlantVillageVQA, MIRAGE, AgMMU, and authenticated AgroBench
+- kept manual-slot fallbacks for IP102, AgBase resources, and Agri-LLaVA where selective 10 percent remote download is not practical
+- added `scripts/data/normalize_all.py` and subset-tag-aware manifest builders and reports
+- added HiPerGator helpers under `scripts/hpc/`
+- rewrote `README.md` and `TODO.md` around the new data workflow
 
 ## 2026-04-08 Deferred
 
 Deferred on purpose:
-- `flash-attn` is still optional until validated on the target CUDA 12.9.1 / B200 environment
-- no Dockerfile was added because the repository did not already have one and the exact image choice still needs hardware validation
-- no second distributed stack was added; `torchrun` is the single primary path for now
-- real B200 multi-GPU validation remains a TODO because that hardware is not available in the current execution environment
+- real AgMMU download validation still needs a HiPerGator run
+- real AgroBench validation still needs authenticated gated access
+- PlantDoc still uses a deterministic single-label reduction for multi-label annotations
+- manual staging is still required for IP102, AgBase resources, and Agri-LLaVA
 
 ## External Verification Used
 
-- PyTorch previous versions page for official `cu129` wheel install instructions:
-  - https://pytorch.org/get-started/previous-versions/
-- PyTorch 2.7 release notes for Blackwell support context:
-  - https://pytorch.org/blog/pytorch2-7/
-- Transformers Qwen3-VL docs:
-  - https://huggingface.co/docs/transformers/en/model_doc/qwen3_vl
-- TRL GRPO docs:
-  - https://huggingface.co/docs/trl/grpo_trainer
+- PlantVillage on Hugging Face:
+  - https://huggingface.co/datasets/GVJahnavi/PlantVillage_dataset
+- PlantVillageVQA on Hugging Face:
+  - https://huggingface.co/datasets/SyedNazmusSakib/PlantVillageVQA
+- MIRAGE on Hugging Face:
+  - https://huggingface.co/datasets/MIRAGE-Benchmark/MIRAGE
+- AgMMU on Hugging Face:
+  - https://huggingface.co/datasets/AgMMU/AgMMU_v1
+- Agri-LLaVA VQA Bench on Hugging Face:
+  - https://huggingface.co/datasets/Agri-LLaVA-Anonymous/Agri_LLaVA_VQA_Bench
+- AgroBench on Hugging Face:
+  - https://huggingface.co/datasets/risashinoda/AgroBench

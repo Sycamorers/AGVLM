@@ -1,57 +1,137 @@
+defaults:
+  download_mode: partial
+  sample_fraction: 0.1
+  raw_dir_template: "{data_root}/raw/{dataset_name}/{subset_tag}"
+  interim_path_template: "{data_root}/interim/{subset_tag}/{dataset_name}.jsonl"
+  processed_dir_template: "{data_root}/processed/{dataset_name}/{subset_tag}"
+  manifest_dir_template: "{data_root}/manifests/{subset_tag}"
+
 datasets:
   - name: plantvillage
-    task_family: classification
-    raw_dir: data/raw/plantvillage
-    interim_path: data/interim/plantvillage.jsonl
-    download_mode: manual
-    manual_url: https://github.com/spMohanty/PlantVillage-Dataset
-    notes: Original ground-level leaf disease classification dataset.
+    task_family: sft
+    source_type: hf_dataset
+    access: public
+    normalizer: classification_records
+    materializer: plantvillage
+    hf_repo_id: GVJahnavi/PlantVillage_dataset
+    hf_config_names: [default]
+    hf_split_names: [train, test]
+    manual_url: https://huggingface.co/datasets/GVJahnavi/PlantVillage_dataset
+    notes: Public Hugging Face dataset with explicit train and test splits.
+    include_in_sft: true
+    include_in_rl: true
+    include_in_eval: false
+
   - name: plantdoc
-    task_family: classification
-    raw_dir: data/raw/plantdoc
-    interim_path: data/interim/plantdoc.jsonl
-    download_mode: manual
-    manual_url: https://github.com/pratikkayal/PlantDoc-Dataset
-    notes: Field-image disease dataset with realistic backgrounds.
+    task_family: sft
+    source_type: hf_dataset
+    access: public
+    normalizer: classification_records
+    materializer: plantdoc
+    hf_repo_id: agyaatcoder/PlantDoc
+    hf_split_names: [train, test]
+    manual_url: https://huggingface.co/datasets/agyaatcoder/PlantDoc
+    notes: Public Hugging Face object-detection dataset materialized here as classification records using the most frequent annotation label per image.
+    include_in_sft: true
+    include_in_rl: true
+    include_in_eval: true
+
   - name: ip102
-    task_family: classification
-    raw_dir: data/raw/ip102
-    interim_path: data/interim/ip102.jsonl
-    download_mode: manual
+    task_family: sft
+    source_type: manual
+    access: manual
+    normalizer: ip102
     manual_url: https://github.com/xpwu95/IP102
-    notes: Insect pest classification dataset with official train/val/test files.
+    notes: No verified selective remote partial-download path is configured. Provide the official split files and images under the subset-tag raw directory.
+    include_in_sft: true
+    include_in_rl: true
+    include_in_eval: true
+
   - name: plantvillage_vqa
-    task_family: vqa
-    raw_dir: data/raw/plantvillage_vqa
-    interim_path: data/interim/plantvillage_vqa.jsonl
-    download_mode: manual
-    manual_url: PLACEHOLDER_PLANTVILLAGE_VQA_SOURCE
-    notes: Manual slot until an approved source is provided locally.
+    task_family: sft
+    source_type: hf_dataset
+    access: public
+    normalizer: vqa_records
+    materializer: plantvillage_vqa
+    hf_repo_id: SyedNazmusSakib/PlantVillageVQA
+    hf_split_names: [train]
+    default_task_type: vqa
+    manual_url: https://huggingface.co/datasets/SyedNazmusSakib/PlantVillageVQA
+    license_name: cc-by-4.0
+    notes: Public Hugging Face dataset with a single train split and per-row split tags.
+    include_in_sft: true
+    include_in_rl: true
+    include_in_eval: true
+
   - name: agbase
-    task_family: consultation
-    raw_dir: data/raw/agbase
-    interim_path: data/interim/agbase.jsonl
-    download_mode: manual
-    manual_url: PLACEHOLDER_AGBASE_SOURCE
-    notes: Development-side resources only; document license before use.
+    task_family: sft
+    source_type: manual
+    access: manual
+    normalizer: consultation_records
+    default_task_type: consultation
+    manual_url: https://github.com/YuWang-1024/AgMMU
+    notes: AgBase-style resources are not exposed through a verified selective remote-download path in this repo. Drop prepared records into the subset-tag raw directory.
+    include_in_sft: true
+    include_in_rl: true
+    include_in_eval: false
+
   - name: mirage
-    task_family: consultation
-    raw_dir: data/raw/mirage
-    interim_path: data/interim/mirage.jsonl
-    download_mode: manual
-    manual_url: PLACEHOLDER_MIRAGE_SOURCE
-    notes: Manual slot for MIRAGE-MMST and MIRAGE-MMMT data exports.
+    task_family: eval
+    source_type: hf_dataset
+    access: public
+    normalizer: vqa_records
+    materializer: mirage
+    hf_repo_id: MIRAGE-Benchmark/MIRAGE
+    hf_config_names: [MMST_Standard, MMST_Contextual, MMMT_Direct, MMMT_Decomp]
+    hf_split_names: [train, dev, test]
+    default_task_type: consultation
+    manual_url: https://huggingface.co/datasets/MIRAGE-Benchmark/MIRAGE
+    notes: Public Hugging Face benchmark with separate MMST and MMMT configurations.
+    include_in_sft: true
+    include_in_rl: true
+    include_in_eval: true
+
   - name: agrillava
-    task_family: consultation
-    raw_dir: data/raw/agrillava
-    interim_path: data/interim/agrillava.jsonl
-    download_mode: manual
-    manual_url: PLACEHOLDER_AGRILLAVA_SOURCE
-    notes: Optional data source; verify licensing before use.
+    task_family: sft
+    source_type: manual
+    access: manual
+    normalizer: consultation_records
+    default_task_type: consultation
+    manual_url: https://huggingface.co/datasets/Agri-LLaVA-Anonymous/Agri_LLaVA_VQA_Bench
+    notes: The Hub dataset builder is broken and the images are distributed as a monolithic archive, so this repo does not attempt a selective 10 percent remote download.
+    include_in_sft: true
+    include_in_rl: false
+    include_in_eval: false
+
   - name: agmmu
     task_family: eval
-    raw_dir: data/raw/agmmu
-    interim_path: data/interim/agmmu.jsonl
-    download_mode: manual
-    manual_url: PLACEHOLDER_AGMMU_SOURCE
-    notes: Evaluation-only slot. Keep benchmark test data out of training.
+    source_type: hf_dataset
+    access: public
+    normalizer: vqa_records
+    materializer: agmmu
+    hf_repo_id: AgMMU/AgMMU_v1
+    hf_split_names: [train]
+    default_task_type: vqa
+    manual_url: https://huggingface.co/datasets/AgMMU/AgMMU_v1
+    license_name: cc
+    notes: Public Hugging Face WebDataset benchmark. Partial acquisition is implemented as a prefix over the train split.
+    include_in_sft: false
+    include_in_rl: false
+    include_in_eval: true
+    eval_only: true
+
+  - name: agrobench
+    task_family: eval
+    source_type: hf_dataset
+    access: gated
+    normalizer: vqa_records
+    materializer: agrobench
+    hf_repo_id: risashinoda/AgroBench
+    hf_split_names: [train]
+    default_task_type: vqa
+    manual_url: https://huggingface.co/datasets/risashinoda/AgroBench
+    notes: Hugging Face dataset is gated. If access is granted and the user is authenticated, the same partial-download path can be used; otherwise a manual slot is created.
+    include_in_sft: false
+    include_in_rl: false
+    include_in_eval: true
+    eval_only: true

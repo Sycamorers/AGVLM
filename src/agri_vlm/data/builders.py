@@ -65,6 +65,11 @@ def build_eval_manifests(
     write_manifest(output_paths["agmmu"], [row.model_dump(mode="json") for row in agmmu_rows])
     summary["agmmu"] = len(agmmu_rows)
 
+    agrobench_rows = read_manifest(source_paths["agrobench"]) if source_paths.get("agrobench") else []
+    if output_paths.get("agrobench"):
+        write_manifest(output_paths["agrobench"], [row.model_dump(mode="json") for row in agrobench_rows])
+    summary["agrobench"] = len(agrobench_rows)
+
     mirage_rows = read_manifest(source_paths["mirage"]) if source_paths.get("mirage") else []
     mmst_rows = []
     mmmt_rows = []
@@ -82,7 +87,9 @@ def build_eval_manifests(
     holdout_rows = []
     fallback_rows = []
     for dataset_name in holdout_datasets:
-        source_path = source_paths[dataset_name]
+        source_path = source_paths.get(dataset_name)
+        if not source_path:
+            continue
         for row in read_manifest(source_path):
             if row.split == "test":
                 continue

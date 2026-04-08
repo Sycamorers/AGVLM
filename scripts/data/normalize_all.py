@@ -1,15 +1,13 @@
 #!/usr/bin/env python3
-"""Download supported dataset subsets into subset-tagged raw directories."""
+"""Normalize all materialized datasets for a subset tag."""
 
 from __future__ import annotations
 
 import argparse
 import json
-import os
 from pathlib import Path
 
-from agri_vlm.data.hf_download import download_supported_datasets
-from agri_vlm.data.pipeline import resolve_runtime_settings
+from agri_vlm.data.pipeline import normalize_dataset_spec, resolve_runtime_settings
 from agri_vlm.data.registry import load_dataset_registry
 
 
@@ -21,7 +19,6 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--subset-tag", default=None)
     parser.add_argument("--data-root", default=None)
     parser.add_argument("--datasets", nargs="*", default=None)
-    parser.add_argument("--dry-run", action="store_true")
     return parser.parse_args()
 
 
@@ -37,17 +34,28 @@ def main() -> int:
         sample_fraction=args.fraction,
         data_root=args.data_root,
     )
-    summary = download_supported_datasets(
-        registry=registry,
-        repo_root=repo_root,
-        subset_tag=runtime["subset_tag"],
-        download_mode=runtime["download_mode"],
-        sample_fraction=runtime["sample_fraction"],
-        data_root=str(runtime["data_root"]),
-        dataset_names=args.datasets,
-        token=os.environ.get("HF_TOKEN"),
-        dry_run=args.dry_run,
-    )
+    selected_names = args.datasets or list(registry.specs.keys())
+
+    summary = {}
+    for dataset_name in selected_names:
+        spec = registry.specs[dataset_name]
+        try:
+            rows = normalize_dataset_spec(
+                spec=spec,
+                registry=registry,
+                repo_root=repo_root,
+                subset_tag=runtime["subset_tag"],
+                data_root=str(runtime["data_root"]),
+                download_mode=runtime["download_mode"],
+                sample_fraction=runtime["sample_fraction"],
+            )
+            summary[dataset_name] = {"status": "normalized", "rows": len(rows)}
+        except FileNotFoundError as exc:
+            summary[dataset_name] = {"status": "missing_raw", "reason": str(exc)}
+        except Exception as exc:
+            summary[dataset_name] = {"status": "error", "reason": str(exc)}
+            raise
+
     print(
         json.dumps(
             {
