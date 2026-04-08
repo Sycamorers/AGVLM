@@ -22,6 +22,12 @@ def maybe_wrap_with_peft(model: Any, train_config: Any) -> Any:
     """Wrap a model with LoRA if requested."""
     if not train_config.use_peft:
         return model
-    from peft import get_peft_model
+    from peft import get_peft_model, prepare_model_for_kbit_training
+
+    if getattr(model, "is_loaded_in_4bit", False):
+        model = prepare_model_for_kbit_training(
+            model,
+            use_gradient_checkpointing=train_config.gradient_checkpointing,
+        )
 
     return get_peft_model(model, build_lora_config(train_config))

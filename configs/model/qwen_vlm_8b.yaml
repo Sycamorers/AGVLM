@@ -9,6 +9,9 @@ bnb_4bit_compute_dtype: bfloat16
 bnb_4bit_quant_type: nf4
 trust_remote_code: false
 device_map: auto
+distributed_device_map: local_process
 gradient_checkpointing: true
+low_cpu_mem_usage: true
+use_cache: false
 max_pixels: 12845056
 min_pixels: 3136

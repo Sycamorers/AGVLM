@@ -17,6 +17,16 @@ gradient_checkpointing: true
 use_peft: true
 dry_run: false
 smoke_max_samples: 8
+resume_from_checkpoint: auto
+dataloader_num_workers: 2
+dataloader_pin_memory: true
+dataloader_persistent_workers: true
+ddp_find_unused_parameters: false
+ddp_timeout: 1800
+log_on_each_node: false
+save_on_each_node: false
+full_determinism: false
+tf32: true
 beta: 0.0
 num_generations: 4
 max_prompt_length: 2048

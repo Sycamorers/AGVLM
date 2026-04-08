@@ -6,17 +6,22 @@ from typing import Any, Dict, List
 
 from agri_vlm.data.conversation_format import sample_to_prompt_messages
 from agri_vlm.data.manifest_io import read_manifest, summarize_manifest
-from agri_vlm.modeling.peft_setup import build_lora_config
+from agri_vlm.logging_utils import configure_logging
+from agri_vlm.modeling.model_factory import load_sft_checkpoint_model
 from agri_vlm.modeling.processor_factory import load_processor
 from agri_vlm.rewards.composite import make_trl_reward_function
+from agri_vlm.utils.checkpointing import resolve_resume_checkpoint
+from agri_vlm.utils.distributed import configure_torch_runtime, get_distributed_context
 from agri_vlm.utils.image import open_image
 from agri_vlm.utils.io import ensure_dir
 
 
 def _build_rl_dry_run_summary(rows: List[Any], output_dir: Path) -> Dict[str, Any]:
+    distributed_context = get_distributed_context()
     summary = {
         "train_rows": len(rows),
         "train_summary": summarize_manifest(rows),
+        "distributed": distributed_context.as_dict(),
     }
     ensure_dir(output_dir)
     (output_dir / "dry_run_summary.json").write_text(
@@ -27,6 +32,8 @@ def _build_rl_dry_run_summary(rows: List[Any], output_dir: Path) -> Dict[str, An
 
 def run_rl_grpo(model_config: Any, train_config: Any) -> Dict[str, Any]:
     """Run GRPO training on top of the SFT checkpoint."""
+    distributed_context = get_distributed_context(set_device=True)
+    logger = configure_logging(logger_name="agri_vlm.training.rl")
     rows = read_manifest(Path(train_config.manifest_path))
     if train_config.smoke_max_samples:
         rows = rows[: train_config.smoke_max_samples]
@@ -38,8 +45,15 @@ def run_rl_grpo(model_config: Any, train_config: Any) -> Dict[str, Any]:
     from datasets import Dataset
     from trl import GRPOConfig, GRPOTrainer
 
+    configure_torch_runtime(tf32=train_config.tf32)
     ensure_dir(output_dir)
+    logger.info("Starting GRPO with distributed context: %s", distributed_context.as_dict())
     processor = load_processor(model_config)
+    model = load_sft_checkpoint_model(
+        model_config=model_config,
+        checkpoint_path=train_config.sft_checkpoint_path,
+        distributed_context=distributed_context,
+    )
     records = []
     for row in rows:
         prompt = processor.apply_chat_template(
@@ -81,6 +95,7 @@ def run_rl_grpo(model_config: Any, train_config: Any) -> Dict[str, Any]:
         per_device_train_batch_size=train_config.per_device_train_batch_size,
         gradient_accumulation_steps=train_config.gradient_accumulation_steps,
         bf16=train_config.bf16,
+        tf32=train_config.tf32,
         max_prompt_length=train_config.max_prompt_length,
         max_completion_length=train_config.max_completion_length,
         num_generations=train_config.num_generations,
@@ -91,10 +106,21 @@ def run_rl_grpo(model_config: Any, train_config: Any) -> Dict[str, Any]:
         vllm_mode=train_config.vllm_mode,
         report_to=train_config.report_to,
         remove_unused_columns=False,
+        seed=train_config.seed,
+        data_seed=train_config.seed,
+        dataloader_num_workers=train_config.dataloader_num_workers,
+        dataloader_pin_memory=train_config.dataloader_pin_memory,
+        dataloader_persistent_workers=train_config.dataloader_persistent_workers,
+        ddp_find_unused_parameters=train_config.ddp_find_unused_parameters,
+        ddp_timeout=train_config.ddp_timeout,
+        log_on_each_node=train_config.log_on_each_node,
+        save_on_each_node=train_config.save_on_each_node,
+        full_determinism=train_config.full_determinism,
+        disable_tqdm=not distributed_context.is_main_process,
     )
 
     trainer = GRPOTrainer(
-        model=train_config.sft_checkpoint_path,
+        model=model,
         args=grpo_args,
         train_dataset=dataset,
         processing_class=processor,
@@ -104,9 +130,11 @@ def run_rl_grpo(model_config: Any, train_config: Any) -> Dict[str, Any]:
                 reward_weights=train_config.reward_weights,
             )
         ],
-        peft_config=build_lora_config(train_config) if train_config.use_peft else None,
     )
-    trainer.train()
+    resume_path = resolve_resume_checkpoint(output_dir, train_config.resume_from_checkpoint)
+    trainer.train(resume_from_checkpoint=str(resume_path) if resume_path else None)
     trainer.save_model()
-    processor.save_pretrained(output_dir)
+    if trainer.is_world_process_zero():
+        processor.save_pretrained(output_dir)
+    logger.info("Finished GRPO run with %s training rows.", len(rows))
     return _build_rl_dry_run_summary(rows, output_dir)

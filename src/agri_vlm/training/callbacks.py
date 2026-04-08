@@ -30,6 +30,8 @@ class JsonlMetricsCallback(TrainerCallback):
     ) -> None:
         if not logs:
             return
+        if hasattr(state, "is_world_process_zero") and not state.is_world_process_zero:
+            return
         payload = dict(logs)
         payload["global_step"] = state.global_step
         with self.output_path.open("a", encoding="utf-8") as handle:

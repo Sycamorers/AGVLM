@@ -1,35 +1,48 @@
 # Decision Log
 
-## 2026-04-08: base VLM selection
+## 2026-04-08 Audit
 
-Decision:
-- default base model: `Qwen/Qwen3-VL-4B-Instruct`
-- optional larger model: `Qwen/Qwen3-VL-8B-Instruct`
+Already working:
+- dataset normalization, manifest building, evaluation scripts, and smoke/unit test scaffolding
+- SFT entrypoint built on `transformers.Trainer`
+- RL entrypoint built on `trl.GRPOTrainer`
+- base-model selection already documented around `Qwen/Qwen3-VL-4B-Instruct`
 
-Why:
-- the official Qwen Hugging Face organization exposes public open-weight `Qwen3-VL-4B-Instruct` and `Qwen3-VL-8B-Instruct` checkpoints
-- the current official Hugging Face Transformers documentation includes `Qwen3-VL` in the v5.5.0 docs
-- the official Qwen3-VL model cards recommend `flash_attention_2` where supported
-- the default V1 path should use the smallest practical dense model
+Missing before this pass:
+- no explicit multi-GPU launch path
+- `device_map="auto"` made distributed training unsafe
+- no rank-aware logging or artifact handling
+- weak environment verification
+- README was too long and did not standardize CUDA / Python / launch assumptions
 
-Inference explicitly noted:
-- I could not verify an official public open-weight locally fine-tunable `Qwen3.6` VLM checkpoint on the official Qwen Hugging Face organization or current Transformers docs as of April 8, 2026
-- because that is an absence-of-evidence conclusion from official sources, it is treated as an inference rather than a direct official statement
+## 2026-04-08 This Upgrade Pass
 
-Sources:
-- https://huggingface.co/docs/transformers/en/model_doc/qwen3_vl
-- https://huggingface.co/Qwen/Qwen3-VL-4B-Instruct
-- https://huggingface.co/Qwen/Qwen3-VL-8B-Instruct
-- https://huggingface.co/docs/trl/grpo_trainer
+Changed:
+- standardized the repo on Python `3.11`
+- standardized setup around PyTorch `2.8.0` `cu129` wheels and CUDA 12.9.1 assumptions
+- added `scripts/launch_torchrun.py` as the primary distributed launcher
+- added distributed runtime helpers for rank, device, and logging behavior
+- patched SFT and RL paths for distributed-safe model loading, main-rank-only artifact writes, and resume control
+- added B200-oriented multi-GPU train configs and 1-GPU smoke configs
+- rewrote `README.md`
+- added explicit top-level `TODO.md`
+- upgraded `scripts/verify_environment.py` to report CUDA, GPUs, bf16, and distributed sanity
 
-## 2026-04-08: training stack choice
+## 2026-04-08 Deferred
 
-Decision:
-- `transformers`, `accelerate`, `peft`, `trl`, `datasets`, and `bitsandbytes` are the default stack
-- `trl.GRPOTrainer` is used for RL
-- LoRA is the default training path
+Deferred on purpose:
+- `flash-attn` is still optional until validated on the target CUDA 12.9.1 / B200 environment
+- no Dockerfile was added because the repository did not already have one and the exact image choice still needs hardware validation
+- no second distributed stack was added; `torchrun` is the single primary path for now
+- real B200 multi-GPU validation remains a TODO because that hardware is not available in the current execution environment
 
-Why:
-- the stack is mainstream and maintainable
-- TRL now documents VLM GRPO support and GRPO-family loss variants
-- LoRA keeps V1 practical on limited hardware
+## External Verification Used
+
+- PyTorch previous versions page for official `cu129` wheel install instructions:
+  - https://pytorch.org/get-started/previous-versions/
+- PyTorch 2.7 release notes for Blackwell support context:
+  - https://pytorch.org/blog/pytorch2-7/
+- Transformers Qwen3-VL docs:
+  - https://huggingface.co/docs/transformers/en/model_doc/qwen3_vl
+- TRL GRPO docs:
+  - https://huggingface.co/docs/trl/grpo_trainer

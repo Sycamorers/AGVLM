@@ -1,11 +1,11 @@
-sft_checkpoint_path: outputs/sft/qwen3-vl-8b-lora
+sft_checkpoint_path: outputs/sft/qwen3-vl-4b-lora-b200
 manifest_path: data/manifests/rl_manifest.jsonl
 eval_manifest_path: data/manifests/local_holdout_eval.jsonl
-output_dir: outputs/rl/grpo-qwen3-vl-8b-lora
+output_dir: outputs/rl/grpo-qwen3-vl-4b-b200
 seed: 29
 per_device_train_batch_size: 1
 gradient_accumulation_steps: 8
-learning_rate: 3.0e-6
+learning_rate: 5.0e-6
 weight_decay: 0.0
 warmup_ratio: 0.03
 max_grad_norm: 1.0
@@ -15,10 +15,11 @@ save_total_limit: 2
 bf16: true
 gradient_checkpointing: true
 use_peft: true
+report_to: []
 dry_run: false
-smoke_max_samples: 8
+smoke_max_samples: 0
 resume_from_checkpoint: auto
-dataloader_num_workers: 2
+dataloader_num_workers: 4
 dataloader_pin_memory: true
 dataloader_persistent_workers: true
 ddp_find_unused_parameters: false
@@ -31,9 +32,9 @@ beta: 0.0
 num_generations: 4
 max_prompt_length: 2048
 max_completion_length: 256
-loss_type: dr_grpo
-scale_rewards: none
-use_vllm: true
+loss_type: grpo
+scale_rewards: group
+use_vllm: false
 vllm_mode: colocate
 reward_modules:
   - exact_match

@@ -39,8 +39,11 @@ class ModelConfigSchema(BaseModel):
     bnb_4bit_compute_dtype: str = "bfloat16"
     bnb_4bit_quant_type: str = "nf4"
     trust_remote_code: bool = False
-    device_map: str = "auto"
+    device_map: Optional[str] = "auto"
+    distributed_device_map: str = "local_process"
     gradient_checkpointing: bool = True
+    low_cpu_mem_usage: bool = True
+    use_cache: bool = False
     max_pixels: Optional[int] = None
     min_pixels: Optional[int] = None
 
@@ -71,6 +74,16 @@ class TrainConfigSchema(BaseModel):
     report_to: List[str] = Field(default_factory=list)
     dry_run: bool = False
     smoke_max_samples: int = 8
+    resume_from_checkpoint: Optional[str] = "auto"
+    dataloader_num_workers: int = 0
+    dataloader_pin_memory: bool = True
+    dataloader_persistent_workers: bool = False
+    ddp_find_unused_parameters: Optional[bool] = False
+    ddp_timeout: int = 1800
+    log_on_each_node: bool = False
+    save_on_each_node: bool = False
+    full_determinism: bool = False
+    tf32: bool = True
     freeze: FreezeConfigSchema = Field(default_factory=FreezeConfigSchema)
     lora: LoRAConfigSchema = Field(default_factory=LoRAConfigSchema)
 
