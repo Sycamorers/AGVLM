@@ -102,36 +102,3 @@ datasets:
     include_in_sft: true
     include_in_rl: false
     include_in_eval: false
-
-  - name: agmmu
-    task_family: eval
-    source_type: hf_dataset
-    access: public
-    normalizer: vqa_records
-    materializer: agmmu
-    hf_repo_id: AgMMU/AgMMU_v1
-    hf_split_names: [train]
-    default_task_type: vqa
-    manual_url: https://huggingface.co/datasets/AgMMU/AgMMU_v1
-    license_name: cc
-    notes: Public Hugging Face WebDataset benchmark. Partial acquisition is implemented as a prefix over the train split.
-    include_in_sft: false
-    include_in_rl: false
-    include_in_eval: true
-    eval_only: true
-
-  - name: agrobench
-    task_family: eval
-    source_type: hf_dataset
-    access: gated
-    normalizer: vqa_records
-    materializer: agrobench
-    hf_repo_id: risashinoda/AgroBench
-    hf_split_names: [train]
-    default_task_type: vqa
-    manual_url: https://huggingface.co/datasets/risashinoda/AgroBench
-    notes: Hugging Face dataset is gated. If access is granted and the user is authenticated, the same partial-download path can be used; otherwise a manual slot is created.
-    include_in_sft: false
-    include_in_rl: false
-    include_in_eval: true
-    eval_only: true

@@ -61,15 +61,6 @@ def build_eval_manifests(
 ) -> Dict[str, int]:
     summary = {}
 
-    agmmu_rows = read_manifest(source_paths["agmmu"]) if source_paths.get("agmmu") else []
-    write_manifest(output_paths["agmmu"], [row.model_dump(mode="json") for row in agmmu_rows])
-    summary["agmmu"] = len(agmmu_rows)
-
-    agrobench_rows = read_manifest(source_paths["agrobench"]) if source_paths.get("agrobench") else []
-    if output_paths.get("agrobench"):
-        write_manifest(output_paths["agrobench"], [row.model_dump(mode="json") for row in agrobench_rows])
-    summary["agrobench"] = len(agrobench_rows)
-
     mirage_rows = read_manifest(source_paths["mirage"]) if source_paths.get("mirage") else []
     mmst_rows = []
     mmmt_rows = []

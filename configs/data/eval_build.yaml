@@ -1,13 +1,9 @@
 sources:
-  agmmu: agmmu
-  agrobench: agrobench
   mirage: mirage
   plantdoc: plantdoc
   ip102: ip102
   plantvillage_vqa: plantvillage_vqa
 output_paths:
-  agmmu: "{data_root}/manifests/{subset_tag}/agmmu_eval.jsonl"
-  agrobench: "{data_root}/manifests/{subset_tag}/agrobench_eval.jsonl"
   mirage_mmst: "{data_root}/manifests/{subset_tag}/mirage_mmst_eval.jsonl"
   mirage_mmmt: "{data_root}/manifests/{subset_tag}/mirage_mmmt_eval.jsonl"
   local_holdout: "{data_root}/manifests/{subset_tag}/local_holdout_eval.jsonl"

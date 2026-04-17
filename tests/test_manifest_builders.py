@@ -38,7 +38,6 @@ def sample_row(sample_id: str, dataset: str, task_type: str, split: str) -> dict
 def test_manifest_builders_filter_and_merge(tmp_path: Path) -> None:
     plantdoc_path = tmp_path / "plantdoc.jsonl"
     mirage_path = tmp_path / "mirage.jsonl"
-    agmmu_path = tmp_path / "agmmu.jsonl"
     ip102_path = tmp_path / "ip102.jsonl"
     vqa_path = tmp_path / "vqa.jsonl"
 
@@ -50,7 +49,6 @@ def test_manifest_builders_filter_and_merge(tmp_path: Path) -> None:
         ],
     )
     write_manifest(mirage_path, [sample_row("m1", "mirage", "consultation", "validation")])
-    write_manifest(agmmu_path, [sample_row("a1", "agmmu", "vqa", "test")])
     write_manifest(ip102_path, [sample_row("i1", "ip102", "classification", "train")])
     write_manifest(vqa_path, [sample_row("v1", "plantvillage_vqa", "vqa", "train")])
 
@@ -77,14 +75,12 @@ def test_manifest_builders_filter_and_merge(tmp_path: Path) -> None:
 
     summary = build_eval_manifests(
         source_paths={
-            "agmmu": agmmu_path,
             "mirage": mirage_path,
             "plantdoc": plantdoc_path,
             "ip102": ip102_path,
             "plantvillage_vqa": vqa_path,
         },
         output_paths={
-            "agmmu": tmp_path / "agmmu_eval.jsonl",
             "mirage_mmst": tmp_path / "mmst.jsonl",
             "mirage_mmmt": tmp_path / "mmmt.jsonl",
             "local_holdout": tmp_path / "holdout.jsonl",
@@ -93,5 +89,6 @@ def test_manifest_builders_filter_and_merge(tmp_path: Path) -> None:
         holdout_datasets=["plantdoc", "ip102", "plantvillage_vqa"],
         salt="test-salt",
     )
-    assert summary["agmmu"] == 1
+    assert summary["mirage_mmst"] == 1
+    assert summary["mirage_mmmt"] == 0
     assert len(read_manifest(tmp_path / "holdout.jsonl")) >= 1

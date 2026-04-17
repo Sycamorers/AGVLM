@@ -5,7 +5,6 @@
 The repo now uses a hybrid source model:
 
 - automatic partial download when a selective public Hugging Face path is available
-- authenticated partial download when a gated Hugging Face path exists
 - manual subset-tagged raw-data slots when selective remote download is not practical
 
 Default acquisition mode:
@@ -25,10 +24,6 @@ Automatic partial download:
 - PlantDoc
 - PlantVillageVQA
 - MIRAGE
-- AgMMU
-
-Authenticated partial download:
-- AgroBench
 
 Manual staging:
 - IP102
@@ -60,7 +55,5 @@ The local holdout stays conservative:
 
 ## Current Constraints
 
-- AgMMU and AgroBench still need runtime validation on real HiPerGator runs
-- AgroBench requires gated access
 - IP102, AgBase resources, and Agri-LLaVA still need manual staging
 - PlantDoc currently reduces multi-label annotations to one deterministic primary label per image

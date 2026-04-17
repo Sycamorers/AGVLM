@@ -51,13 +51,11 @@ Public datasets with automatic partial download:
 - PlantDoc
 - PlantVillageVQA
 - MIRAGE
-- AgMMU
 
-Manual or authenticated datasets:
+Manual datasets:
 - IP102: manual drop-in
 - AgBase resources: manual drop-in
 - Agri-LLaVA / Agri-400K: manual drop-in
-- AgroBench: gated Hugging Face access; otherwise manual slot
 
 Prepare the 10% subset:
 
@@ -119,7 +117,7 @@ PYTHONPATH=src python scripts/launch_torchrun.py \
   --nproc-per-node 8 \
   scripts/train/train_sft.py -- \
   --model-config configs/model/qwen_vlm_4b.yaml \
-  --train-config configs/train/sft_lora_b200_multigpu.yaml
+  --train-config configs/train/sft_lora_full_b200_multigpu.yaml
 ```
 
 Multi-GPU RL:
@@ -134,13 +132,44 @@ PYTHONPATH=src python scripts/launch_torchrun.py \
 
 ## Evaluation
 
+Single-run local holdout eval with model predictions:
+
 ```bash
 PYTHONPATH=src python scripts/eval/eval_local_holdout.py \
   --model-config configs/model/qwen_vlm_4b.yaml \
-  --eval-config configs/eval/local_holdout.yaml
+  --eval-config configs/eval/local_holdout_full.yaml \
+  --prediction-mode model \
+  --predictions-output outputs/eval/full/local_holdout_predictions.jsonl
 ```
 
-AgroBench and AgMMU use separate eval manifests under `data/manifests/partial_10pct/`.
+Baseline or post-FT benchmark suite:
+
+```bash
+PYTHONPATH=src python scripts/eval/run_benchmark.py \
+  --model-config configs/model/qwen_vlm_4b.yaml \
+  --tasks local_holdout mirage_mmst mirage_mmmt \
+  --prediction-mode model \
+  --output-dir outputs/benchmarks/base-qwen3-vl-4b
+```
+
+Run the same suite against an SFT checkpoint:
+
+```bash
+PYTHONPATH=src python scripts/eval/run_benchmark.py \
+  --model-config configs/model/qwen_vlm_4b.yaml \
+  --tasks local_holdout mirage_mmst mirage_mmmt \
+  --prediction-mode model \
+  --checkpoint-path outputs/sft/qwen3-vl-4b-lora-full-b200 \
+  --output-dir outputs/benchmarks/sft-qwen3-vl-4b-lora-full-b200
+```
+
+```bash
+PYTHONPATH=src python scripts/eval/eval_local_holdout.py \
+  --model-config configs/model/qwen_vlm_4b.yaml \
+  --eval-config configs/eval/local_holdout_full.yaml
+```
+
+MIRAGE and the local holdout use separate eval manifests under `data/manifests/full/`. The benchmark wrapper writes both aggregate metrics and per-example prediction JSONL files.
 
 ## Repo Layout
 
@@ -156,7 +185,6 @@ tests/          unit tests and smoke checks
 ## Known Limitations
 
 - The current host used for this pass is Python `3.9`, so `scripts/verify_environment.py` correctly fails here until a Python `3.11` environment is activated.
-- AgMMU and AgroBench automatic adapters need runtime validation on real HiPerGator hardware and a real authenticated Hugging Face session for AgroBench.
 - IP102, AgBase resources, and Agri-LLaVA still require manual staging because this repo does not accept full-archive downloads just to keep 10%.
 - `flash-attn` remains optional until it is validated against the target CUDA 12.9.1 image.
 
@@ -164,6 +192,5 @@ tests/          unit tests and smoke checks
 
 Top open items are tracked in [TODO.md](/blue/hmedeiros/qinruoyao/agvlm/TODO.md). Current P0 items are:
 
-- validate the automatic AgMMU and authenticated AgroBench download paths on HiPerGator
 - stage manual IP102, AgBase, and Agri-LLaVA subsets under the new subset-tagged raw layout
 - run one real partial-to-full data rerun on the target cluster and record any path or cache issues

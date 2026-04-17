@@ -3,11 +3,13 @@
 from __future__ import annotations
 
 from collections import Counter
+import csv
 import io
 import json
 from pathlib import Path
 import shutil
 from typing import Any, Dict, Iterable, List, Optional, Tuple
+import zipfile
 
 from PIL import Image
 
@@ -26,6 +28,17 @@ def _require_hf_datasets():
             "Install the project environment first."
         ) from exc
     return load_dataset, load_dataset_builder
+
+
+def _require_hf_hub_download():
+    try:
+        from huggingface_hub import hf_hub_download
+    except Exception as exc:  # pragma: no cover - dependency guard
+        raise RuntimeError(
+            "The `huggingface_hub` package is required for archive-backed dataset downloads. "
+            "Install the project environment first."
+        ) from exc
+    return hf_hub_download
 
 
 def _canonical_split(value: str) -> str:
@@ -72,6 +85,8 @@ def _listify(value: Any) -> List[Any]:
 
 def _save_image_value(value: Any, path: Path) -> None:
     ensure_dir(path.parent)
+    if path.exists() and path.stat().st_size > 0:
+        return
     if hasattr(value, "save"):
         value.convert("RGB").save(path)
         return
@@ -160,6 +175,21 @@ def _write_jsonl_rows(path: Path, rows: Iterable[Dict[str, Any]]) -> None:
         for row in rows:
             handle.write(json.dumps(row, ensure_ascii=False, sort_keys=True))
             handle.write("\n")
+
+
+def _relative_posix_path(path: Path, root: Path) -> str:
+    return str(path.relative_to(root)).replace("\\", "/")
+
+
+def _normalize_decision_value(value: Any) -> Optional[str]:
+    normalized = str(value or "").strip().lower().strip("<>")
+    if not normalized:
+        return None
+    if "respond" in normalized:
+        return "respond"
+    if "clarify" in normalized or "more info" in normalized or "ask" in normalized:
+        return "clarify"
+    return normalized
 
 
 def _download_plantvillage(
@@ -299,6 +329,100 @@ def _download_generic_vqa_records(
     return {"saved_rows": saved, "split_sizes": split_sizes}
 
 
+def _download_plantvillage_vqa_archive(
+    spec: DatasetSpec,
+    raw_dir: Path,
+    download_mode: str,
+    sample_fraction: float,
+    token: Optional[str],
+) -> Dict[str, Any]:
+    hf_hub_download = _require_hf_hub_download()
+    archive_path = hf_hub_download(
+        repo_id=spec.hf_repo_id,
+        repo_type="dataset",
+        filename="PlantVillageVQA.zip",
+        token=token,
+    )
+
+    with zipfile.ZipFile(archive_path) as archive:
+        names = archive.namelist()
+        csv_name = next((name for name in names if name.lower().endswith(".csv")), None)
+        if csv_name is None:
+            raise ValueError("PlantVillageVQA archive is missing a CSV annotations file.")
+
+        image_members = {
+            Path(name).name.lower(): name
+            for name in names
+            if Path(name).suffix.lower() in {".jpg", ".jpeg", ".png"}
+        }
+        if not image_members:
+            raise ValueError("PlantVillageVQA archive is missing image files.")
+
+        with archive.open(csv_name) as handle:
+            reader = csv.DictReader(io.TextIOWrapper(handle, encoding="utf-8"))
+            source_rows = [dict(row) for row in reader]
+
+        if not source_rows:
+            raise ValueError("PlantVillageVQA CSV did not contain any rows.")
+
+        split_sizes = Counter(_canonical_split(row.get("split") or "train") for row in source_rows)
+        split_targets = {
+            split_name: _split_target_count(split_sizes[split_name], download_mode, sample_fraction)
+            for split_name in split_sizes
+        }
+
+        selected_rows: List[Dict[str, Any]] = []
+        selected_counts: Counter[str] = Counter()
+        for row in source_rows:
+            split_name = _canonical_split(row.get("split") or "train")
+            target_count = split_targets[split_name]
+            if target_count is not None and selected_counts[split_name] >= target_count:
+                continue
+            selected_rows.append(row)
+            selected_counts[split_name] += 1
+
+        extracted_images: Dict[Tuple[str, str], str] = {}
+        rows: List[Dict[str, Any]] = []
+        for index, row in enumerate(selected_rows):
+            split_name = _canonical_split(row.get("split") or "train")
+            image_name = Path(row.get("image_path") or row.get("image_id") or "").name
+            if not image_name:
+                raise ValueError("PlantVillageVQA row %s is missing an image path." % index)
+            image_key = (split_name, image_name.lower())
+            member_name = image_members.get(image_name.lower())
+            if member_name is None:
+                raise FileNotFoundError("PlantVillageVQA image not found in archive: %s" % image_name)
+
+            if image_key not in extracted_images:
+                image_path = raw_dir / "images" / split_name / image_name
+                ensure_dir(image_path.parent)
+                with archive.open(member_name) as source, image_path.open("wb") as destination:
+                    shutil.copyfileobj(source, destination)
+                extracted_images[image_key] = _relative_posix_path(image_path, raw_dir)
+
+            question = str(row.get("question") or "").strip()
+            answer = str(row.get("answer") or "").strip()
+            if not question or not answer:
+                raise ValueError("PlantVillageVQA row %s is missing question/answer text." % index)
+
+            rows.append(
+                {
+                    "id": "%s-%06d" % (row.get("image_id") or "plantvillage_vqa", index),
+                    "images": [extracted_images[image_key]],
+                    "image": extracted_images[image_key],
+                    "question": question,
+                    "answer": answer,
+                    "split": split_name,
+                    "task_type": spec.default_task_type or "vqa",
+                    "question_type": row.get("question_type"),
+                    "template_origin": "source_authored",
+                }
+            )
+
+    _write_jsonl_rows(raw_dir / "records.jsonl", rows)
+    return {"saved_rows": len(rows), "split_sizes": dict(split_sizes)}
+
+
 def _download_mirage(
     spec: DatasetSpec,
     raw_dir: Path,
@@ -313,7 +437,11 @@ def _download_mirage(
 
     for config_name in spec.hf_config_names:
         builder = load_dataset_builder(spec.hf_repo_id, name=config_name, token=token)
-        config_splits = spec.hf_split_names or tuple(builder.info.splits.keys())
+        available_splits = tuple((builder.info.splits or {}).keys())
+        requested_splits = spec.hf_split_names or available_splits
+        config_splits = [split_name for split_name in requested_splits if split_name in available_splits]
+        if not config_splits:
+            raise ValueError("No supported MIRAGE splits found for %s" % config_name)
         config_sizes = _load_builder_split_sizes(builder, config_splits)
         split_sizes.update({"%s:%s" % (config_name, key): value for key, value in config_sizes.items()})
         for split_name in config_splits:
@@ -333,7 +461,7 @@ def _download_mirage(
                 answer = _first_non_empty(row, ["utterance", "answer", "response", "assistant_response", "expert_response"])
                 if question is None or answer is None:
                     raise ValueError("MIRAGE row is missing question/answer for %s %s index %s" % (config_name, split_name, index))
-                decision = str(row.get("decision") or "").strip().lower() or None
+                decision = _normalize_decision_value(row.get("decision"))
                 task_type = "clarify_or_respond" if decision else "consultation"
                 benchmark_track = "mmmt" if config_name.lower().startswith("mmmt") else "mmst"
                 rows.append(
@@ -358,55 +486,6 @@ def _download_mirage(
     return {"saved_rows": saved, "split_sizes": split_sizes}
 
 
-def _download_agmmu_or_agrobench(
-    spec: DatasetSpec,
-    raw_dir: Path,
-    download_mode: str,
-    sample_fraction: float,
-    token: Optional[str],
-) -> Dict[str, Any]:
-    _, load_dataset_builder = _require_hf_datasets()
-    config_name = spec.hf_config_names[0] if spec.hf_config_names else None
-    builder = load_dataset_builder(spec.hf_repo_id, name=config_name, token=token)
-    split_names = spec.hf_split_names or tuple(builder.info.splits.keys())
-    split_sizes = _load_builder_split_sizes(builder, split_names)
-    rows: List[Dict[str, Any]] = []
-    saved = 0
-
-    for split_name in split_names:
-        target_count = _split_target_count(split_sizes.get(split_name), download_mode, sample_fraction)
-        for index, row in enumerate(_iter_dataset_rows(spec.hf_repo_id, config_name, split_name, target_count, token)):
-            image_pairs = _extract_image_pairs(row)
-            if not image_pairs:
-                raise ValueError("%s row is missing images in split %s index %s" % (spec.name, split_name, index))
-            image_paths = []
-            for image_index, (_, value) in enumerate(image_pairs, start=1):
-                file_name = "%s-%06d-%02d.png" % (split_name, index, image_index)
-                image_path = raw_dir / "images" / split_name / file_name
-                _save_image_value(value, image_path)
-                image_paths.append(str(image_path.relative_to(raw_dir)).replace("\\", "/"))
-            question = _first_non_empty(row, ["question", "query", "prompt", "instruction", "user", "text"])
-            answer = _first_non_empty(row, ["answer", "response", "label", "output", "target"])
-            if question is None or answer is None:
-                raise ValueError("%s row is missing question/answer in split %s index %s" % (spec.name, split_name, index))
-            rows.append(
-                {
-                    "id": str(row.get("id") or row.get("item_id") or row.get("question_id") or "%s-%06d" % (split_name, index)),
-                    "images": image_paths,
-                    "image": image_paths[0],
-                    "question": str(question).strip(),
-                    "answer": str(answer).strip(),
-                    "split": _canonical_split(str(row.get("split") or split_name)),
-                    "task_type": spec.default_task_type or "vqa",
-                    "options": row.get("options"),
-                    "template_origin": "source_authored",
-                }
-            )
-            saved += 1
-    _write_jsonl_rows(raw_dir / "records.jsonl", rows)
-    return {"saved_rows": saved, "split_sizes": split_sizes}
-
-
 def _materialize_spec(
     spec: DatasetSpec,
     raw_dir: Path,
@@ -420,11 +499,9 @@ def _materialize_spec(
     if materializer == "plantdoc":
         return _download_plantdoc(spec, raw_dir, download_mode, sample_fraction, token)
     if materializer == "plantvillage_vqa":
-        return _download_generic_vqa_records(spec, raw_dir, download_mode, sample_fraction, token)
+        return _download_plantvillage_vqa_archive(spec, raw_dir, download_mode, sample_fraction, token)
     if materializer == "mirage":
         return _download_mirage(spec, raw_dir, download_mode, sample_fraction, token)
-    if materializer in {"agmmu", "agrobench"}:
-        return _download_agmmu_or_agrobench(spec, raw_dir, download_mode, sample_fraction, token)
     raise ValueError("Unsupported materializer for %s: %s" % (spec.name, materializer))
 
 

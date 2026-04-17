@@ -27,7 +27,7 @@ def target_to_text(sample: UnifiedSample) -> str:
 
 
 def sample_to_prompt_messages(sample: UnifiedSample) -> List[Dict[str, Any]]:
-    return [message.model_dump(mode="json") for message in sample.messages]
+    return [message.model_dump(mode="json", exclude_none=True) for message in sample.messages]
 
 
 def sample_to_training_messages(sample: UnifiedSample) -> List[Dict[str, Any]]:
@@ -42,4 +42,4 @@ def sample_to_training_messages(sample: UnifiedSample) -> List[Dict[str, Any]]:
 
 
 def strip_assistant_messages(messages: List[Message]) -> List[Dict[str, Any]]:
-    return [message.model_dump(mode="json") for message in messages if message.role != "assistant"]
+    return [message.model_dump(mode="json", exclude_none=True) for message in messages if message.role != "assistant"]

@@ -1,5 +1,0 @@
-manifest_path: data/manifests/partial_10pct/agmmu_eval.jsonl
-output_path: outputs/eval/agmmu_metrics.json
-batch_size: 1
-max_new_tokens: 128
-prediction_mode: oracle

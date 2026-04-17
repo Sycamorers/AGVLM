@@ -70,6 +70,17 @@ def _base_sample(
     }
 
 
+def _normalize_expected_decision(value: Any) -> Optional[str]:
+    normalized = str(value or "").strip().lower().strip("<>")
+    if not normalized:
+        return None
+    if "respond" in normalized:
+        return "respond"
+    if "clarify" in normalized or "more info" in normalized or "ask" in normalized:
+        return "clarify"
+    return normalized
+
+
 def load_provenance_metadata(raw_dir: Path) -> Dict[str, Any]:
     payload = read_download_info(raw_dir)
     if not payload:
@@ -334,7 +345,7 @@ def normalize_vqa_like_dataset(
         expected_decision = None
         if task_type == TASK_TYPE_CLARIFY:
             verifier_mode = "clarify"
-            expected_decision = row.get("decision") or row.get("expected_decision")
+            expected_decision = _normalize_expected_decision(row.get("decision") or row.get("expected_decision"))
         rows.append(
             _base_sample(
                 sample_id="%s-%s" % (dataset_name, row.get("id") or index),

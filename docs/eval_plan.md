@@ -1,15 +1,5 @@
 # Eval Plan
 
-## AgMMU
-
-Local implementation:
-- exact match for MCQ-style answers
-- exact match for short open-ended answers where feasible
-
-Usage:
-- evaluation-only manifest
-- keep benchmark test rows out of SFT and RL manifests
-
 ## MIRAGE-MMST
 
 Local implementation:
@@ -40,4 +30,4 @@ The smoke pipeline uses:
 - dry-run SFT and RL
 - oracle local evaluation
 
-This verifies repository wiring without requiring public benchmarks or model downloads.
+This verifies repository wiring without requiring benchmark-only datasets or model downloads.

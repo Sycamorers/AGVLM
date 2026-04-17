@@ -9,6 +9,19 @@ from typing import Any, Dict, Optional
 from agri_vlm.utils.distributed import DistributedContext
 
 
+def _resolve_attn_implementation(model_config: Any) -> Optional[str]:
+    attn_implementation = model_config.attn_implementation
+    if not attn_implementation:
+        return None
+    if attn_implementation != "flash_attention_2":
+        return attn_implementation
+    try:
+        import flash_attn  # noqa: F401
+    except ImportError:
+        return "sdpa"
+    return attn_implementation
+
+
 def torch_dtype_from_name(dtype_name: str) -> Any:
     import torch
 
@@ -50,8 +63,9 @@ def build_model_init_kwargs(
     device_map = _resolve_device_map(model_config, distributed_context=distributed_context)
     if device_map is not None:
         kwargs["device_map"] = device_map
-    if model_config.attn_implementation:
-        kwargs["attn_implementation"] = model_config.attn_implementation
+    attn_implementation = _resolve_attn_implementation(model_config)
+    if attn_implementation:
+        kwargs["attn_implementation"] = attn_implementation
     dtype = torch_dtype_from_name(model_config.torch_dtype)
     kwargs["torch_dtype"] = dtype
 
@@ -99,6 +113,7 @@ def load_sft_checkpoint_model(
     model_config: Any,
     checkpoint_path: str,
     distributed_context: Optional[DistributedContext] = None,
+    is_trainable: bool = True,
 ) -> Any:
     """Load a trainable model from an SFT checkpoint path."""
     checkpoint_dir = Path(checkpoint_path)
@@ -119,7 +134,27 @@ def load_sft_checkpoint_model(
         model_config=model_config,
         distributed_context=distributed_context,
     )
-    model = PeftModel.from_pretrained(model, checkpoint_path, is_trainable=True)
+    model = PeftModel.from_pretrained(model, checkpoint_path, is_trainable=is_trainable)
     if hasattr(model, "config"):
         model.config.use_cache = model_config.use_cache
     return model
+
+
+def load_inference_model(
+    model_config: Any,
+    checkpoint_path: Optional[str] = None,
+    distributed_context: Optional[DistributedContext] = None,
+) -> Any:
+    """Load either the base model or a fine-tuned checkpoint for inference."""
+    if checkpoint_path:
+        return load_sft_checkpoint_model(
+            model_config=model_config,
+            checkpoint_path=checkpoint_path,
+            distributed_context=distributed_context,
+            is_trainable=False,
+        )
+    return load_model(
+        model_name_or_path=model_config.model_name_or_path,
+        model_config=model_config,
+        distributed_context=distributed_context,
+    )

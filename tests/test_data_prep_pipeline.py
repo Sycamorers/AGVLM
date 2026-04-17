@@ -82,5 +82,13 @@ def test_data_prep_pipeline_generates_report(tmp_path: Path) -> None:
     report_path = tmp_path / "data" / "manifests" / "partial_10pct" / "dataset_report.json"
     report = json.loads(report_path.read_text(encoding="utf-8"))
     assert report["subset_tag"] == "partial_10pct"
-    assert report["datasets"]["agrobench"]["status"] == "normalized"
     assert report["datasets"]["ip102"]["normalized_rows"] >= 1
+    assert set(report["datasets"]) == {
+        "agbase",
+        "agrillava",
+        "ip102",
+        "mirage",
+        "plantdoc",
+        "plantvillage",
+        "plantvillage_vqa",
+    }

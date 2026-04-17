@@ -40,6 +40,11 @@ Recommended hardware assumptions:
 - one modern CUDA GPU for smoke-sized experiments
 - more GPU memory for 8B or larger completion lengths
 
+Current project status:
+- full data manifests are ready
+- baseline inference on `local_holdout` has been run on a B200 GPU
+- the next execution step is full-data SFT with `configs/train/sft_lora_full_b200_multigpu.yaml`
+
 Optional stack features:
 - FlashAttention-2 for faster memory-efficient attention
 - DeepSpeed for larger runs

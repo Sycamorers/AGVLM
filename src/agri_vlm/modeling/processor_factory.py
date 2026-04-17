@@ -1,13 +1,23 @@
 """Processor loading helpers."""
 
-from typing import Any
+from pathlib import Path
+from typing import Any, Optional
 
 
-def load_processor(model_config: Any) -> Any:
+def load_processor(model_config: Any, checkpoint_path: Optional[str] = None) -> Any:
     """Load the processor from pretrained weights."""
     from transformers import AutoProcessor
 
     processor_name = model_config.processor_name_or_path or model_config.model_name_or_path
+    if checkpoint_path:
+        checkpoint_dir = Path(checkpoint_path)
+        processor_files = [
+            "processor_config.json",
+            "preprocessor_config.json",
+            "tokenizer_config.json",
+        ]
+        if any((checkpoint_dir / name).exists() for name in processor_files):
+            processor_name = str(checkpoint_dir)
     processor = AutoProcessor.from_pretrained(processor_name, trust_remote_code=model_config.trust_remote_code)
     tokenizer = getattr(processor, "tokenizer", None)
     if tokenizer is not None and tokenizer.pad_token is None:

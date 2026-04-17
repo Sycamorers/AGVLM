@@ -172,35 +172,6 @@ def _build_smoke_raw_data(raw_dir: Path, dataset_name: str, subset_tag: str, dow
                 }
             ],
         )
-    elif dataset_name == "agmmu":
-        _write_jsonl(
-            raw_dir / "records.jsonl",
-            [
-                {
-                    "id": "agmmu-smoke-1",
-                    "image": image("agmmu_smoke_1.png", [90, 90, 90]),
-                    "question": "Which option best matches the symptom? A) healthy B) leaf spot C) pest-free D) nutrient burn",
-                    "answer": "B) leaf spot",
-                    "split": "train",
-                    "task_type": "vqa",
-                }
-            ],
-        )
-    elif dataset_name == "agrobench":
-        _write_jsonl(
-            raw_dir / "records.jsonl",
-            [
-                {
-                    "id": "agrobench-smoke-1",
-                    "image": image("agrobench_smoke_1.png", [100, 80, 130]),
-                    "question": "Which answer best matches the observed crop symptom?",
-                    "answer": "leaf spot",
-                    "options": {"A": "healthy", "B": "leaf spot", "C": "no crop"},
-                    "split": "train",
-                    "task_type": "vqa",
-                }
-            ],
-        )
     else:
         raise ValueError("Unsupported smoke dataset: %s" % dataset_name)
 
@@ -272,8 +243,6 @@ def main() -> int:
             "agbase",
             "mirage",
             "agrillava",
-            "agmmu",
-            "agrobench",
         ]
         for dataset_name in smoke_datasets:
             spec = registry.specs[dataset_name]

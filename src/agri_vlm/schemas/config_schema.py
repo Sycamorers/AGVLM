@@ -112,6 +112,9 @@ class EvalConfigSchema(BaseModel):
     batch_size: int = 1
     max_new_tokens: int = 128
     prediction_mode: str = "oracle"
+    checkpoint_path: Optional[str] = None
+    predictions_path: Optional[str] = None
+    max_examples: int = 0
 
 
 class ManifestBuildConfigSchema(BaseModel):
