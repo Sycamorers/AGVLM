@@ -34,6 +34,27 @@ Stage C:
 - restrict RL data to rewardable or semi-verifiable tasks
 - keep GRPO-family loss changes config-switchable
 
+## Problem framing by stage
+
+Stage A solves the data consistency problem. The selected agriculture datasets use different
+formats, labels, splits, image layouts, licenses, and access rules. The pipeline converts them
+into one auditable schema and separates SFT, RL, and evaluation data so training can be repeated
+without manual path edits or silent dataset omissions.
+
+Stage B solves the domain adaptation problem. The base VLM has general multimodal ability, but it
+does not know the desired agriculture-specific label space, consultation style, or output behavior.
+SFT teaches the model to connect crop imagery, disease and pest labels, VQA answers, and
+management-style responses.
+
+Stage C solves the behavior alignment problem. SFT can make the model imitate examples, but it does
+not directly optimize for conservative agricultural consultation. GRPO is used to reward verifiable
+answers, clarify-vs-respond decisions, uncertainty when evidence is incomplete, structured outputs,
+management coverage, and penalties for unsupported claims.
+
+Evaluation solves the measurement problem. The local holdout and MIRAGE tasks are intended to show
+whether fine-tuning improves agriculture-specific recognition and consultation behavior under the
+same conditions used for the base model.
+
 ## Engineering principles
 
 - config-driven execution
