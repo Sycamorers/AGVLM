@@ -35,6 +35,7 @@ def build_rl_manifest(
     exclude_splits: Sequence[str],
     allowed_verifier_modes: Sequence[str],
     max_answer_words: int,
+    max_images_per_sample: int = None,
 ) -> List[dict]:
     merged_rows = merge_manifests(
         source_paths=source_paths,
@@ -46,6 +47,8 @@ def build_rl_manifest(
         allowed_verifier_modes=allowed_verifier_modes,
         max_answer_words=max_answer_words,
     )
+    if max_images_per_sample is not None:
+        rewardable_rows = [row for row in rewardable_rows if len(row.images) <= max_images_per_sample]
     return [
         sample.model_dump(mode="json")
         for sample in write_manifest(output_path, [row.model_dump(mode="json") for row in rewardable_rows])

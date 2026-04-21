@@ -20,3 +20,6 @@ allowed_verifier_modes:
   - structured
   - clarify
 max_answer_words: 80
+# V1 GRPO training is scoped to one ground-level RGB image per sample.
+# Multi-image MIRAGE tracks remain in evaluation manifests.
+max_images_per_sample: 1

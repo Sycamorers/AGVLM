@@ -60,9 +60,12 @@ def main() -> int:
         exclude_splits=payload["exclude_splits"],
         allowed_verifier_modes=payload["allowed_verifier_modes"],
         max_answer_words=payload["max_answer_words"],
+        max_images_per_sample=payload.get("max_images_per_sample"),
     )
     missing = [dataset_name for dataset_name in payload["datasets"] if dataset_name not in source_paths]
     print("built_rl_manifest=%s rows=%s" % (output_path, len(rows)))
+    if payload.get("max_images_per_sample") is not None:
+        print("rl_max_images_per_sample=%s" % payload["max_images_per_sample"])
     if missing:
         print("missing_rl_sources=%s" % ",".join(missing))
     return 0

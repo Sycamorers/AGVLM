@@ -98,7 +98,7 @@ def run_sft(model_config: Any, train_config: Any) -> Dict[str, Any]:
         fp16=train_config.fp16,
         tf32=train_config.tf32,
         report_to=train_config.report_to,
-        evaluation_strategy="steps" if eval_rows else "no",
+        eval_strategy="steps" if eval_rows else "no",
         remove_unused_columns=False,
         gradient_checkpointing=train_config.gradient_checkpointing,
         seed=train_config.seed,

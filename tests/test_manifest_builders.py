@@ -4,13 +4,14 @@ from agri_vlm.data.builders import build_eval_manifests, build_rl_manifest, buil
 from agri_vlm.data.manifest_io import read_manifest, write_manifest
 
 
-def sample_row(sample_id: str, dataset: str, task_type: str, split: str) -> dict:
+def sample_row(sample_id: str, dataset: str, task_type: str, split: str, image_count: int = 1) -> dict:
+    images = ["data/raw/_smoke/%s_%s.png" % (sample_id, index) for index in range(image_count)]
     return {
         "sample_id": sample_id,
         "source_dataset": dataset,
         "task_type": task_type,
         "split": split,
-        "images": ["data/raw/_smoke/%s.png" % sample_id],
+        "images": images,
         "messages": [
             {
                 "role": "system",
@@ -19,7 +20,7 @@ def sample_row(sample_id: str, dataset: str, task_type: str, split: str) -> dict
             {
                 "role": "user",
                 "content": [
-                    {"type": "image", "image": "data/raw/_smoke/%s.png" % sample_id},
+                    *[{"type": "image", "image": image} for image in images],
                     {"type": "text", "text": "Answer the question."},
                 ],
             },
@@ -50,7 +51,13 @@ def test_manifest_builders_filter_and_merge(tmp_path: Path) -> None:
     )
     write_manifest(mirage_path, [sample_row("m1", "mirage", "consultation", "validation")])
     write_manifest(ip102_path, [sample_row("i1", "ip102", "classification", "train")])
-    write_manifest(vqa_path, [sample_row("v1", "plantvillage_vqa", "vqa", "train")])
+    write_manifest(
+        vqa_path,
+        [
+            sample_row("v1", "plantvillage_vqa", "vqa", "train"),
+            sample_row("v2", "plantvillage_vqa", "vqa", "train", image_count=2),
+        ],
+    )
 
     sft_output = tmp_path / "sft.jsonl"
     rows = build_sft_manifest(
@@ -70,8 +77,10 @@ def test_manifest_builders_filter_and_merge(tmp_path: Path) -> None:
         exclude_splits=["test"],
         allowed_verifier_modes=["label", "exact_match"],
         max_answer_words=10,
+        max_images_per_sample=1,
     )
     assert len(rl_rows) == 2
+    assert all(len(row["images"]) == 1 for row in rl_rows)
 
     summary = build_eval_manifests(
         source_paths={
