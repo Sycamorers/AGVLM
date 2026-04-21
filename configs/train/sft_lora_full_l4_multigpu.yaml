@@ -1,0 +1,50 @@
+manifest_path: data/manifests/full/sft_manifest.valid_images.jsonl
+eval_manifest_path: data/manifests/full/local_holdout_eval.valid_images.jsonl
+output_dir: outputs/sft/qwen3-vl-4b-lora-full-l4
+seed: 17
+per_device_train_batch_size: 1
+per_device_eval_batch_size: 1
+gradient_accumulation_steps: 21
+num_train_epochs: 1
+learning_rate: 2.0e-4
+weight_decay: 0.01
+warmup_ratio: 0.03
+max_grad_norm: 1.0
+logging_steps: 5
+save_steps: 100
+eval_steps: 100
+save_total_limit: 2
+bf16: true
+fp16: false
+gradient_checkpointing: true
+use_peft: true
+report_to: []
+dry_run: false
+smoke_max_samples: 0
+resume_from_checkpoint: auto
+dataloader_num_workers: 4
+dataloader_pin_memory: true
+dataloader_persistent_workers: true
+ddp_find_unused_parameters: false
+ddp_timeout: 1800
+log_on_each_node: false
+save_on_each_node: false
+full_determinism: false
+tf32: true
+freeze:
+  freeze_vision_encoder: true
+  freeze_projector: false
+  trainable_text_modules: []
+lora:
+  r: 16
+  alpha: 32
+  dropout: 0.05
+  bias: none
+  target_modules:
+    - q_proj
+    - k_proj
+    - v_proj
+    - o_proj
+    - gate_proj
+    - up_proj
+    - down_proj

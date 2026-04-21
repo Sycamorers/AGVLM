@@ -1,0 +1,47 @@
+manifest_path: data/manifests/partial_10pct/sft_manifest.jsonl
+eval_manifest_path: data/manifests/partial_10pct/local_holdout_eval.jsonl
+output_dir: outputs/smoke/sft-qwen3-vl-4b-l4-compat
+seed: 17
+per_device_train_batch_size: 1
+per_device_eval_batch_size: 1
+gradient_accumulation_steps: 1
+num_train_epochs: 1
+learning_rate: 2.0e-4
+weight_decay: 0.01
+warmup_ratio: 0.03
+max_grad_norm: 1.0
+logging_steps: 1
+save_steps: 1000
+eval_steps: 1000
+save_total_limit: 1
+bf16: true
+fp16: false
+gradient_checkpointing: true
+use_peft: true
+report_to: []
+dry_run: false
+smoke_max_samples: 4
+resume_from_checkpoint: null
+dataloader_num_workers: 0
+dataloader_pin_memory: true
+dataloader_persistent_workers: false
+ddp_find_unused_parameters: false
+ddp_timeout: 1800
+log_on_each_node: false
+save_on_each_node: false
+full_determinism: false
+tf32: true
+freeze:
+  freeze_vision_encoder: true
+  freeze_projector: false
+  trainable_text_modules: []
+lora:
+  r: 8
+  alpha: 16
+  dropout: 0.05
+  bias: none
+  target_modules:
+    - q_proj
+    - k_proj
+    - v_proj
+    - o_proj

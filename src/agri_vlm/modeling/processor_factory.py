@@ -18,7 +18,12 @@ def load_processor(model_config: Any, checkpoint_path: Optional[str] = None) -> 
         ]
         if any((checkpoint_dir / name).exists() for name in processor_files):
             processor_name = str(checkpoint_dir)
-    processor = AutoProcessor.from_pretrained(processor_name, trust_remote_code=model_config.trust_remote_code)
+    processor_kwargs = {"trust_remote_code": model_config.trust_remote_code}
+    if model_config.min_pixels is not None:
+        processor_kwargs["min_pixels"] = model_config.min_pixels
+    if model_config.max_pixels is not None:
+        processor_kwargs["max_pixels"] = model_config.max_pixels
+    processor = AutoProcessor.from_pretrained(processor_name, **processor_kwargs)
     tokenizer = getattr(processor, "tokenizer", None)
     if tokenizer is not None and tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
