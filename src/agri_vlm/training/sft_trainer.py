@@ -14,7 +14,11 @@ from agri_vlm.training.callbacks import JsonlMetricsCallback
 from agri_vlm.training.collators import QwenVLChatCollator
 from agri_vlm.training.run_artifacts import prepare_run_artifacts, write_training_artifact_manifest
 from agri_vlm.utils.checkpointing import resolve_resume_checkpoint
-from agri_vlm.utils.distributed import configure_torch_runtime, get_distributed_context
+from agri_vlm.utils.distributed import (
+    configure_torch_runtime,
+    destroy_distributed_process_group,
+    get_distributed_context,
+)
 from agri_vlm.utils.io import ensure_dir
 
 
@@ -29,6 +33,20 @@ class ManifestListDataset:
 
     def __getitem__(self, index: int) -> Dict[str, Any]:
         return self.rows[index]
+
+
+def _image_count_histogram(rows: List[Any]) -> Dict[str, int]:
+    histogram: Dict[str, int] = {}
+    for row in rows:
+        key = str(len(row.images))
+        histogram[key] = histogram.get(key, 0) + 1
+    return histogram
+
+
+def _filter_rows_by_max_images(rows: List[Any], *, max_images_per_sample: int | None) -> List[Any]:
+    if max_images_per_sample is None:
+        return rows
+    return [row for row in rows if len(row.images) <= max_images_per_sample]
 
 
 def _chunked_causal_lm_loss(
@@ -105,6 +123,8 @@ def _build_dry_run_summary(train_rows: List[Any], eval_rows: List[Any], output_d
         "eval_rows": len(eval_rows),
         "train_summary": summarize_manifest(train_rows),
         "eval_summary": summarize_manifest(eval_rows),
+        "train_image_count_histogram": _image_count_histogram(train_rows),
+        "eval_image_count_histogram": _image_count_histogram(eval_rows),
         "distributed": distributed_context.as_dict(),
     }
     ensure_dir(output_dir)
@@ -124,6 +144,17 @@ def run_sft(model_config: Any, train_config: Any) -> Dict[str, Any]:
     if train_config.eval_manifest_path and Path(train_config.eval_manifest_path).exists():
         eval_rows = read_manifest(Path(train_config.eval_manifest_path))
 
+    original_train_rows = len(train_rows)
+    original_eval_rows = len(eval_rows)
+    train_rows = _filter_rows_by_max_images(
+        train_rows,
+        max_images_per_sample=train_config.max_images_per_sample,
+    )
+    eval_rows = _filter_rows_by_max_images(
+        eval_rows,
+        max_images_per_sample=train_config.max_images_per_sample,
+    )
+
     output_dir = Path(train_config.output_dir)
     if train_config.smoke_max_samples:
         train_rows = train_rows[: train_config.smoke_max_samples]
@@ -142,79 +173,93 @@ def run_sft(model_config: Any, train_config: Any) -> Dict[str, Any]:
 
     from transformers import TrainingArguments, set_seed
 
-    configure_torch_runtime(tf32=train_config.tf32)
-    ensure_dir(output_dir)
-    set_seed(train_config.seed)
-    logger.info("Starting SFT with distributed context: %s", distributed_context.as_dict())
-
-    processor = load_processor(model_config)
-    model = load_model(
-        model_config.model_name_or_path,
-        model_config=model_config,
-        distributed_context=distributed_context,
-    )
-    freeze_stats = apply_freezing(model, train_config.freeze)
-    model = maybe_wrap_with_peft(model, train_config=train_config)
-
-    training_args = TrainingArguments(
-        output_dir=str(output_dir),
-        per_device_train_batch_size=train_config.per_device_train_batch_size,
-        per_device_eval_batch_size=train_config.per_device_eval_batch_size,
-        gradient_accumulation_steps=train_config.gradient_accumulation_steps,
-        num_train_epochs=train_config.num_train_epochs,
-        learning_rate=train_config.learning_rate,
-        weight_decay=train_config.weight_decay,
-        warmup_ratio=train_config.warmup_ratio,
-        max_grad_norm=train_config.max_grad_norm,
-        logging_steps=train_config.logging_steps,
-        logging_dir=str(run_artifacts.tensorboard_dir),
-        save_steps=train_config.save_steps,
-        eval_steps=train_config.eval_steps,
-        save_total_limit=train_config.save_total_limit,
-        bf16=train_config.bf16,
-        fp16=train_config.fp16,
-        tf32=train_config.tf32,
-        report_to=run_artifacts.report_to,
-        run_name=run_artifacts.run_name,
-        eval_strategy="steps" if eval_rows else "no",
-        remove_unused_columns=False,
-        gradient_checkpointing=train_config.gradient_checkpointing,
-        seed=train_config.seed,
-        data_seed=train_config.seed,
-        dataloader_num_workers=train_config.dataloader_num_workers,
-        dataloader_pin_memory=train_config.dataloader_pin_memory,
-        dataloader_persistent_workers=train_config.dataloader_persistent_workers,
-        ddp_find_unused_parameters=train_config.ddp_find_unused_parameters,
-        ddp_timeout=train_config.ddp_timeout,
-        log_on_each_node=train_config.log_on_each_node,
-        save_on_each_node=train_config.save_on_each_node,
-        full_determinism=train_config.full_determinism,
-        disable_tqdm=not distributed_context.is_main_process,
-    )
-
-    trainer_class = _build_sft_trainer_class(train_config.loss_chunk_size)
-    trainer = trainer_class(
-        model=model,
-        args=training_args,
-        train_dataset=ManifestListDataset(train_rows),
-        eval_dataset=ManifestListDataset(eval_rows) if eval_rows else None,
-        data_collator=QwenVLChatCollator(processor=processor),
-        callbacks=[
-            JsonlMetricsCallback(
-                run_artifacts.metrics_jsonl_path,
-                mirror_paths=[run_artifacts.legacy_metrics_jsonl_path],
+    try:
+        configure_torch_runtime(tf32=train_config.tf32)
+        ensure_dir(output_dir)
+        set_seed(train_config.seed)
+        logger.info("Starting SFT with distributed context: %s", distributed_context.as_dict())
+        if train_config.max_images_per_sample is not None:
+            logger.info(
+                "Applied max_images_per_sample=%s filter: train %s -> %s rows, eval %s -> %s rows",
+                train_config.max_images_per_sample,
+                original_train_rows,
+                len(train_rows),
+                original_eval_rows,
+                len(eval_rows),
             )
-        ],
-    )
+        if not train_rows:
+            raise ValueError("No SFT training rows remain after applying the configured filters.")
 
-    resume_path = resolve_resume_checkpoint(output_dir, train_config.resume_from_checkpoint)
-    trainer.train(resume_from_checkpoint=str(resume_path) if resume_path else None)
-    trainer.save_model()
-    if trainer.is_world_process_zero():
-        processor.save_pretrained(output_dir)
-    summary = _build_dry_run_summary(train_rows, eval_rows, output_dir)
-    summary["freeze_stats"] = freeze_stats
-    if trainer.is_world_process_zero():
-        write_training_artifact_manifest(run_artifacts, extra={"freeze_stats": freeze_stats})
-    logger.info("Finished SFT. Freeze stats: %s", freeze_stats)
-    return summary
+        processor = load_processor(model_config)
+        model = load_model(
+            model_config.model_name_or_path,
+            model_config=model_config,
+            distributed_context=distributed_context,
+        )
+        freeze_stats = apply_freezing(model, train_config.freeze)
+        model = maybe_wrap_with_peft(model, train_config=train_config)
+
+        training_args = TrainingArguments(
+            output_dir=str(output_dir),
+            per_device_train_batch_size=train_config.per_device_train_batch_size,
+            per_device_eval_batch_size=train_config.per_device_eval_batch_size,
+            gradient_accumulation_steps=train_config.gradient_accumulation_steps,
+            num_train_epochs=train_config.num_train_epochs,
+            learning_rate=train_config.learning_rate,
+            weight_decay=train_config.weight_decay,
+            warmup_ratio=train_config.warmup_ratio,
+            max_grad_norm=train_config.max_grad_norm,
+            logging_steps=train_config.logging_steps,
+            logging_dir=str(run_artifacts.tensorboard_dir),
+            save_steps=train_config.save_steps,
+            eval_steps=train_config.eval_steps,
+            save_total_limit=train_config.save_total_limit,
+            bf16=train_config.bf16,
+            fp16=train_config.fp16,
+            tf32=train_config.tf32,
+            report_to=run_artifacts.report_to,
+            run_name=run_artifacts.run_name,
+            eval_strategy="steps" if eval_rows else "no",
+            remove_unused_columns=False,
+            gradient_checkpointing=train_config.gradient_checkpointing,
+            seed=train_config.seed,
+            data_seed=train_config.seed,
+            dataloader_num_workers=train_config.dataloader_num_workers,
+            dataloader_pin_memory=train_config.dataloader_pin_memory,
+            dataloader_persistent_workers=train_config.dataloader_persistent_workers,
+            ddp_find_unused_parameters=train_config.ddp_find_unused_parameters,
+            ddp_timeout=train_config.ddp_timeout,
+            log_on_each_node=train_config.log_on_each_node,
+            save_on_each_node=train_config.save_on_each_node,
+            full_determinism=train_config.full_determinism,
+            disable_tqdm=not distributed_context.is_main_process,
+        )
+
+        trainer_class = _build_sft_trainer_class(train_config.loss_chunk_size)
+        trainer = trainer_class(
+            model=model,
+            args=training_args,
+            train_dataset=ManifestListDataset(train_rows),
+            eval_dataset=ManifestListDataset(eval_rows) if eval_rows else None,
+            data_collator=QwenVLChatCollator(processor=processor),
+            callbacks=[
+                JsonlMetricsCallback(
+                    run_artifacts.metrics_jsonl_path,
+                    mirror_paths=[run_artifacts.legacy_metrics_jsonl_path],
+                )
+            ],
+        )
+
+        resume_path = resolve_resume_checkpoint(output_dir, train_config.resume_from_checkpoint)
+        trainer.train(resume_from_checkpoint=str(resume_path) if resume_path else None)
+        trainer.save_model()
+        if trainer.is_world_process_zero():
+            processor.save_pretrained(output_dir)
+        summary = _build_dry_run_summary(train_rows, eval_rows, output_dir)
+        summary["freeze_stats"] = freeze_stats
+        if trainer.is_world_process_zero():
+            write_training_artifact_manifest(run_artifacts, extra={"freeze_stats": freeze_stats})
+        logger.info("Finished SFT. Freeze stats: %s", freeze_stats)
+        return summary
+    finally:
+        destroy_distributed_process_group()

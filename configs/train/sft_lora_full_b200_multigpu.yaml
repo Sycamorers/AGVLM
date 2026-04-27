@@ -1,5 +1,5 @@
-manifest_path: data/manifests/full/sft_manifest.jsonl
-eval_manifest_path: data/manifests/full/local_holdout_eval.jsonl
+manifest_path: data/manifests/full/sft_manifest.decode_aspect_valid_images.jsonl
+eval_manifest_path: data/manifests/full/local_holdout_eval.decode_aspect_valid_images.jsonl
 output_dir: outputs/sft/qwen3-vl-4b-lora-full-b200
 seed: 17
 per_device_train_batch_size: 2
@@ -11,12 +11,13 @@ weight_decay: 0.01
 warmup_ratio: 0.03
 max_grad_norm: 1.0
 logging_steps: 5
-save_steps: 100
+save_steps: 25
 eval_steps: 100
 save_total_limit: 2
 bf16: true
 fp16: false
 gradient_checkpointing: true
+loss_chunk_size: 1024
 use_peft: true
 report_to:
   - tensorboard

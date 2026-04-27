@@ -79,6 +79,7 @@ class TrainConfigSchema(BaseModel):
     save_run_metadata: bool = True
     dry_run: bool = False
     smoke_max_samples: int = 8
+    max_images_per_sample: Optional[int] = Field(default=None, ge=1)
     resume_from_checkpoint: Optional[str] = "auto"
     dataloader_num_workers: int = 0
     dataloader_pin_memory: bool = True

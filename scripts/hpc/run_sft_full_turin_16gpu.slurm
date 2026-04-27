@@ -1,12 +1,12 @@
 #!/bin/bash -l
-#SBATCH --job-name=agri-vlm-sft-full-b200
-#SBATCH --partition=hpg-b200
-#SBATCH --nodes=1
-#SBATCH --ntasks=1
-#SBATCH --cpus-per-task=32
-#SBATCH --gpus=4
+#SBATCH --job-name=agri-vlm-sft-full-turin-16g
+#SBATCH --partition=hpg-turin
+#SBATCH --nodes=8
+#SBATCH --ntasks-per-node=1
+#SBATCH --cpus-per-task=16
+#SBATCH --gpus-per-node=2
 #SBATCH --mem=128G
-#SBATCH --time=23:00:00
+#SBATCH --time=2-00:00:00
 #SBATCH --mail-user=zijing.huang@ufl.edu
 #SBATCH --mail-type=BEGIN,END,FAIL,REQUEUE,TIME_LIMIT,TIME_LIMIT_90
 #SBATCH --output=logs/slurm/%x-%j.out
@@ -31,31 +31,28 @@ export PYTHONPATH=src
 export OMP_NUM_THREADS=8
 export TOKENIZERS_PARALLELISM=false
 export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
-RUN_DIR="$PWD/outputs/sft/qwen3-vl-4b-lora-full-b200"
+export MASTER_ADDR="$(scontrol show hostnames "$SLURM_JOB_NODELIST" | head -n 1)"
+export MASTER_PORT="$((28800 + SLURM_JOB_ID % 1000))"
+RUN_DIR="$PWD/outputs/sft/qwen3-vl-4b-lora-full-turin-16gpu"
 
 mkdir -p "$AGRI_VLM_DATA_ROOT" "$HF_HOME" "$HUGGINGFACE_HUB_CACHE" "$HF_XET_CACHE" "$TRANSFORMERS_CACHE" "$TMPDIR"
 
 python scripts/verify_environment.py
-python - <<'PY'
-import json
-import torch
-
-assert torch.cuda.is_available(), "CUDA is not available on the allocated B200 node."
-names = [torch.cuda.get_device_name(index) for index in range(torch.cuda.device_count())]
-assert len(names) >= 4, "Expected at least 4 visible GPUs, found: %s" % names
-assert all("B200" in name for name in names[:4]), "Expected NVIDIA B200 GPUs, found: %s" % names
-assert torch.cuda.is_bf16_supported(), "BF16 is not supported by the allocated B200 runtime."
-print("b200_cuda_validation=%s" % json.dumps({"gpu_names": names[:4], "bf16_supported": True}, sort_keys=True))
-PY
-
 TRAIN_EXIT=0
 set +e
-python scripts/launch_torchrun.py \
-  --nproc-per-node 4 \
-  --master-port "$((28700 + SLURM_JOB_ID % 1000))" \
-  scripts/train/train_sft.py -- \
-  --model-config configs/model/qwen_vlm_4b.yaml \
-  --train-config configs/train/sft_lora_full_b200_multigpu.yaml
+srun --ntasks="$SLURM_NNODES" --ntasks-per-node=1 bash -lc '
+python -m torch.distributed.run \
+  --nnodes "$SLURM_NNODES" \
+  --node_rank "$SLURM_NODEID" \
+  --nproc_per_node 2 \
+  --rdzv_backend c10d \
+  --rdzv_endpoint "$MASTER_ADDR:$MASTER_PORT" \
+  --rdzv_id "$SLURM_JOB_ID" \
+  --max_restarts 0 \
+  scripts/train/train_sft.py \
+  --model-config configs/model/qwen_vlm_4b_turin_24g.yaml \
+  --train-config configs/train/sft_lora_full_turin_16gpu.yaml
+'
 TRAIN_EXIT=$?
 set -e
 

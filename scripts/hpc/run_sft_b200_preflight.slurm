@@ -1,14 +1,14 @@
 #!/bin/bash -l
-#SBATCH --job-name=agri-vlm-sft-full-b200
+#SBATCH --job-name=agri-vlm-sft-b200-preflight
 #SBATCH --partition=hpg-b200
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=32
-#SBATCH --gpus=4
+#SBATCH --cpus-per-task=16
+#SBATCH --gpus=2
 #SBATCH --mem=128G
-#SBATCH --time=23:00:00
+#SBATCH --time=01:00:00
 #SBATCH --mail-user=zijing.huang@ufl.edu
-#SBATCH --mail-type=BEGIN,END,FAIL,REQUEUE,TIME_LIMIT,TIME_LIMIT_90
+#SBATCH --mail-type=END,FAIL,REQUEUE,TIME_LIMIT
 #SBATCH --output=logs/slurm/%x-%j.out
 #SBATCH --error=logs/slurm/%x-%j.err
 
@@ -31,7 +31,7 @@ export PYTHONPATH=src
 export OMP_NUM_THREADS=8
 export TOKENIZERS_PARALLELISM=false
 export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
-RUN_DIR="$PWD/outputs/sft/qwen3-vl-4b-lora-full-b200"
+RUN_DIR="$PWD/outputs/smoke/sft-qwen3-vl-4b-b200-preflight"
 
 mkdir -p "$AGRI_VLM_DATA_ROOT" "$HF_HOME" "$HUGGINGFACE_HUB_CACHE" "$HF_XET_CACHE" "$TRANSFORMERS_CACHE" "$TMPDIR"
 
@@ -42,20 +42,20 @@ import torch
 
 assert torch.cuda.is_available(), "CUDA is not available on the allocated B200 node."
 names = [torch.cuda.get_device_name(index) for index in range(torch.cuda.device_count())]
-assert len(names) >= 4, "Expected at least 4 visible GPUs, found: %s" % names
-assert all("B200" in name for name in names[:4]), "Expected NVIDIA B200 GPUs, found: %s" % names
+assert len(names) >= 2, "Expected at least 2 visible GPUs, found: %s" % names
+assert all("B200" in name for name in names[:2]), "Expected NVIDIA B200 GPUs, found: %s" % names
 assert torch.cuda.is_bf16_supported(), "BF16 is not supported by the allocated B200 runtime."
-print("b200_cuda_validation=%s" % json.dumps({"gpu_names": names[:4], "bf16_supported": True}, sort_keys=True))
+print("b200_cuda_validation=%s" % json.dumps({"gpu_names": names[:2], "bf16_supported": True}, sort_keys=True))
 PY
 
 TRAIN_EXIT=0
 set +e
 python scripts/launch_torchrun.py \
-  --nproc-per-node 4 \
-  --master-port "$((28700 + SLURM_JOB_ID % 1000))" \
+  --nproc-per-node 2 \
+  --master-port "$((28600 + SLURM_JOB_ID % 1000))" \
   scripts/train/train_sft.py -- \
   --model-config configs/model/qwen_vlm_4b.yaml \
-  --train-config configs/train/sft_lora_full_b200_multigpu.yaml
+  --train-config configs/train/sft_lora_full_b200_preflight.yaml
 TRAIN_EXIT=$?
 set -e
 

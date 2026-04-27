@@ -15,7 +15,11 @@ from agri_vlm.rewards.composite import make_trl_reward_function
 from agri_vlm.training.callbacks import JsonlMetricsCallback
 from agri_vlm.training.run_artifacts import prepare_run_artifacts, write_training_artifact_manifest
 from agri_vlm.utils.checkpointing import resolve_resume_checkpoint
-from agri_vlm.utils.distributed import configure_torch_runtime, get_distributed_context
+from agri_vlm.utils.distributed import (
+    configure_torch_runtime,
+    destroy_distributed_process_group,
+    get_distributed_context,
+)
 from agri_vlm.utils.image import open_image
 from agri_vlm.utils.io import ensure_dir
 
@@ -128,115 +132,118 @@ def run_rl_grpo(model_config: Any, train_config: Any) -> Dict[str, Any]:
     from datasets import Dataset
     from trl import GRPOConfig, GRPOTrainer
 
-    configure_torch_runtime(tf32=train_config.tf32)
-    ensure_dir(output_dir)
-    logger.info("Starting GRPO with distributed context: %s", distributed_context.as_dict())
-    processor = ProcessorDTypeAdapter(
-        load_processor(model_config),
-        pixel_dtype=torch_dtype_from_name(model_config.torch_dtype),
-    )
-    model = load_sft_checkpoint_model(
-        model_config=model_config,
-        checkpoint_path=train_config.sft_checkpoint_path,
-        distributed_context=distributed_context,
-    )
-    _cast_vision_modules(model, torch_dtype_from_name(model_config.torch_dtype))
-    _wrap_generate_with_autocast(model, torch_dtype_from_name(model_config.torch_dtype))
-    records = []
-    for row in rows:
-        records.append(
-            {
-                "prompt": sample_to_prompt_messages(row),
-                "image_paths": row.images,
-                "task_type": row.task_type,
-                "sample_id": row.sample_id,
-                "target_json": json.dumps(row.target.model_dump(mode="json"), ensure_ascii=False),
-                "verifier_json": json.dumps(row.verifier.model_dump(mode="json"), ensure_ascii=False),
-                "reward_meta_json": json.dumps(row.reward_meta.model_dump(mode="json"), ensure_ascii=False),
-                "metadata_json": json.dumps(row.metadata, ensure_ascii=False),
-            }
+    try:
+        configure_torch_runtime(tf32=train_config.tf32)
+        ensure_dir(output_dir)
+        logger.info("Starting GRPO with distributed context: %s", distributed_context.as_dict())
+        processor = ProcessorDTypeAdapter(
+            load_processor(model_config),
+            pixel_dtype=torch_dtype_from_name(model_config.torch_dtype),
+        )
+        model = load_sft_checkpoint_model(
+            model_config=model_config,
+            checkpoint_path=train_config.sft_checkpoint_path,
+            distributed_context=distributed_context,
+        )
+        _cast_vision_modules(model, torch_dtype_from_name(model_config.torch_dtype))
+        _wrap_generate_with_autocast(model, torch_dtype_from_name(model_config.torch_dtype))
+        records = []
+        for row in rows:
+            records.append(
+                {
+                    "prompt": sample_to_prompt_messages(row),
+                    "image_paths": row.images,
+                    "task_type": row.task_type,
+                    "sample_id": row.sample_id,
+                    "target_json": json.dumps(row.target.model_dump(mode="json"), ensure_ascii=False),
+                    "verifier_json": json.dumps(row.verifier.model_dump(mode="json"), ensure_ascii=False),
+                    "reward_meta_json": json.dumps(row.reward_meta.model_dump(mode="json"), ensure_ascii=False),
+                    "metadata_json": json.dumps(row.metadata, ensure_ascii=False),
+                }
+            )
+
+        dataset = Dataset.from_list(records)
+
+        def transform(batch: Dict[str, List[Any]]) -> Dict[str, List[Any]]:
+            batch["prompt"] = [_drop_none_fields(prompt) for prompt in batch["prompt"]]
+            batch["images"] = [
+                [open_image(Path(path)) for path in image_paths] for image_paths in batch["image_paths"]
+            ]
+            return batch
+
+        dataset.set_transform(transform)
+
+        grpo_args = GRPOConfig(
+            output_dir=str(output_dir),
+            learning_rate=train_config.learning_rate,
+            weight_decay=train_config.weight_decay,
+            warmup_ratio=train_config.warmup_ratio,
+            num_train_epochs=train_config.num_train_epochs,
+            max_grad_norm=train_config.max_grad_norm,
+            logging_steps=train_config.logging_steps,
+            logging_dir=str(run_artifacts.tensorboard_dir),
+            save_steps=train_config.save_steps,
+            save_total_limit=train_config.save_total_limit,
+            per_device_train_batch_size=train_config.per_device_train_batch_size,
+            gradient_accumulation_steps=train_config.gradient_accumulation_steps,
+            bf16=train_config.bf16,
+            tf32=train_config.tf32,
+            gradient_checkpointing=train_config.gradient_checkpointing,
+            max_prompt_length=train_config.max_prompt_length,
+            max_completion_length=train_config.max_completion_length,
+            num_generations=train_config.num_generations,
+            beta=train_config.beta,
+            loss_type=train_config.loss_type,
+            scale_rewards=train_config.scale_rewards,
+            use_vllm=train_config.use_vllm,
+            vllm_mode=train_config.vllm_mode,
+            report_to=run_artifacts.report_to,
+            run_name=run_artifacts.run_name,
+            remove_unused_columns=False,
+            seed=train_config.seed,
+            data_seed=train_config.seed,
+            dataloader_num_workers=train_config.dataloader_num_workers,
+            dataloader_pin_memory=train_config.dataloader_pin_memory,
+            dataloader_persistent_workers=train_config.dataloader_persistent_workers,
+            ddp_find_unused_parameters=train_config.ddp_find_unused_parameters,
+            ddp_timeout=train_config.ddp_timeout,
+            log_on_each_node=train_config.log_on_each_node,
+            save_on_each_node=train_config.save_on_each_node,
+            full_determinism=train_config.full_determinism,
+            disable_tqdm=not distributed_context.is_main_process,
         )
 
-    dataset = Dataset.from_list(records)
-
-    def transform(batch: Dict[str, List[Any]]) -> Dict[str, List[Any]]:
-        batch["prompt"] = [_drop_none_fields(prompt) for prompt in batch["prompt"]]
-        batch["images"] = [
-            [open_image(Path(path)) for path in image_paths] for image_paths in batch["image_paths"]
-        ]
-        return batch
-
-    dataset.set_transform(transform)
-
-    grpo_args = GRPOConfig(
-        output_dir=str(output_dir),
-        learning_rate=train_config.learning_rate,
-        weight_decay=train_config.weight_decay,
-        warmup_ratio=train_config.warmup_ratio,
-        num_train_epochs=train_config.num_train_epochs,
-        max_grad_norm=train_config.max_grad_norm,
-        logging_steps=train_config.logging_steps,
-        logging_dir=str(run_artifacts.tensorboard_dir),
-        save_steps=train_config.save_steps,
-        save_total_limit=train_config.save_total_limit,
-        per_device_train_batch_size=train_config.per_device_train_batch_size,
-        gradient_accumulation_steps=train_config.gradient_accumulation_steps,
-        bf16=train_config.bf16,
-        tf32=train_config.tf32,
-        gradient_checkpointing=train_config.gradient_checkpointing,
-        max_prompt_length=train_config.max_prompt_length,
-        max_completion_length=train_config.max_completion_length,
-        num_generations=train_config.num_generations,
-        beta=train_config.beta,
-        loss_type=train_config.loss_type,
-        scale_rewards=train_config.scale_rewards,
-        use_vllm=train_config.use_vllm,
-        vllm_mode=train_config.vllm_mode,
-        report_to=run_artifacts.report_to,
-        run_name=run_artifacts.run_name,
-        remove_unused_columns=False,
-        seed=train_config.seed,
-        data_seed=train_config.seed,
-        dataloader_num_workers=train_config.dataloader_num_workers,
-        dataloader_pin_memory=train_config.dataloader_pin_memory,
-        dataloader_persistent_workers=train_config.dataloader_persistent_workers,
-        ddp_find_unused_parameters=train_config.ddp_find_unused_parameters,
-        ddp_timeout=train_config.ddp_timeout,
-        log_on_each_node=train_config.log_on_each_node,
-        save_on_each_node=train_config.save_on_each_node,
-        full_determinism=train_config.full_determinism,
-        disable_tqdm=not distributed_context.is_main_process,
-    )
-
-    trainer = GRPOTrainer(
-        model=model,
-        args=grpo_args,
-        train_dataset=dataset,
-        processing_class=processor,
-        reward_funcs=[
-            make_trl_reward_function(
-                reward_modules=train_config.reward_modules,
-                reward_weights=train_config.reward_weights,
-            )
-        ],
-        callbacks=[
-            JsonlMetricsCallback(
-                run_artifacts.metrics_jsonl_path,
-                mirror_paths=[run_artifacts.legacy_metrics_jsonl_path],
-            )
-        ],
-    )
-    resume_path = resolve_resume_checkpoint(output_dir, train_config.resume_from_checkpoint)
-    trainer.train(resume_from_checkpoint=str(resume_path) if resume_path else None)
-    trainer.save_model()
-    if trainer.is_world_process_zero():
-        processor.save_pretrained(output_dir)
-        write_training_artifact_manifest(
-            run_artifacts,
-            extra={
-                "reward_modules": train_config.reward_modules,
-                "reward_weights": train_config.reward_weights,
-            },
+        trainer = GRPOTrainer(
+            model=model,
+            args=grpo_args,
+            train_dataset=dataset,
+            processing_class=processor,
+            reward_funcs=[
+                make_trl_reward_function(
+                    reward_modules=train_config.reward_modules,
+                    reward_weights=train_config.reward_weights,
+                )
+            ],
+            callbacks=[
+                JsonlMetricsCallback(
+                    run_artifacts.metrics_jsonl_path,
+                    mirror_paths=[run_artifacts.legacy_metrics_jsonl_path],
+                )
+            ],
         )
-    logger.info("Finished GRPO run with %s training rows.", len(rows))
-    return _build_rl_dry_run_summary(rows, output_dir)
+        resume_path = resolve_resume_checkpoint(output_dir, train_config.resume_from_checkpoint)
+        trainer.train(resume_from_checkpoint=str(resume_path) if resume_path else None)
+        trainer.save_model()
+        if trainer.is_world_process_zero():
+            processor.save_pretrained(output_dir)
+            write_training_artifact_manifest(
+                run_artifacts,
+                extra={
+                    "reward_modules": train_config.reward_modules,
+                    "reward_weights": train_config.reward_weights,
+                },
+            )
+        logger.info("Finished GRPO run with %s training rows.", len(rows))
+        return _build_rl_dry_run_summary(rows, output_dir)
+    finally:
+        destroy_distributed_process_group()

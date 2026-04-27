@@ -90,6 +90,16 @@ def configure_torch_runtime(tf32: bool = True) -> None:
         torch.backends.cudnn.allow_tf32 = tf32
 
 
+def destroy_distributed_process_group() -> None:
+    """Tear down torch.distributed when a launcher initialized it."""
+    try:
+        import torch.distributed as dist
+    except Exception:  # pragma: no cover - optional outside distributed runtime
+        return
+    if dist.is_available() and dist.is_initialized():
+        dist.destroy_process_group()
+
+
 def rank_zero_print(message: str) -> None:
     """Print only from global rank zero."""
     if get_distributed_context().is_main_process:

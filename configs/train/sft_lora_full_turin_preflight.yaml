@@ -1,5 +1,5 @@
-manifest_path: data/manifests/full/sft_manifest.valid_images.jsonl
-eval_manifest_path: data/manifests/full/local_holdout_eval.valid_images.jsonl
+manifest_path: data/manifests/full/sft_manifest.decode_aspect_valid_images.jsonl
+eval_manifest_path: data/manifests/full/local_holdout_eval.decode_aspect_valid_images.jsonl
 output_dir: outputs/smoke/sft-qwen3-vl-4b-turin-preflight
 seed: 17
 per_device_train_batch_size: 1
@@ -24,12 +24,13 @@ report_to:
 run_name: sft-qwen3-vl-4b-lora-full-turin-preflight
 dry_run: false
 smoke_max_samples: 16
+max_images_per_sample: 7
 resume_from_checkpoint: null
 dataloader_num_workers: 0
 dataloader_pin_memory: true
 dataloader_persistent_workers: false
 ddp_find_unused_parameters: false
-ddp_timeout: 1800
+ddp_timeout: 600
 log_on_each_node: false
 save_on_each_node: false
 full_determinism: false

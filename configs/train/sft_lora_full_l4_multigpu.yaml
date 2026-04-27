@@ -1,5 +1,5 @@
-manifest_path: data/manifests/full/sft_manifest.valid_images.jsonl
-eval_manifest_path: data/manifests/full/local_holdout_eval.valid_images.jsonl
+manifest_path: data/manifests/full/sft_manifest.decode_aspect_valid_images.jsonl
+eval_manifest_path: data/manifests/full/local_holdout_eval.decode_aspect_valid_images.jsonl
 output_dir: outputs/sft/qwen3-vl-4b-lora-full-l4
 seed: 17
 per_device_train_batch_size: 1

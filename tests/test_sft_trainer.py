@@ -38,3 +38,15 @@ def test_train_config_accepts_loss_chunk_size() -> None:
     )
 
     assert config.loss_chunk_size == 1024
+
+
+def test_train_config_accepts_max_images_per_sample() -> None:
+    config = TrainConfigSchema.model_validate(
+        {
+            "manifest_path": "data/manifests/partial_10pct/sft_manifest.jsonl",
+            "output_dir": "outputs/smoke/sft-qwen3-vl-4b",
+            "max_images_per_sample": 7,
+        }
+    )
+
+    assert config.max_images_per_sample == 7

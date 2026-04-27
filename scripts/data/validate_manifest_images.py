@@ -57,6 +57,15 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Return success when invalid rows are found only if an invalid-output report is written.",
     )
+    parser.add_argument(
+        "--max-aspect-ratio",
+        type=float,
+        default=None,
+        help=(
+            "Optional maximum allowed absolute aspect ratio. "
+            "Rows referencing images above this threshold are reported invalid."
+        ),
+    )
     return parser.parse_args()
 
 
@@ -87,25 +96,45 @@ def _validate_image_header(path: Path) -> Optional[str]:
     return "unsupported image signature: %s" % header[:8].hex()
 
 
-def _validate_image(path: Path, mode: str) -> Optional[str]:
+def _validate_image(
+    path: Path,
+    mode: str,
+    max_aspect_ratio: float | None,
+) -> Tuple[Optional[str], Optional[Dict[str, float]]]:
     if not path.exists():
-        return "missing file"
+        return "missing file", None
     if not path.is_file():
-        return "not a file"
+        return "not a file", None
     if mode == "header":
-        return _validate_image_header(path)
+        return _validate_image_header(path), None
     try:
         with Image.open(path) as image:
-            image.verify()
+            width, height = image.size
+            image.load()
+            image.convert("RGB")
     except Exception as exc:
-        return "%s: %s" % (type(exc).__name__, exc)
-    return None
+        return "%s: %s" % (type(exc).__name__, exc), None
+
+    metadata = {
+        "width": float(width),
+        "height": float(height),
+        "aspect_ratio": max(width / max(height, 1), height / max(width, 1)),
+    }
+    if max_aspect_ratio is not None and metadata["aspect_ratio"] > max_aspect_ratio:
+        return (
+            "aspect_ratio %.1f exceeds max %.1f" % (metadata["aspect_ratio"], max_aspect_ratio),
+            metadata,
+        )
+    return None, metadata
 
 
-def _validate_image_reference(payload: Tuple[str, str, str]) -> Tuple[str, Optional[str], str]:
-    image_path, repo_root, mode = payload
+def _validate_image_reference(
+    payload: Tuple[str, str, str, Optional[float]],
+) -> Tuple[str, Optional[str], str, Optional[Dict[str, float]]]:
+    image_path, repo_root, mode, max_aspect_ratio = payload
     resolved_path = _resolve_image_path(image_path, Path(repo_root))
-    return image_path, _validate_image(resolved_path, mode), str(resolved_path)
+    error, metadata = _validate_image(resolved_path, mode, max_aspect_ratio)
+    return image_path, error, str(resolved_path), metadata
 
 
 def _collect_unique_images(manifest_path: Path, progress_every: int) -> List[str]:
@@ -133,33 +162,42 @@ def _validate_unique_images(
     mode: str,
     workers: int,
     progress_every: int,
-) -> Dict[str, Dict[str, str]]:
-    errors: Dict[str, Dict[str, str]] = {}
-    payloads = [(image_path, str(repo_root), mode) for image_path in image_paths]
+    max_aspect_ratio: float | None,
+) -> Dict[str, Dict[str, object]]:
+    results: Dict[str, Dict[str, object]] = {}
+    payloads = [(image_path, str(repo_root), mode, max_aspect_ratio) for image_path in image_paths]
     if workers > 1:
         with ProcessPoolExecutor(max_workers=workers) as executor:
             iterator = executor.map(_validate_image_reference, payloads, chunksize=256)
-            for index, (image_path, error, resolved_path) in enumerate(iterator, start=1):
-                if error:
-                    errors[image_path] = {"error": error, "resolved_path": resolved_path}
+            for index, (image_path, error, resolved_path, metadata) in enumerate(iterator, start=1):
+                results[image_path] = {
+                    "error": error,
+                    "resolved_path": resolved_path,
+                    "metadata": metadata,
+                }
                 if progress_every and index % progress_every == 0:
                     print(
-                        "validated_images=%s invalid_unique_images=%s" % (index, len(errors)),
+                        "validated_images=%s invalid_unique_images=%s"
+                        % (index, sum(1 for payload in results.values() if payload["error"])),
                         file=sys.stderr,
                         flush=True,
                     )
     else:
         for index, payload in enumerate(payloads, start=1):
-            image_path, error, resolved_path = _validate_image_reference(payload)
-            if error:
-                errors[image_path] = {"error": error, "resolved_path": resolved_path}
+            image_path, error, resolved_path, metadata = _validate_image_reference(payload)
+            results[image_path] = {
+                "error": error,
+                "resolved_path": resolved_path,
+                "metadata": metadata,
+            }
             if progress_every and index % progress_every == 0:
                 print(
-                    "validated_images=%s invalid_unique_images=%s" % (index, len(errors)),
+                    "validated_images=%s invalid_unique_images=%s"
+                    % (index, sum(1 for payload in results.values() if payload["error"])),
                     file=sys.stderr,
                     flush=True,
                 )
-    return errors
+    return results
 
 
 def main() -> int:
@@ -177,12 +215,13 @@ def main() -> int:
     total_images = 0
     invalid_image_count = 0
     unique_images = _collect_unique_images(manifest_path, args.progress_every)
-    image_error_lookup = _validate_unique_images(
+    image_validation_lookup = _validate_unique_images(
         image_paths=unique_images,
         repo_root=repo_root,
         mode=args.mode,
         workers=max(1, args.workers),
         progress_every=args.progress_every,
+        max_aspect_ratio=args.max_aspect_ratio,
     )
 
     if valid_output:
@@ -203,17 +242,22 @@ def main() -> int:
             for image_path in row.get("images") or []:
                 total_images += 1
                 dataset_counts[dataset]["images"] += 1
-                error_payload = image_error_lookup.get(str(image_path))
-                if error_payload:
+                validation_payload = image_validation_lookup.get(str(image_path))
+                if validation_payload is None:
+                    continue
+                error_message = validation_payload.get("error")
+                metadata = validation_payload.get("metadata")
+                if error_message:
                     invalid_image_count += 1
                     dataset_counts[dataset]["invalid_images"] += 1
-                    image_errors.append(
-                        {
-                            "image": image_path,
-                            "resolved_path": error_payload["resolved_path"],
-                            "error": error_payload["error"],
-                        }
-                    )
+                    image_error = {
+                        "image": image_path,
+                        "resolved_path": validation_payload["resolved_path"],
+                        "error": error_message,
+                    }
+                    if isinstance(metadata, dict):
+                        image_error.update(metadata)
+                    image_errors.append(image_error)
             if not row.get("images"):
                 image_errors.append(
                     {
@@ -261,8 +305,11 @@ def main() -> int:
         "manifest": str(manifest_path),
         "repo_root": str(repo_root),
         "mode": args.mode,
+        "max_aspect_ratio": args.max_aspect_ratio,
         "unique_images": len(unique_images),
-        "invalid_unique_images": len(image_error_lookup),
+        "invalid_unique_images": sum(
+            1 for payload in image_validation_lookup.values() if payload.get("error")
+        ),
         "total_rows": total_rows,
         "valid_rows": valid_row_count,
         "invalid_rows": invalid_row_count,
