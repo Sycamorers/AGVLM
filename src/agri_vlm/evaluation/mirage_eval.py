@@ -4,7 +4,7 @@ from typing import Any, Dict
 
 from agri_vlm.data.manifest_io import read_manifest
 from agri_vlm.evaluation.inference import generate_predictions, oracle_predictions
-from agri_vlm.evaluation.metrics import clarify_accuracy, exact_match_rate
+from agri_vlm.evaluation.metrics import clarify_decision_metrics, exact_match_rate
 from agri_vlm.evaluation.reporting import build_prediction_rows
 
 
@@ -27,11 +27,12 @@ def run_mirage_eval_bundle(model_config: Any, eval_config: Any) -> Dict[str, Any
     clarify_refs = [row.target.decision for row in rows if row.target.decision]
     clarify_preds = [prediction for row, prediction in zip(rows, predictions) if row.target.decision]
     answer_refs = [list(row.target.acceptable_answers) or [row.target.answer_text or ""] for row in rows]
+    decision_metrics = clarify_decision_metrics(clarify_refs, clarify_preds) if clarify_refs else {}
     metrics = {
         "num_examples": len(rows),
         "answer_exact_match": exact_match_rate(answer_refs, predictions),
-        "clarify_accuracy": clarify_accuracy(clarify_refs, clarify_preds) if clarify_refs else 0.0,
     }
+    metrics.update(decision_metrics)
     return {
         "metrics": metrics,
         "predictions": build_prediction_rows(rows, predictions),

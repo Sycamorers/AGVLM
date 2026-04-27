@@ -50,7 +50,8 @@ def word_count(text: str) -> int:
 
 def contains_any(text: str, phrases: Sequence[str]) -> bool:
     normalized = normalize_text(text)
-    return any(normalize_text(phrase) in normalized for phrase in phrases if phrase)
+    normalized_phrases = [normalize_text(phrase) for phrase in phrases if normalize_text(phrase)]
+    return any(phrase in normalized for phrase in normalized_phrases)
 
 
 def section_headers_present(text: str, headers: Sequence[str]) -> List[str]:

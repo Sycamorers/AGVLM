@@ -4,7 +4,7 @@ MASTER_PORT ?= 29500
 DATA_DOWNLOAD_MODE ?= partial
 DATA_FRACTION ?= 0.1
 
-.PHONY: help bootstrap verify verify-dist smoke prepare-slots download-data normalize-all data-partial data-full data-report build-sft-manifest build-rl-manifest build-eval-manifest sft sft-dist rl rl-dist eval eval-local test
+.PHONY: help bootstrap verify verify-dist smoke prepare-slots download-data normalize-all data-partial data-full data-report build-sft-manifest build-rl-manifest build-eval-manifest benchmark-status export-training-artifacts export-benchmark-tables sft sft-dist rl rl-dist eval eval-local test
 
 help:
 	@echo "Targets:"
@@ -21,6 +21,9 @@ help:
 	@echo "  build-sft-manifest   Build the SFT manifest"
 	@echo "  build-rl-manifest    Build the RL manifest"
 	@echo "  build-eval-manifest  Build evaluation manifests"
+	@echo "  benchmark-status     Report benchmark readiness and missing paths"
+	@echo "  export-training-artifacts  Export curves/tables from RUN_DIR"
+	@echo "  export-benchmark-tables    Export tables from BENCHMARK_RUNS"
 	@echo "  sft                  Run 1-process supervised fine-tuning"
 	@echo "  sft-dist             Run single-node multi-GPU supervised fine-tuning via torchrun"
 	@echo "  rl                   Run 1-process GRPO post-training"
@@ -89,6 +92,20 @@ build-eval-manifest:
 		--config configs/data/eval_build.yaml \
 		--download-mode $(DATA_DOWNLOAD_MODE) \
 		--fraction $(DATA_FRACTION)
+
+benchmark-status:
+	PYTHONPATH=src $(PYTHON) scripts/benchmarks/benchmark_status.py \
+		--download-mode $(DATA_DOWNLOAD_MODE) \
+		--fraction $(DATA_FRACTION)
+
+export-training-artifacts:
+	test -n "$(RUN_DIR)"
+	PYTHONPATH=src $(PYTHON) scripts/artifacts/export_training_artifacts.py \
+		--run-dir "$(RUN_DIR)"
+
+export-benchmark-tables:
+	test -n "$(BENCHMARK_RUNS)"
+	PYTHONPATH=src $(PYTHON) scripts/artifacts/export_benchmark_tables.py $(BENCHMARK_RUNS)
 
 data-report:
 	PYTHONPATH=src $(PYTHON) scripts/data/dataset_report.py \

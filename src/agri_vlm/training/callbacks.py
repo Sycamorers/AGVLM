@@ -2,7 +2,7 @@
 
 import json
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Iterable, Optional
 
 try:  # pragma: no cover - exercised only when transformers is unavailable
     from transformers import TrainerCallback
@@ -16,9 +16,11 @@ except Exception:  # pragma: no cover - fallback for dry-run imports
 class JsonlMetricsCallback(TrainerCallback):
     """Persist trainer logs as JSONL."""
 
-    def __init__(self, output_path: Path) -> None:
+    def __init__(self, output_path: Path, mirror_paths: Optional[Iterable[Path]] = None) -> None:
         self.output_path = output_path
-        self.output_path.parent.mkdir(parents=True, exist_ok=True)
+        self.paths = [output_path, *(mirror_paths or [])]
+        for path in self.paths:
+            path.parent.mkdir(parents=True, exist_ok=True)
 
     def on_log(
         self,
@@ -34,6 +36,7 @@ class JsonlMetricsCallback(TrainerCallback):
             return
         payload = dict(logs)
         payload["global_step"] = state.global_step
-        with self.output_path.open("a", encoding="utf-8") as handle:
-            handle.write(json.dumps(payload, sort_keys=True))
-            handle.write("\n")
+        for path in self.paths:
+            with path.open("a", encoding="utf-8") as handle:
+                handle.write(json.dumps(payload, sort_keys=True))
+                handle.write("\n")

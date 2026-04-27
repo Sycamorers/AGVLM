@@ -1,19 +1,19 @@
-manifest_path: data/manifests/partial_10pct/sft_manifest.jsonl
-eval_manifest_path: data/manifests/partial_10pct/local_holdout_eval.jsonl
-output_dir: outputs/smoke/sft-qwen3-vl-4b-l4-compat
+manifest_path: data/manifests/full/sft_manifest.valid_images.jsonl
+eval_manifest_path: data/manifests/full/local_holdout_eval.valid_images.jsonl
+output_dir: outputs/sft/ablations/qwen3-vl-4b-lora-attention-only-full-l4
 seed: 17
 per_device_train_batch_size: 1
 per_device_eval_batch_size: 1
-gradient_accumulation_steps: 1
+gradient_accumulation_steps: 21
 num_train_epochs: 1
 learning_rate: 2.0e-4
 weight_decay: 0.01
 warmup_ratio: 0.03
 max_grad_norm: 1.0
-logging_steps: 1
-save_steps: 1000
-eval_steps: 1000
-save_total_limit: 1
+logging_steps: 5
+save_steps: 100
+eval_steps: 100
+save_total_limit: 2
 bf16: true
 fp16: false
 gradient_checkpointing: true
@@ -21,13 +21,13 @@ loss_chunk_size: 1024
 use_peft: true
 report_to:
   - tensorboard
-run_name: sft-qwen3-vl-4b-l4-smoke
+run_name: sft-lora-attention-only-full-l4
 dry_run: false
-smoke_max_samples: 4
-resume_from_checkpoint: null
-dataloader_num_workers: 0
+smoke_max_samples: 0
+resume_from_checkpoint: auto
+dataloader_num_workers: 4
 dataloader_pin_memory: true
-dataloader_persistent_workers: false
+dataloader_persistent_workers: true
 ddp_find_unused_parameters: false
 ddp_timeout: 1800
 log_on_each_node: false
@@ -39,8 +39,8 @@ freeze:
   freeze_projector: false
   trainable_text_modules: []
 lora:
-  r: 8
-  alpha: 16
+  r: 16
+  alpha: 32
   dropout: 0.05
   bias: none
   target_modules:

@@ -29,6 +29,7 @@ export PYTHONPATH=src
 export OMP_NUM_THREADS=4
 export TOKENIZERS_PARALLELISM=false
 export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
+RUN_DIR="$PWD/outputs/smoke/sft-qwen3-vl-4b-l4-compat"
 
 mkdir -p "$AGRI_VLM_DATA_ROOT" "$HF_HOME" "$HUGGINGFACE_HUB_CACHE" "$HF_XET_CACHE" "$TRANSFORMERS_CACHE" "$TMPDIR"
 
@@ -45,9 +46,20 @@ assert torch.cuda.is_bf16_supported(), "BF16 is not supported by the allocated L
 print("l4_cuda_validation=%s" % json.dumps({"gpu_names": names, "bf16_supported": True}, sort_keys=True))
 PY
 
+TRAIN_EXIT=0
+set +e
 python scripts/launch_torchrun.py \
   --nproc-per-node 1 \
   --master-port "$((28500 + SLURM_JOB_ID % 1000))" \
   scripts/train/train_sft.py -- \
   --model-config configs/model/qwen_vlm_4b_l4.yaml \
   --train-config configs/train/sft_lora_l4_smoke.yaml
+TRAIN_EXIT=$?
+set -e
+
+if [[ -f "$RUN_DIR/metrics/train_metrics.jsonl" || -f "$RUN_DIR/metrics.jsonl" ]]; then
+  python scripts/artifacts/export_training_artifacts.py --run-dir "$RUN_DIR" || true
+fi
+
+echo "TensorBoard: tensorboard --logdir $RUN_DIR/tensorboard --host 0.0.0.0 --port 6006"
+exit "$TRAIN_EXIT"

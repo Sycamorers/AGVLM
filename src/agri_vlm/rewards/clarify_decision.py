@@ -15,6 +15,8 @@ CLARIFY_MARKERS = [
 
 
 def infer_decision(prediction: str) -> str:
+    if "?" in (prediction or ""):
+        return "clarify"
     normalized = normalize_text(prediction)
     if contains_any(normalized, CLARIFY_MARKERS):
         return "clarify"

@@ -4,14 +4,17 @@
 from __future__ import annotations
 
 import argparse
+from datetime import datetime, timezone
 import json
 from pathlib import Path
+import socket
+import subprocess
 from typing import Any, Callable, Dict
 
 from agri_vlm.evaluation.local_eval import run_local_eval_bundle
 from agri_vlm.evaluation.mirage_eval import run_mirage_eval_bundle
 from agri_vlm.schemas.config_schema import EvalConfigSchema, ModelConfigSchema, load_config
-from agri_vlm.utils.io import ensure_dir, write_json, write_jsonl
+from agri_vlm.utils.io import ensure_dir, write_json, write_jsonl, write_yaml
 
 
 TASK_SPECS: Dict[str, Dict[str, Any]] = {
@@ -28,6 +31,22 @@ TASK_SPECS: Dict[str, Dict[str, Any]] = {
         "runner": run_mirage_eval_bundle,
     },
 }
+
+
+def _git_value(repo_root: Path, *args: str) -> str | None:
+    try:
+        completed = subprocess.run(
+            ["git", *args],
+            cwd=repo_root,
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+    except Exception:
+        return None
+    if completed.returncode != 0:
+        return None
+    return completed.stdout.strip()
 
 
 def parse_args() -> argparse.Namespace:
@@ -74,6 +93,10 @@ def _run_task(
     task_output_dir = ensure_dir(output_dir / task_name)
     eval_config.output_path = str(task_output_dir / "metrics.json")
     eval_config.predictions_path = str(task_output_dir / "predictions.jsonl")
+    write_yaml(
+        task_output_dir / "resolved_eval_config.yaml",
+        {"task": task_name, "eval_config": eval_config.model_dump(mode="json")},
+    )
 
     runner: Callable[[Any, Any], dict] = spec["runner"]
     result = runner(model_config=model_config, eval_config=eval_config)
@@ -94,8 +117,19 @@ def main() -> int:
     repo_root = Path(__file__).resolve().parents[2]
     model_config = load_config(repo_root / args.model_config, ModelConfigSchema)
     output_dir = ensure_dir(Path(args.output_dir))
+    write_yaml(
+        output_dir / "resolved_model_config.yaml",
+        {"model_config": model_config.model_dump(mode="json")},
+    )
 
     summary = {
+        "created_at_utc": datetime.now(timezone.utc).isoformat(),
+        "hostname": socket.gethostname(),
+        "output_dir": str(output_dir),
+        "git": {
+            "commit": _git_value(repo_root, "rev-parse", "HEAD"),
+            "branch": _git_value(repo_root, "branch", "--show-current"),
+        },
         "model_config": args.model_config,
         "base_model_name_or_path": model_config.model_name_or_path,
         "checkpoint_path": args.checkpoint_path,

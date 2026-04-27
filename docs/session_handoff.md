@@ -1,10 +1,126 @@
 # Session Handoff
 
-Last updated: 2026-04-17
+Last updated: 2026-04-27
+
+## April 27, 2026 Update
+
+Current active milestone: the real Turin multi-GPU SFT run is live and has already passed the distributed preflight gate.
+
+What happened in this session:
+
+- refreshed the shared `agri-vlm-v1` environment with `scripts/hpc/prepare_env.sh`
+- fixed TensorBoard startup by pinning `setuptools<81` in:
+  - `scripts/hpc/prepare_env.sh`
+  - `scripts/bootstrap_env.sh`
+- verified real Turin GPU access on job `31095001`
+  - host type seen by runtime: `NVIDIA L4`
+  - CUDA available: yes
+  - BF16 supported: yes
+- ran distributed SFT preflight on Turin job `31095166`
+  - shape: `2 nodes x 2 GPUs per node = world_size 4`
+  - result: success
+  - output dir: `outputs/smoke/sft-qwen3-vl-4b-turin-preflight`
+  - exported figures:
+    - `outputs/artifacts/figures/sft-qwen3-vl-4b-turin-preflight/loss.png`
+    - `outputs/artifacts/figures/sft-qwen3-vl-4b-turin-preflight/grad_norm.png`
+    - `outputs/artifacts/figures/sft-qwen3-vl-4b-turin-preflight/learning_rate.png`
+- submitted the actual full SFT run on Turin job `31095385`
+  - state at handoff time on April 27, 2026: `RUNNING`
+  - partition: `hpg-turin`
+  - shape: `2 nodes x 2 GPUs per node = world_size 4`
+  - live run dir: `outputs/sft/qwen3-vl-4b-lora-full-turin`
+  - config: `configs/train/sft_lora_full_turin_multigpu.yaml`
+
+Evidence that the real run is healthy so far:
+
+- rank-zero log shows distributed startup with `world_size: 4`
+- TensorBoard event file already exists under:
+  - `outputs/sft/qwen3-vl-4b-lora-full-turin/tensorboard/`
+- JSONL metrics are being written:
+  - `outputs/sft/qwen3-vl-4b-lora-full-turin/metrics/train_metrics.jsonl`
+  - compatibility copy: `outputs/sft/qwen3-vl-4b-lora-full-turin/metrics.jsonl`
+- latest visible training metrics at handoff time:
+  - step `5`: `loss 16.1963`
+  - step `10`: `loss 15.7693`
+  - step `15`: `loss 14.5021`
+  - step `20`: `loss 12.3623`
+  - step `25`: `loss 9.9954`
+
+Monitoring commands for the next session:
+
+```bash
+cd /blue/hmedeiros/qinruoyao/agvlm
+
+tail -f logs/slurm/agri-vlm-sft-full-l4-31095385.out
+tail -f logs/slurm/agri-vlm-sft-full-l4-31095385.err
+tail -n 40 outputs/sft/qwen3-vl-4b-lora-full-turin/metrics.jsonl
+```
+
+TensorBoard for the live run:
+
+```bash
+cd /blue/hmedeiros/qinruoyao/agvlm
+module load conda
+source "$(conda info --base)/etc/profile.d/conda.sh"
+conda activate agri-vlm-v1
+
+tensorboard \
+  --logdir outputs/sft/qwen3-vl-4b-lora-full-turin/tensorboard \
+  --host 0.0.0.0 \
+  --port 6006
+```
+
+Then forward the port from a local machine:
+
+```bash
+ssh -N -L 6006:login8.ufhpc:6006 qinruoyao@hpg.rc.ufl.edu
+```
+
+Open `http://localhost:6006`.
+
+Next actions after job `31095385` finishes:
+
+1. Inspect `logs/slurm/agri-vlm-sft-full-l4-31095385.out` and `.err`.
+2. Confirm final checkpoint and artifact files exist in `outputs/sft/qwen3-vl-4b-lora-full-turin/`.
+3. Confirm the post-run artifact export happened automatically.
+4. If needed, rerun:
+   - `python scripts/artifacts/export_training_artifacts.py --run-dir outputs/sft/qwen3-vl-4b-lora-full-turin`
+5. Run post-SFT benchmarks.
+6. Start GRPO from the resulting SFT checkpoint.
+
+## April 21, 2026 Update
+
+Current active milestone: full SFT on L4 is submitted but not yet completed. The visible log `logs/slurm/agri-vlm-sft-full-l4-30580348.err` shows CUDA OOM during default fp32 loss conversion at about step 29. The codebase now includes a chunked SFT loss path controlled by `loss_chunk_size`, and the L4 configs set `loss_chunk_size: 1024`.
+
+New operating-system pieces added:
+
+- TensorBoard logging for SFT and GRPO via `report_to: tensorboard`.
+- Stable run artifacts under each training run directory:
+  - `resolved_config.yaml`
+  - `run_metadata.json`
+  - `metrics/train_metrics.jsonl`
+  - `tensorboard/`
+  - `artifact_manifest.json` after successful training
+- Benchmark readiness tracking:
+  - `configs/benchmarks/benchmarks.yaml`
+  - `scripts/benchmarks/benchmark_status.py`
+- Paper artifact export scripts:
+  - `scripts/artifacts/export_training_artifacts.py`
+  - `scripts/artifacts/export_benchmark_tables.py`
+- Progress and paper planning docs:
+  - `docs/progress_tracker.md`
+  - `docs/experiment_roadmap.md`
+  - `docs/benchmark_plan.md`
+  - `docs/training_monitoring.md`
+  - `docs/results_artifacts.md`
+  - `docs/research_plan.md`
+  - `docs/paper_outline.md`
+
+Immediate next action: rerun or resume full L4 SFT with the updated config. If it succeeds, export SFT curves, run local/MIRAGE benchmarks, export benchmark tables, then start GRPO. If it fails again with OOM, lower image pixels or switch to the B200 full config.
 
 ## Current State
 
-The repo is ready for the first real full-data SFT run.
+The repo is ready for the rerun or continuation of the first real full-data SFT milestone.
 
 Completed and normalized full datasets:
 

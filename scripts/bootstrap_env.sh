@@ -18,7 +18,7 @@ fi
 "${PYTHON_BIN}" -m venv "${VENV_DIR}"
 source "${VENV_DIR}/bin/activate"
 python -m ensurepip --upgrade
-python -m pip install --upgrade pip setuptools wheel
+python -m pip install --upgrade pip wheel "setuptools<81"
 
 echo "Installing PyTorch ${TORCH_VERSION} wheels from ${TORCH_INDEX_URL}"
 python -m pip install \

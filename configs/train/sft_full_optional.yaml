@@ -18,7 +18,9 @@ bf16: true
 fp16: false
 gradient_checkpointing: true
 use_peft: false
-report_to: []
+report_to:
+  - tensorboard
+run_name: sft-qwen3-vl-4b-full-optional
 dry_run: false
 smoke_max_samples: 8
 resume_from_checkpoint: auto

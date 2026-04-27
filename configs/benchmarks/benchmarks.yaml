@@ -1,0 +1,98 @@
+defaults:
+  download_mode: full
+  sample_fraction: 1.0
+  output_root: outputs/benchmarks
+
+benchmarks:
+  - name: mirage
+    role: primary consultation benchmark
+    paper_use: Main external benchmark for contextual agricultural consultation and clarify-vs-respond behavior.
+    implementation_status: implemented
+    access: public Hugging Face dataset
+    preparation_mode: automatic
+    licensing_notes: Preserve upstream MIRAGE terms and cite the benchmark.
+    prepare_commands:
+      - PYTHONPATH=src python scripts/data/download_public_datasets.py --download-mode full --fraction 1.0 --datasets mirage
+      - PYTHONPATH=src python scripts/data/normalize_all.py --download-mode full --fraction 1.0
+      - PYTHONPATH=src python scripts/data/build_eval_manifest.py --download-mode full --fraction 1.0
+    eval_commands:
+      - PYTHONPATH=src python scripts/eval/run_benchmark.py --model-config configs/model/qwen_vlm_4b.yaml --tasks mirage_mmst mirage_mmmt --prediction-mode model --output-dir outputs/benchmarks/<model_name>
+    readiness_paths:
+      - path: "{data_root}/manifests/{subset_tag}/mirage_mmst_eval.jsonl"
+        kind: manifest
+        required: true
+      - path: "{data_root}/manifests/{subset_tag}/mirage_mmmt_eval.jsonl"
+        kind: manifest
+        required: true
+      - path: "configs/eval/mirage_mmst_full.yaml"
+        kind: eval_config
+        required: true
+      - path: "configs/eval/mirage_mmmt_full.yaml"
+        kind: eval_config
+        required: true
+
+  - name: local_holdout
+    role: internal deployment-relevant benchmark
+    paper_use: In-distribution evaluation for local disease, pest, VQA, and consultation-heavy cases.
+    implementation_status: implemented
+    access: generated from normalized local manifests
+    preparation_mode: automatic plus manual source staging for IP102 and Agri resources when used
+    licensing_notes: Preserve source-level licenses in manifest metadata and dataset reports.
+    prepare_commands:
+      - PYTHONPATH=src python scripts/data/normalize_all.py --download-mode full --fraction 1.0
+      - PYTHONPATH=src python scripts/data/build_eval_manifest.py --download-mode full --fraction 1.0
+    eval_commands:
+      - PYTHONPATH=src python scripts/eval/run_benchmark.py --model-config configs/model/qwen_vlm_4b.yaml --tasks local_holdout --prediction-mode model --output-dir outputs/benchmarks/<model_name>
+    readiness_paths:
+      - path: "{data_root}/manifests/{subset_tag}/local_holdout_eval.jsonl"
+        kind: manifest
+        required: true
+      - path: "configs/eval/local_holdout_full.yaml"
+        kind: eval_config
+        required: true
+
+  - name: agmmu
+    role: knowledge-intensive agricultural benchmark
+    paper_use: Tests agricultural factual and expert knowledge beyond consultation style.
+    implementation_status: planned
+    access: external benchmark resources; manual verification required before integration
+    preparation_mode: manual staging until a verified selective download and schema mapping are added
+    licensing_notes: "TODO: verify official AgMMU redistribution and citation requirements before committing raw data."
+    prepare_commands:
+      - "TODO: stage AgMMU raw files under data/raw/agmmu/full after verifying official access terms."
+      - "TODO: add scripts/data/normalize_agmmu.py and configs/eval/agmmu_full.yaml."
+    eval_commands:
+      - "TODO: add agmmu task to scripts/eval/run_benchmark.py after normalized manifest exists."
+    readiness_paths:
+      - path: "{data_root}/raw/agmmu/{subset_tag}"
+        kind: raw_dir
+        required: true
+      - path: "{data_root}/manifests/{subset_tag}/agmmu_eval.jsonl"
+        kind: manifest
+        required: true
+      - path: "configs/eval/agmmu_full.yaml"
+        kind: eval_config
+        required: true
+
+  - name: agrobench
+    role: broad agricultural capability benchmark
+    paper_use: Breadth benchmark for generalization across agricultural tasks.
+    implementation_status: planned
+    access: external benchmark resources; manual verification required before integration
+    preparation_mode: manual staging until the official source and schema are pinned
+    licensing_notes: "TODO: verify official AgroBench access, redistribution, and citation requirements."
+    prepare_commands:
+      - "TODO: stage AgroBench raw files under data/raw/agrobench/full after access verification."
+      - "TODO: add scripts/data/normalize_agrobench.py and configs/eval/agrobench_full.yaml."
+    eval_commands:
+      - "TODO: add agrobench task to scripts/eval/run_benchmark.py after normalized manifest exists."
+    readiness_paths:
+      - path: "{data_root}/raw/agrobench/{subset_tag}"
+        kind: raw_dir
+        required: true
+      - path: "{data_root}/manifests/{subset_tag}/agrobench_eval.jsonl"
+        kind: manifest
+        required: true
+      - path: "configs/eval/agrobench_full.yaml"
+        kind: eval_config
+        required: true

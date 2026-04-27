@@ -2,15 +2,21 @@
 
 ## P0 Critical
 
-- Run full SFT on HiPerGator with the new full-manifest LoRA config.
-  - Action: request a multi-GPU B200 allocation, then launch `scripts/train/train_sft.py` with `configs/train/sft_lora_full_b200_multigpu.yaml`.
-  - Files: `configs/train/sft_lora_full_b200_multigpu.yaml`, `scripts/launch_torchrun.py`, `scripts/train/train_sft.py`
-  - Rationale: full data prep and baseline inference are finished; the next blocking milestone is the first real fine-tuning run.
+- Rerun or resume full SFT after the L4 OOM.
+  - Action: submit the L4 full SFT config with `loss_chunk_size: 1024`, or use the B200 full config if L4 remains memory-bound.
+  - Files: `configs/train/sft_lora_full_l4_multigpu.yaml`, `scripts/hpc/run_sft_full_l4.slurm`, `src/agri_vlm/training/sft_trainer.py`
+  - Evidence: `logs/slurm/agri-vlm-sft-full-l4-30580348.err` failed with CUDA OOM during fp32 loss conversion.
+  - Rationale: the first full Agri-SFT checkpoint blocks post-SFT eval and GRPO.
 
 - Run post-SFT benchmark on the same local holdout split.
-  - Action: after SFT writes `outputs/sft/qwen3-vl-4b-lora-full-b200`, rerun `scripts/eval/run_benchmark.py` with `--checkpoint-path` against `local_holdout`.
-  - Files: `scripts/eval/run_benchmark.py`, `configs/eval/local_holdout_full.yaml`, `docs/session_handoff.md`
+  - Action: after SFT writes a completed checkpoint, rerun `scripts/eval/run_benchmark.py` with `--checkpoint-path` against `local_holdout`, `mirage_mmst`, and `mirage_mmmt`.
+  - Files: `scripts/eval/run_benchmark.py`, `configs/eval/local_holdout_full.yaml`, `configs/eval/mirage_mmst_full.yaml`, `configs/eval/mirage_mmmt_full.yaml`
   - Rationale: the before/after comparison requested by the project depends on matching eval conditions pre- and post-fine-tuning.
+
+- Export SFT training artifacts once the run completes.
+  - Action: run `PYTHONPATH=src python scripts/artifacts/export_training_artifacts.py --run-dir <sft_run_dir>`.
+  - Files: `scripts/artifacts/export_training_artifacts.py`, `docs/results_artifacts.md`
+  - Rationale: paper figures should be regenerated from raw metrics, not manually recreated.
 
 ## P1 Important
 
@@ -30,6 +36,11 @@
   - Rationale: the repo keeps `flash-attn` optional until the target image is confirmed.
 
 ## P2 Nice-to-Have
+
+- Integrate AgMMU and AgroBench evaluators after access verification.
+  - Action: verify official sources/licenses, add normalizers, add eval configs, and register tasks in `scripts/eval/run_benchmark.py`.
+  - Files: `configs/benchmarks/benchmarks.yaml`, `scripts/benchmarks/benchmark_status.py`, `docs/benchmark_plan.md`
+  - Rationale: they are important for the full paper matrix but should not block the minimum publishable pipeline.
 
 - Add a dedicated `make data-smoke` target.
   - Action: expose the synthetic raw-data pipeline used in tests as a top-level Make target.

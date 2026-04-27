@@ -4,7 +4,7 @@ from typing import Any, Dict, List
 
 from agri_vlm.data.manifest_io import read_manifest
 from agri_vlm.evaluation.inference import generate_predictions, oracle_predictions
-from agri_vlm.evaluation.metrics import accuracy, clarify_accuracy, exact_match_rate, macro_f1
+from agri_vlm.evaluation.metrics import accuracy, clarify_decision_metrics, exact_match_rate, macro_f1
 from agri_vlm.evaluation.reporting import build_prediction_rows
 from agri_vlm.rewards.composite import build_reward_input, compute_composite_reward
 
@@ -67,14 +67,15 @@ def run_local_eval_bundle(model_config: Any, eval_config: Any) -> Dict[str, Any]
             ).total
         )
 
+    decision_metrics = clarify_decision_metrics(decision_refs, decision_preds) if decision_refs else {}
     metrics = {
         "num_examples": len(rows),
         "label_accuracy": accuracy(label_refs, label_preds),
         "label_macro_f1": macro_f1(tuple(label_refs), tuple(label_preds)) if label_refs else 0.0,
         "answer_exact_match": exact_match_rate(vqa_refs, vqa_preds) if vqa_refs else 0.0,
-        "clarify_accuracy": clarify_accuracy(decision_refs, decision_preds) if decision_refs else 0.0,
         "average_reward": sum(reward_totals) / float(len(reward_totals)) if reward_totals else 0.0,
     }
+    metrics.update(decision_metrics)
     return {
         "metrics": metrics,
         "predictions": build_prediction_rows(rows, predictions),

@@ -19,7 +19,7 @@ if ! conda env list | awk '{print $1}' | grep -qx "${ENV_NAME}"; then
 fi
 
 conda activate "${ENV_NAME}"
-python -m pip install --upgrade pip setuptools wheel
+python -m pip install --upgrade pip wheel "setuptools<81"
 python -m pip install \
   "torch==${TORCH_VERSION}" \
   "torchvision==${TORCHVISION_VERSION}" \

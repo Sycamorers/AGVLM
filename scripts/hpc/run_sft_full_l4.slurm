@@ -33,10 +33,13 @@ export TOKENIZERS_PARALLELISM=false
 export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 export MASTER_ADDR="$(scontrol show hostnames "$SLURM_JOB_NODELIST" | head -n 1)"
 export MASTER_PORT="$((29500 + SLURM_JOB_ID % 1000))"
+RUN_DIR="$PWD/outputs/sft/qwen3-vl-4b-lora-full-turin"
 
 mkdir -p "$AGRI_VLM_DATA_ROOT" "$HF_HOME" "$HUGGINGFACE_HUB_CACHE" "$HF_XET_CACHE" "$TRANSFORMERS_CACHE" "$TMPDIR"
 
 python scripts/verify_environment.py
+TRAIN_EXIT=0
+set +e
 srun --ntasks="$SLURM_NNODES" --ntasks-per-node=1 bash -lc '
 python -m torch.distributed.run \
   --nnodes "$SLURM_NNODES" \
@@ -48,5 +51,14 @@ python -m torch.distributed.run \
   --max_restarts 0 \
   scripts/train/train_sft.py \
   --model-config configs/model/qwen_vlm_4b_l4.yaml \
-  --train-config configs/train/sft_lora_full_l4_multigpu.yaml
+  --train-config configs/train/sft_lora_full_turin_multigpu.yaml
 '
+TRAIN_EXIT=$?
+set -e
+
+if [[ -f "$RUN_DIR/metrics/train_metrics.jsonl" || -f "$RUN_DIR/metrics.jsonl" ]]; then
+  python scripts/artifacts/export_training_artifacts.py --run-dir "$RUN_DIR" || true
+fi
+
+echo "TensorBoard: tensorboard --logdir $RUN_DIR/tensorboard --host 0.0.0.0 --port 6006"
+exit "$TRAIN_EXIT"

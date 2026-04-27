@@ -43,7 +43,14 @@ Recommended hardware assumptions:
 Current project status:
 - full data manifests are ready
 - baseline inference on `local_holdout` has been run on a B200 GPU
-- the next execution step is full-data SFT with `configs/train/sft_lora_full_b200_multigpu.yaml`
+- the active execution milestone is full-data SFT on L4 with `configs/train/sft_lora_full_l4_multigpu.yaml`
+- the latest visible L4 job failed with CUDA OOM; rerun with the chunked-loss mitigation before starting GRPO
+
+Monitoring outputs:
+- TensorBoard: `<run_dir>/tensorboard/`
+- JSONL metrics: `<run_dir>/metrics/train_metrics.jsonl`
+- run metadata: `<run_dir>/run_metadata.json`
+- resolved config: `<run_dir>/resolved_config.yaml`
 
 Optional stack features:
 - FlashAttention-2 for faster memory-efficient attention

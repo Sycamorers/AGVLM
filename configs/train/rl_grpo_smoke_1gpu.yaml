@@ -15,7 +15,9 @@ save_total_limit: 1
 bf16: true
 gradient_checkpointing: true
 use_peft: true
-report_to: []
+report_to:
+  - tensorboard
+run_name: grpo-smoke-qwen3-vl-4b
 dry_run: true
 smoke_max_samples: 4
 resume_from_checkpoint: auto

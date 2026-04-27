@@ -1,6 +1,7 @@
 from types import SimpleNamespace
 
 from agri_vlm.evaluation.local_eval import run_local_eval_bundle
+from agri_vlm.evaluation.metrics import clarify_decision_metrics
 from agri_vlm.utils.io import write_jsonl
 
 
@@ -59,3 +60,21 @@ def test_local_eval_bundle_exports_predictions_and_honors_max_examples(tmp_path)
     assert len(result["predictions"]) == 1
     assert result["predictions"][0]["sample_id"] == "sample-1"
     assert result["predictions"][0]["prediction"] == "early blight"
+
+
+def test_clarify_decision_metrics_report_error_modes() -> None:
+    metrics = clarify_decision_metrics(
+        ["clarify", "clarify", "respond", "respond"],
+        [
+            "Can you share a clearer close-up image?",
+            "This is early blight.",
+            "What crop is this?",
+            "This is healthy.",
+        ],
+    )
+
+    assert metrics["clarify_accuracy"] == 0.5
+    assert metrics["clarify_precision"] == 0.5
+    assert metrics["clarify_recall"] == 0.5
+    assert metrics["unnecessary_clarification_rate"] == 0.5
+    assert metrics["premature_answer_rate"] == 0.5

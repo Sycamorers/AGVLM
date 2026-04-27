@@ -21,6 +21,9 @@ Reported metrics:
 - macro F1 for label tasks
 - exact match for short-answer tasks
 - clarify accuracy when applicable
+- clarify precision and recall when decision labels are present
+- unnecessary clarification rate
+- premature answer rate
 - average composite reward for held-out outputs
 
 ## Smoke evaluation

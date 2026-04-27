@@ -70,8 +70,13 @@ class TrainConfigSchema(BaseModel):
     bf16: bool = True
     fp16: bool = False
     gradient_checkpointing: bool = True
+    loss_chunk_size: int = Field(default=0, ge=0)
     use_peft: bool = True
-    report_to: List[str] = Field(default_factory=list)
+    report_to: List[str] = Field(default_factory=lambda: ["tensorboard"])
+    run_name: Optional[str] = None
+    logging_dir: Optional[str] = None
+    artifact_dir: Optional[str] = None
+    save_run_metadata: bool = True
     dry_run: bool = False
     smoke_max_samples: int = 8
     resume_from_checkpoint: Optional[str] = "auto"

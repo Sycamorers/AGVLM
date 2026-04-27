@@ -14,8 +14,17 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 
-REQUIRED_PACKAGES = ["yaml", "pydantic", "PIL"]
-OPTIONAL_PACKAGES = ["torch", "transformers", "datasets", "accelerate", "peft", "trl", "bitsandbytes"]
+REQUIRED_PACKAGES = ["yaml", "pydantic", "PIL", "tensorboard"]
+OPTIONAL_PACKAGES = [
+    "torch",
+    "transformers",
+    "datasets",
+    "accelerate",
+    "peft",
+    "trl",
+    "bitsandbytes",
+    "matplotlib",
+]
 DATA_ENV_VARS = [
     "AGRI_VLM_DATA_ROOT",
     "HF_HOME",

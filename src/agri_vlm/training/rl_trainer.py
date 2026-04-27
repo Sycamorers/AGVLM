@@ -12,6 +12,8 @@ from agri_vlm.logging_utils import configure_logging
 from agri_vlm.modeling.model_factory import load_sft_checkpoint_model, torch_dtype_from_name
 from agri_vlm.modeling.processor_factory import load_processor
 from agri_vlm.rewards.composite import make_trl_reward_function
+from agri_vlm.training.callbacks import JsonlMetricsCallback
+from agri_vlm.training.run_artifacts import prepare_run_artifacts, write_training_artifact_manifest
 from agri_vlm.utils.checkpointing import resolve_resume_checkpoint
 from agri_vlm.utils.distributed import configure_torch_runtime, get_distributed_context
 from agri_vlm.utils.image import open_image
@@ -113,6 +115,13 @@ def run_rl_grpo(model_config: Any, train_config: Any) -> Dict[str, Any]:
         rows = rows[: train_config.smoke_max_samples]
 
     output_dir = Path(train_config.output_dir)
+    run_artifacts = prepare_run_artifacts(
+        stage="rl_grpo",
+        model_config=model_config,
+        train_config=train_config,
+        distributed_context=distributed_context,
+        dry_run=train_config.dry_run,
+    )
     if train_config.dry_run:
         return _build_rl_dry_run_summary(rows, output_dir)
 
@@ -167,6 +176,7 @@ def run_rl_grpo(model_config: Any, train_config: Any) -> Dict[str, Any]:
         num_train_epochs=train_config.num_train_epochs,
         max_grad_norm=train_config.max_grad_norm,
         logging_steps=train_config.logging_steps,
+        logging_dir=str(run_artifacts.tensorboard_dir),
         save_steps=train_config.save_steps,
         save_total_limit=train_config.save_total_limit,
         per_device_train_batch_size=train_config.per_device_train_batch_size,
@@ -182,7 +192,8 @@ def run_rl_grpo(model_config: Any, train_config: Any) -> Dict[str, Any]:
         scale_rewards=train_config.scale_rewards,
         use_vllm=train_config.use_vllm,
         vllm_mode=train_config.vllm_mode,
-        report_to=train_config.report_to,
+        report_to=run_artifacts.report_to,
+        run_name=run_artifacts.run_name,
         remove_unused_columns=False,
         seed=train_config.seed,
         data_seed=train_config.seed,
@@ -208,11 +219,24 @@ def run_rl_grpo(model_config: Any, train_config: Any) -> Dict[str, Any]:
                 reward_weights=train_config.reward_weights,
             )
         ],
+        callbacks=[
+            JsonlMetricsCallback(
+                run_artifacts.metrics_jsonl_path,
+                mirror_paths=[run_artifacts.legacy_metrics_jsonl_path],
+            )
+        ],
     )
     resume_path = resolve_resume_checkpoint(output_dir, train_config.resume_from_checkpoint)
     trainer.train(resume_from_checkpoint=str(resume_path) if resume_path else None)
     trainer.save_model()
     if trainer.is_world_process_zero():
         processor.save_pretrained(output_dir)
+        write_training_artifact_manifest(
+            run_artifacts,
+            extra={
+                "reward_modules": train_config.reward_modules,
+                "reward_weights": train_config.reward_weights,
+            },
+        )
     logger.info("Finished GRPO run with %s training rows.", len(rows))
     return _build_rl_dry_run_summary(rows, output_dir)

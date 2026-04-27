@@ -2,6 +2,18 @@
 
 Research codebase for a ground-level RGB agriculture VLM focused on disease, pest, symptom, consultation, and clarify-vs-respond tasks.
 
+## Project Operating Docs
+
+- [Project overview](docs/project_overview.md)
+- [Research plan](docs/research_plan.md)
+- [Experiment roadmap](docs/experiment_roadmap.md)
+- [Progress tracker](docs/progress_tracker.md)
+- [Training monitoring](docs/training_monitoring.md)
+- [Benchmark plan](docs/benchmark_plan.md)
+- [Results artifacts](docs/results_artifacts.md)
+- [Paper outline](docs/paper_outline.md)
+- [Session handoff](docs/session_handoff.md)
+
 ## Target Environment
 
 - Cluster: UF HiPerGator
@@ -130,6 +142,25 @@ PYTHONPATH=src python scripts/launch_torchrun.py \
   --train-config configs/train/rl_grpo_b200_multigpu.yaml
 ```
 
+Training outputs are standardized under each run directory:
+
+- `resolved_config.yaml`
+- `run_metadata.json`
+- `metrics/train_metrics.jsonl`
+- `metrics.jsonl`
+- `tensorboard/`
+- `artifact_manifest.json` after successful training
+
+TensorBoard:
+
+```bash
+tensorboard --logdir outputs --host 0.0.0.0 --port 6006
+```
+
+Run `bash scripts/hpc/prepare_env.sh` once after updating the repo so the environment installs `tensorboard` and artifact plotting dependencies.
+
+The current active milestone is the full L4 SFT rerun or resume. The latest visible L4 log shows CUDA OOM during fp32 loss conversion; the L4 configs now use `loss_chunk_size: 1024`.
+
 ## Evaluation
 
 Single-run local holdout eval with model predictions:
@@ -171,6 +202,28 @@ PYTHONPATH=src python scripts/eval/eval_local_holdout.py \
 
 MIRAGE and the local holdout use separate eval manifests under `data/manifests/full/`. The benchmark wrapper writes both aggregate metrics and per-example prediction JSONL files.
 
+Check benchmark readiness:
+
+```bash
+PYTHONPATH=src python scripts/benchmarks/benchmark_status.py \
+  --download-mode full \
+  --fraction 1.0
+```
+
+Export benchmark tables:
+
+```bash
+PYTHONPATH=src python scripts/artifacts/export_benchmark_tables.py \
+  --run Base-Qwen3-VL-4B outputs/benchmarks/base-qwen3-vl-4b_local_holdout_256
+```
+
+Export training curves:
+
+```bash
+PYTHONPATH=src python scripts/artifacts/export_training_artifacts.py \
+  --run-dir outputs/sft/qwen3-vl-4b-lora-full-l4
+```
+
 ## Repo Layout
 
 ```text
@@ -184,13 +237,15 @@ tests/          unit tests and smoke checks
 
 ## Known Limitations
 
-- The current host used for this pass is Python `3.9`, so `scripts/verify_environment.py` correctly fails here until a Python `3.11` environment is activated.
-- IP102, AgBase resources, and Agri-LLaVA still require manual staging because this repo does not accept full-archive downloads just to keep 10%.
+- Full SFT is still the active blocking milestone; the latest visible L4 job failed with CUDA OOM and needs a rerun or B200 fallback.
+- IP102, AgBase resources, and Agri-LLaVA still require manual staging when rebuilding from scratch because this repo does not accept full-archive downloads just to keep 10%.
+- AgMMU and AgroBench are tracked in the benchmark registry but still need verified access, normalizers, eval configs, and task entries.
 - `flash-attn` remains optional until it is validated against the target CUDA 12.9.1 image.
 
 ## TODO Summary
 
 Top open items are tracked in [TODO.md](/blue/hmedeiros/qinruoyao/agvlm/TODO.md). Current P0 items are:
 
-- stage manual IP102, AgBase, and Agri-LLaVA subsets under the new subset-tagged raw layout
-- run one real partial-to-full data rerun on the target cluster and record any path or cache issues
+- rerun or resume full SFT after the L4 OOM
+- run post-SFT local and MIRAGE benchmarks
+- export SFT training curves and benchmark tables for the paper
