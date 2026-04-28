@@ -1,0 +1,14 @@
+source_manifest_path: data/manifests/full/sft_manifest.decode_aspect_valid_images.jsonl
+holdout_manifest_path: data/manifests/full/local_holdout_eval.decode_aspect_valid_images.jsonl
+train_output_path: data/manifests/full/sft_train_llama4_max1_no_eval_overlap.jsonl
+eval_output_path: data/manifests/full/sft_eval_llama4_max1_stratified512.jsonl
+summary_output_path: data/manifests/full/sft_train_eval_llama4_summary.json
+train_splits:
+  - train
+eval_splits:
+  - validation
+  - dev
+max_images_per_sample: 1
+eval_sample_size: 512
+min_eval_samples_per_stratum: 16
+salt: agri-vlm-sft-llama4-eval-v1

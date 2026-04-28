@@ -21,7 +21,11 @@ module load cuda/12.9.1
 source "$(conda info --base)/etc/profile.d/conda.sh"
 conda activate agri-vlm-v1
 
-ulimit -c 0
+disable_core_dumps() {
+  ulimit -S -c 0 || true
+  ulimit -H -c 0 || true
+}
+disable_core_dumps
 
 export AGRI_VLM_DATA_ROOT="$PWD/data"
 export HF_HOME="$PWD/.cache/huggingface"
@@ -52,8 +56,12 @@ python scripts/verify_environment.py
 TRAIN_EXIT=0
 set +e
 srun --ntasks="$SLURM_NNODES" --ntasks-per-node=1 bash -lc '
-ulimit -c 0
-python -m torch.distributed.run \
+disable_core_dumps() {
+  ulimit -S -c 0 || true
+  ulimit -H -c 0 || true
+}
+disable_core_dumps
+launch=(python -m torch.distributed.run \
   --nnodes "$SLURM_NNODES" \
   --node_rank "$SLURM_NODEID" \
   --nproc_per_node 2 \
@@ -62,8 +70,13 @@ python -m torch.distributed.run \
   --rdzv_id "$SLURM_JOB_ID" \
   --max_restarts 0 \
   scripts/train/train_sft.py \
-  --model-config configs/model/llama4_scout_17b_16e_turin_24g.yaml \
-  --train-config configs/train/sft_lora_turin_16gpu_preflight_llama4_scout_zero3.yaml
+  --model-config configs/model/llama4_scout_17b_16e_turin_24g_lowres.yaml \
+  --train-config configs/train/sft_lora_turin_16gpu_preflight_llama4_scout_zero3.yaml)
+if command -v prlimit >/dev/null 2>&1; then
+  prlimit --core=0:0 -- "${launch[@]}"
+else
+  "${launch[@]}"
+fi
 '
 TRAIN_EXIT=$?
 set -e

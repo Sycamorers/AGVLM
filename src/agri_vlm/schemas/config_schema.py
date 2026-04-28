@@ -70,6 +70,7 @@ class TrainConfigSchema(BaseModel):
     save_strategy: str = "steps"
     eval_steps: int = 100
     save_total_limit: int = 2
+    prediction_loss_only: bool = True
     bf16: bool = True
     fp16: bool = False
     gradient_checkpointing: bool = True
@@ -84,6 +85,7 @@ class TrainConfigSchema(BaseModel):
     smoke_max_samples: int = 8
     deepspeed: Optional[str] = None
     max_images_per_sample: Optional[int] = Field(default=None, ge=1)
+    fail_on_train_eval_overlap: bool = True
     resume_from_checkpoint: Optional[str] = "auto"
     dataloader_num_workers: int = 0
     dataloader_pin_memory: bool = True

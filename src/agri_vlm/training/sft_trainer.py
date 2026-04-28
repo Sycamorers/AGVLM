@@ -49,6 +49,28 @@ def _filter_rows_by_max_images(rows: List[Any], *, max_images_per_sample: int | 
     return [row for row in rows if len(row.images) <= max_images_per_sample]
 
 
+def _sample_group_key(row: Any) -> str:
+    source_image_id = row.metadata.get("source_image_id") or row.images[0]
+    return "%s::%s" % (row.source_dataset, source_image_id)
+
+
+def _assert_no_train_eval_overlap(train_rows: List[Any], eval_rows: List[Any]) -> None:
+    if not eval_rows:
+        return
+    train_ids = {row.sample_id for row in train_rows}
+    eval_ids = {row.sample_id for row in eval_rows}
+    train_group_keys = {_sample_group_key(row) for row in train_rows}
+    eval_group_keys = {_sample_group_key(row) for row in eval_rows}
+    exact_overlap = train_ids.intersection(eval_ids)
+    group_overlap = train_group_keys.intersection(eval_group_keys)
+    if exact_overlap or group_overlap:
+        raise ValueError(
+            "Train/eval manifest overlap detected: exact_sample_id=%s group_key=%s. "
+            "Build non-overlapping train/eval manifests before launching SFT."
+            % (len(exact_overlap), len(group_overlap))
+        )
+
+
 def _chunked_causal_lm_loss(
     logits: Any,
     labels: Any,
@@ -228,6 +250,8 @@ def run_sft(model_config: Any, train_config: Any) -> Dict[str, Any]:
     if train_config.smoke_max_samples:
         train_rows = train_rows[: train_config.smoke_max_samples]
         eval_rows = eval_rows[: train_config.smoke_max_samples]
+    if train_config.fail_on_train_eval_overlap:
+        _assert_no_train_eval_overlap(train_rows, eval_rows)
 
     run_artifacts = prepare_run_artifacts(
         stage="sft",
@@ -276,6 +300,7 @@ def run_sft(model_config: Any, train_config: Any) -> Dict[str, Any]:
             save_strategy=train_config.save_strategy,
             eval_steps=train_config.eval_steps,
             save_total_limit=train_config.save_total_limit,
+            prediction_loss_only=train_config.prediction_loss_only,
             bf16=train_config.bf16,
             fp16=train_config.fp16,
             tf32=train_config.tf32,

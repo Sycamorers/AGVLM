@@ -1,5 +1,5 @@
-manifest_path: data/manifests/full/sft_manifest.valid_images.jsonl
-eval_manifest_path: null
+manifest_path: data/manifests/full/sft_train_llama4_max1_no_eval_overlap.jsonl
+eval_manifest_path: data/manifests/full/sft_eval_llama4_max1_stratified512.jsonl
 output_dir: outputs/sft/llama4-scout-17b-16e-lora-full-turin-16gpu-zero3
 seed: 17
 per_device_train_batch_size: 1
@@ -16,6 +16,7 @@ save_steps: 100
 save_strategy: "steps"
 eval_steps: 100
 save_total_limit: 2
+prediction_loss_only: true
 bf16: true
 fp16: false
 gradient_checkpointing: true
@@ -28,6 +29,7 @@ dry_run: false
 smoke_max_samples: 0
 deepspeed: configs/deepspeed/zero3_lora_turin_24g.json
 max_images_per_sample: 1
+fail_on_train_eval_overlap: true
 resume_from_checkpoint: null
 dataloader_num_workers: 0
 dataloader_pin_memory: true

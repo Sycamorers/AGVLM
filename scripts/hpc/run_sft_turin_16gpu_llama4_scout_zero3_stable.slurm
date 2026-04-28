@@ -21,7 +21,11 @@ module load cuda/12.9.1
 source "$(conda info --base)/etc/profile.d/conda.sh"
 conda activate agri-vlm-v1
 
-ulimit -c 0
+disable_core_dumps() {
+  ulimit -S -c 0 || true
+  ulimit -H -c 0 || true
+}
+disable_core_dumps
 
 export AGRI_VLM_DATA_ROOT="$PWD/data"
 export HF_HOME="$PWD/.cache/huggingface"
@@ -57,7 +61,11 @@ python scripts/verify_environment.py
 TRAIN_EXIT=0
 set +e
 srun --kill-on-bad-exit=1 --export=ALL,TORCH_CUDA_ARCH_LIST=8.9 --ntasks="$SLURM_NNODES" --ntasks-per-node=1 bash -lc '
-ulimit -c 0
+disable_core_dumps() {
+  ulimit -S -c 0 || true
+  ulimit -H -c 0 || true
+}
+disable_core_dumps
 export TORCH_CUDA_ARCH_LIST=8.9
 export CUDA_MODULE_LOADING=LAZY
 export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
@@ -65,7 +73,7 @@ export NCCL_DEBUG=WARN
 export TORCH_NCCL_ASYNC_ERROR_HANDLING=1
 export TORCH_NCCL_DUMP_ON_TIMEOUT=1
 export TORCH_NCCL_TRACE_BUFFER_SIZE=1048576
-python -m torch.distributed.run \
+launch=(python -m torch.distributed.run \
   --nnodes "$SLURM_NNODES" \
   --node_rank "$SLURM_NODEID" \
   --nproc_per_node 2 \
@@ -75,7 +83,12 @@ python -m torch.distributed.run \
   --max_restarts 0 \
   scripts/train/train_sft.py \
   --model-config configs/model/llama4_scout_17b_16e_turin_24g_lowres.yaml \
-  --train-config configs/train/sft_lora_turin_16gpu_llama4_scout_zero3_stable.yaml
+  --train-config configs/train/sft_lora_turin_16gpu_llama4_scout_zero3_stable.yaml)
+if command -v prlimit >/dev/null 2>&1; then
+  prlimit --core=0:0 -- "${launch[@]}"
+else
+  "${launch[@]}"
+fi
 '
 TRAIN_EXIT=$?
 set -e

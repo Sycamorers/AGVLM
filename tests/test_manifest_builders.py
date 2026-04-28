@@ -1,6 +1,11 @@
 from pathlib import Path
 
-from agri_vlm.data.builders import build_eval_manifests, build_rl_manifest, build_sft_manifest
+from agri_vlm.data.builders import (
+    build_eval_manifests,
+    build_rl_manifest,
+    build_sft_manifest,
+    build_sft_train_eval_manifests,
+)
 from agri_vlm.data.manifest_io import read_manifest, write_manifest
 
 
@@ -101,3 +106,49 @@ def test_manifest_builders_filter_and_merge(tmp_path: Path) -> None:
     assert summary["mirage_mmst"] == 1
     assert summary["mirage_mmmt"] == 0
     assert len(read_manifest(tmp_path / "holdout.jsonl")) >= 1
+
+
+def test_build_sft_train_eval_manifests_removes_eval_overlap(tmp_path: Path) -> None:
+    source_path = tmp_path / "sft_source.jsonl"
+    holdout_path = tmp_path / "holdout.jsonl"
+    train_output = tmp_path / "train.jsonl"
+    eval_output = tmp_path / "eval.jsonl"
+    summary_output = tmp_path / "summary.json"
+
+    write_manifest(
+        source_path,
+        [
+            sample_row("train-keep", "plantdoc", "classification", "train"),
+            sample_row("train-holdout", "plantdoc", "classification", "train"),
+            sample_row("train-val-group", "ip102", "classification", "train"),
+            sample_row("val", "ip102", "classification", "validation"),
+            sample_row("test", "ip102", "classification", "test"),
+            sample_row("multi", "ip102", "classification", "train", image_count=2),
+        ],
+    )
+    rows = [row.model_dump(mode="json") for row in read_manifest(source_path)]
+    rows[2]["metadata"]["source_image_id"] = "shared.png"
+    rows[3]["metadata"]["source_image_id"] = "shared.png"
+    write_manifest(source_path, rows)
+    write_manifest(holdout_path, [sample_row("train-holdout", "plantdoc", "classification", "holdout")])
+
+    summary = build_sft_train_eval_manifests(
+        source_manifest_path=source_path,
+        holdout_manifest_path=holdout_path,
+        train_output_path=train_output,
+        eval_output_path=eval_output,
+        train_splits=["train"],
+        eval_splits=["validation"],
+        max_images_per_sample=1,
+        eval_sample_size=8,
+        min_eval_samples_per_stratum=1,
+        salt="unit-test",
+        summary_output_path=summary_output,
+    )
+
+    train_ids = {row.sample_id for row in read_manifest(train_output)}
+    eval_ids = {row.sample_id for row in read_manifest(eval_output)}
+    assert train_ids == {"train-keep"}
+    assert eval_ids == {"train-holdout", "val"}
+    assert summary["overlap"] == {"exact_sample_id": 0, "group_key": 0}
+    assert summary_output.exists()

@@ -66,3 +66,12 @@ Use the bf16 ZeRO-3 LoRA configs for this model:
 - full run: `configs/train/sft_lora_turin_16gpu_llama4_scout_zero3.yaml`
 
 Do not use bitsandbytes QLoRA with ZeRO-3 for this path. Transformers injects a `device_map` for 4-bit bitsandbytes loading, and `device_map` is incompatible with DeepSpeed ZeRO-3.
+
+Before launching Llama 4 Scout SFT, build the non-overlapping train/eval manifests:
+
+```bash
+PYTHONPATH=src python scripts/data/build_sft_train_eval_manifests.py \
+  --config configs/data/sft_train_eval_llama4.yaml
+```
+
+The generated training manifest keeps only one-image `train` rows and removes every source image group used by the evaluation pool. The step-time validation manifest is a deterministic stratified 512-row subset for loss tracking; full local holdout and MIRAGE evaluation remain separate post-training evaluation jobs.
