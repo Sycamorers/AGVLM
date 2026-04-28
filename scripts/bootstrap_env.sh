@@ -27,7 +27,7 @@ python -m pip install \
   "torchaudio==${TORCHAUDIO_VERSION}" \
   --index-url "${TORCH_INDEX_URL}"
 
-python -m pip install -e ".[dev,qwen-utils]"
+python -m pip install -e ".[dev,qwen-utils,deepspeed]"
 
 if [[ "${INSTALL_FLASH_ATTN}" == "1" ]]; then
   echo "Installing flash-attn from pip. This path should be validated on the target CUDA 12.9.1 / B200 image."

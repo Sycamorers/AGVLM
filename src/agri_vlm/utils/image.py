@@ -18,8 +18,11 @@ def collect_image_paths(root: Path) -> List[Path]:
 
 
 def open_image(path: Path) -> Image.Image:
-    with Image.open(path) as image:
-        return image.convert("RGB")
+    try:
+        with Image.open(path) as image:
+            return image.convert("RGB")
+    except Exception as exc:
+        raise OSError("failed to load image %s: %s: %s" % (path, type(exc).__name__, exc)) from exc
 
 
 def save_solid_image(path: Path, color: Iterable[int]) -> None:

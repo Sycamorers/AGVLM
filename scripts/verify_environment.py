@@ -17,17 +17,22 @@ from typing import Any, Dict, List, Optional
 REQUIRED_PACKAGES = ["yaml", "pydantic", "PIL", "tensorboard"]
 OPTIONAL_PACKAGES = [
     "torch",
+    "torchvision",
     "transformers",
     "datasets",
     "accelerate",
     "peft",
     "trl",
     "bitsandbytes",
+    "deepspeed",
     "matplotlib",
+    "einops",
 ]
 DATA_ENV_VARS = [
     "AGRI_VLM_DATA_ROOT",
+    "AGRI_VLM_REQUIRED_MODEL_ACCESS",
     "HF_HOME",
+    "HF_TOKEN_PATH",
     "TRANSFORMERS_CACHE",
     "HUGGINGFACE_HUB_CACHE",
     "TMPDIR",
@@ -123,6 +128,22 @@ def verify_distributed_runtime() -> Dict[str, Any]:
             dist.destroy_process_group()
 
 
+def verify_hf_model_access(model_id: str) -> Dict[str, Any]:
+    """Verify access to a gated Hugging Face model without downloading weights."""
+    try:
+        from huggingface_hub import hf_hub_download
+
+        config_path = hf_hub_download(repo_id=model_id, filename="config.json")
+    except Exception as exc:  # pragma: no cover - diagnostic path
+        return {
+            "model": model_id,
+            "accessible": False,
+            "error_type": exc.__class__.__name__,
+            "error": str(exc).splitlines()[0],
+        }
+    return {"model": model_id, "accessible": True, "config_path": config_path}
+
+
 def main() -> int:
     repo_root = Path(__file__).resolve().parents[1]
     print("repo_root=%s" % repo_root)
@@ -150,8 +171,15 @@ def main() -> int:
     print("gpu_inventory=%s" % json.dumps(detect_gpu_inventory(), sort_keys=True))
     print("distributed=%s" % json.dumps(verify_distributed_runtime(), sort_keys=True))
 
+    required_model_access = os.environ.get("AGRI_VLM_REQUIRED_MODEL_ACCESS")
+    if required_model_access:
+        model_access = verify_hf_model_access(required_model_access)
+        print("hf_model_access=%s" % json.dumps(model_access, sort_keys=True))
+        if not model_access["accessible"]:
+            failures.append("hf_model_access:%s" % required_model_access)
+
     if failures:
-        print("ERROR: missing required packages: %s" % ", ".join(failures))
+        print("ERROR: environment verification failures: %s" % ", ".join(failures))
         return 1
 
     print("Environment verification passed.")

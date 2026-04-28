@@ -1,0 +1,17 @@
+name: llama4_scout_17b_16e_turin_24g_lowres
+model_name_or_path: meta-llama/Llama-4-Scout-17B-16E-Instruct
+processor_name_or_path: meta-llama/Llama-4-Scout-17B-16E-Instruct
+torch_dtype: bfloat16
+attn_implementation: sdpa
+use_flash_attention_2: false
+load_in_4bit: false
+bnb_4bit_compute_dtype: bfloat16
+bnb_4bit_quant_type: nf4
+trust_remote_code: false
+device_map: auto
+distributed_device_map: none
+gradient_checkpointing: true
+low_cpu_mem_usage: true
+use_cache: false
+max_pixels: 401408
+min_pixels: 3136

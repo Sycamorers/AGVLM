@@ -25,7 +25,7 @@ python -m pip install \
   "torchvision==${TORCHVISION_VERSION}" \
   "torchaudio==${TORCHAUDIO_VERSION}" \
   --index-url "${TORCH_INDEX_URL}"
-python -m pip install -e ".[dev,qwen-utils]"
+python -m pip install -e ".[dev,qwen-utils,deepspeed]"
 
 if [[ "${INSTALL_FLASH_ATTN}" == "1" ]]; then
   python -m pip install "flash-attn>=2.8.0.post2"

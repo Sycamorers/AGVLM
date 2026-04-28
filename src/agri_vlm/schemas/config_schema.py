@@ -32,8 +32,9 @@ class ModelConfigSchema(BaseModel):
     name: str
     model_name_or_path: str
     processor_name_or_path: Optional[str] = None
+    transformers_model_class: Optional[str] = None
     torch_dtype: str = "bfloat16"
-    attn_implementation: str = "flash_attention_2"
+    attn_implementation: Optional[str] = "flash_attention_2"
     use_flash_attention_2: bool = True
     load_in_4bit: bool = True
     bnb_4bit_compute_dtype: str = "bfloat16"
@@ -59,12 +60,14 @@ class TrainConfigSchema(BaseModel):
     per_device_eval_batch_size: int = 1
     gradient_accumulation_steps: int = 1
     num_train_epochs: float = 1.0
+    max_steps: int = -1
     learning_rate: float = 2.0e-4
     weight_decay: float = 0.0
     warmup_ratio: float = 0.03
     max_grad_norm: float = 1.0
     logging_steps: int = 10
     save_steps: int = 100
+    save_strategy: str = "steps"
     eval_steps: int = 100
     save_total_limit: int = 2
     bf16: bool = True
@@ -79,6 +82,8 @@ class TrainConfigSchema(BaseModel):
     save_run_metadata: bool = True
     dry_run: bool = False
     smoke_max_samples: int = 8
+    deepspeed: Optional[str] = None
+    max_images_per_sample: Optional[int] = Field(default=None, ge=1)
     resume_from_checkpoint: Optional[str] = "auto"
     dataloader_num_workers: int = 0
     dataloader_pin_memory: bool = True

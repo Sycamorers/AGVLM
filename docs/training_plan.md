@@ -56,3 +56,13 @@ Optional stack features:
 - FlashAttention-2 for faster memory-efficient attention
 - DeepSpeed for larger runs
 - vLLM for faster RL rollout generation when the environment is stable
+
+## Llama 4 Scout SFT path
+
+The `meta-llama/Llama-4-Scout-17B-16E-Instruct` path is gated by the Llama 4 license on Hugging Face. Authenticate the account before submitting the Slurm jobs; the Llama 4 Slurm scripts set `AGRI_VLM_REQUIRED_MODEL_ACCESS` so `scripts/verify_environment.py` checks `config.json` access before launching distributed training.
+
+Use the bf16 ZeRO-3 LoRA configs for this model:
+- preflight: `configs/train/sft_lora_turin_16gpu_preflight_llama4_scout_zero3.yaml`
+- full run: `configs/train/sft_lora_turin_16gpu_llama4_scout_zero3.yaml`
+
+Do not use bitsandbytes QLoRA with ZeRO-3 for this path. Transformers injects a `device_map` for 4-bit bitsandbytes loading, and `device_map` is incompatible with DeepSpeed ZeRO-3.

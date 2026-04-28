@@ -1,4 +1,4 @@
-"""Model-loading utilities for Qwen vision-language checkpoints."""
+"""Model-loading utilities for multimodal checkpoints."""
 
 from __future__ import annotations
 
@@ -80,6 +80,27 @@ def build_model_init_kwargs(
     return kwargs
 
 
+def _resolve_model_class(model_config: Any) -> Any:
+    import transformers
+
+    configured_class_name = getattr(model_config, "transformers_model_class", None)
+    if configured_class_name:
+        model_cls = getattr(transformers, configured_class_name, None)
+        if model_cls is None:
+            raise ImportError("Configured transformers model class is unavailable: %s" % configured_class_name)
+        return model_cls
+
+    for class_name in (
+        "AutoModelForImageTextToText",
+        "AutoModelForVision2Seq",
+        "Qwen3VLForConditionalGeneration",
+    ):
+        model_cls = getattr(transformers, class_name, None)
+        if model_cls is not None:
+            return model_cls
+    raise ImportError("No compatible multimodal model loader is available in transformers.")
+
+
 def load_model(
     model_name_or_path: str,
     model_config: Any,
@@ -87,23 +108,17 @@ def load_model(
 ) -> Any:
     """Load the configured vision-language model."""
     kwargs = build_model_init_kwargs(model_config, distributed_context=distributed_context)
-    try:
-        from transformers import Qwen3VLForConditionalGeneration
-
-        model_cls = Qwen3VLForConditionalGeneration
-    except ImportError:  # pragma: no cover - depends on transformers install
-        try:
-            from transformers import AutoModelForImageTextToText
-
-            model_cls = AutoModelForImageTextToText
-        except ImportError:
-            from transformers import AutoModelForVision2Seq
-
-            model_cls = AutoModelForVision2Seq
-
+    model_cls = _resolve_model_class(model_config)
     model = model_cls.from_pretrained(model_name_or_path, **kwargs)
     if model_config.gradient_checkpointing and hasattr(model, "gradient_checkpointing_enable"):
-        model.gradient_checkpointing_enable()
+        try:
+            model.gradient_checkpointing_enable()
+        except ValueError as exc:
+            raise ValueError(
+                "%s does not support gradient checkpointing. Set `gradient_checkpointing: false` "
+                "in both the model config and the train config for this model."
+                % model.__class__.__name__
+            ) from exc
     if hasattr(model, "config"):
         model.config.use_cache = model_config.use_cache
     return model
