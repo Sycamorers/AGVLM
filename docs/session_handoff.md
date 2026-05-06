@@ -1,6 +1,55 @@
 # Session Handoff
 
-Last updated: 2026-04-27
+Last updated: 2026-05-06
+
+## May 6, 2026 Update
+
+Current active milestone: prepare the next SFT run on the full max-3-image training set after HPG maintenance.
+
+What happened:
+
+- The completed adapter to keep is:
+  - `/orange/hmedeiros/qinruoyao/agvlm/outputs/sft/llama4-scout-17b-16e-lora-balanced-continuation-b200-4gpu-from-step500-peft`
+- The AGBASE-only disjoint continuation was stopped at job `31951103`.
+  - It reached `global_step=500`.
+  - It wrote loss eval at step 500 but no `checkpoint-500`.
+  - The last complete checkpoint was `checkpoint-450`.
+  - Step-time generation eval was the bottleneck: step-250 generation produced `validation_predictions/step-250.jsonl` only after several hours, and step-500 repeated the same path.
+- The disjoint continuation degraded validation quality and should not be used as the next-stage base.
+  - Best completed balanced B200 run: step `2500`, eval loss `0.2343`, average reward `0.7480`.
+  - Disjoint clean restart: step `500`, eval loss `3.9104`; step-250 generation average reward `0.2871`.
+
+Debug conclusion:
+
+- This was not a scheduler kill or missing checkpoint path.
+- The job remained active on 4x B200s but was trapped in distributed generation metrics after step-500 eval loss.
+- Inline generation eval with the training-wrapped ZeRO-3 model is too expensive for long training runs.
+
+Next-stage setup added:
+
+- `configs/data/sft_train_eval_llama4_max3.yaml`
+- `configs/deepspeed/zero3_lora_b200_no_offload.json`
+- `configs/train/sft_lora_b200_4gpu_llama4_scout_full_max3_from_balanced_probe.yaml`
+- `configs/train/sft_lora_b200_4gpu_llama4_scout_full_max3_from_balanced.yaml`
+- `scripts/hpc/run_sft_b200_4gpu_llama4_scout_full_max3_from_balanced.slurm`
+
+Recommended next commands after maintenance:
+
+```bash
+cd /blue/hmedeiros/qinruoyao/agvlm
+
+sbatch \
+  --export=ALL,TRAIN_CONFIG=configs/train/sft_lora_b200_4gpu_llama4_scout_full_max3_from_balanced_probe.yaml \
+  scripts/hpc/run_sft_b200_4gpu_llama4_scout_full_max3_from_balanced.slurm
+```
+
+If the 100-step probe succeeds with no OOM and acceptable step time, launch the full config:
+
+```bash
+sbatch scripts/hpc/run_sft_b200_4gpu_llama4_scout_full_max3_from_balanced.slurm
+```
+
+Do not enable inline generation metrics during training. Run generation evaluation as a separate job on selected checkpoints.
 
 ## April 27, 2026 Update
 

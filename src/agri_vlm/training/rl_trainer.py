@@ -122,6 +122,7 @@ def run_rl_grpo(model_config: Any, train_config: Any) -> Dict[str, Any]:
         distributed_context=distributed_context,
         dry_run=train_config.dry_run,
     )
+    checkpoint_output_dir = run_artifacts.checkpoint_output_dir
     if train_config.dry_run:
         return _build_rl_dry_run_summary(rows, output_dir)
 
@@ -130,6 +131,7 @@ def run_rl_grpo(model_config: Any, train_config: Any) -> Dict[str, Any]:
 
     configure_torch_runtime(tf32=train_config.tf32)
     ensure_dir(output_dir)
+    ensure_dir(checkpoint_output_dir)
     logger.info("Starting GRPO with distributed context: %s", distributed_context.as_dict())
     processor = ProcessorDTypeAdapter(
         load_processor(model_config),
@@ -169,7 +171,7 @@ def run_rl_grpo(model_config: Any, train_config: Any) -> Dict[str, Any]:
     dataset.set_transform(transform)
 
     grpo_args = GRPOConfig(
-        output_dir=str(output_dir),
+        output_dir=str(checkpoint_output_dir),
         learning_rate=train_config.learning_rate,
         weight_decay=train_config.weight_decay,
         warmup_ratio=train_config.warmup_ratio,
@@ -226,11 +228,11 @@ def run_rl_grpo(model_config: Any, train_config: Any) -> Dict[str, Any]:
             )
         ],
     )
-    resume_path = resolve_resume_checkpoint(output_dir, train_config.resume_from_checkpoint)
+    resume_path = resolve_resume_checkpoint(checkpoint_output_dir, train_config.resume_from_checkpoint)
     trainer.train(resume_from_checkpoint=str(resume_path) if resume_path else None)
     trainer.save_model()
     if trainer.is_world_process_zero():
-        processor.save_pretrained(output_dir)
+        processor.save_pretrained(checkpoint_output_dir)
         write_training_artifact_manifest(
             run_artifacts,
             extra={

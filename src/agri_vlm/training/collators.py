@@ -1,5 +1,7 @@
 """Data collators for multimodal SFT."""
 
+import logging
+import os
 from pathlib import Path
 from typing import Any, Dict, List
 
@@ -7,15 +9,30 @@ from agri_vlm.data.conversation_format import sample_to_prompt_messages, sample_
 from agri_vlm.schemas.dataset_schema import UnifiedSample
 from agri_vlm.utils.image import open_image
 
+LOGGER = logging.getLogger(__name__)
+
+
+def _env_flag(name: str) -> bool:
+    return os.environ.get(name, "").lower() in {"1", "true", "yes", "on"}
+
 
 class VisionLanguageChatCollator:
     """Tokenize multimodal chat samples for causal LM training."""
 
     def __init__(self, processor: Any) -> None:
         self.processor = processor
+        self.log_batches = _env_flag("AGRI_VLM_LOG_COLLATOR_BATCHES")
 
     def __call__(self, features: List[Dict[str, Any]]) -> Dict[str, Any]:
         samples = [UnifiedSample.model_validate(feature) for feature in features]
+        if self.log_batches:
+            LOGGER.info(
+                "SFT collator start rank=%s local_rank=%s sample_ids=%s images=%s",
+                os.environ.get("RANK", "0"),
+                os.environ.get("LOCAL_RANK", "0"),
+                [sample.sample_id for sample in samples],
+                [sample.images for sample in samples],
+            )
         prompt_texts = []
         texts = []
         image_batches = []
@@ -35,6 +52,13 @@ class VisionLanguageChatCollator:
             texts.append(rendered)
             image_batches.append([open_image(Path(path)) for path in sample.images])
 
+        if self.log_batches:
+            LOGGER.info(
+                "SFT collator images loaded rank=%s local_rank=%s sample_ids=%s",
+                os.environ.get("RANK", "0"),
+                os.environ.get("LOCAL_RANK", "0"),
+                [sample.sample_id for sample in samples],
+            )
         batch = self.processor(
             text=texts,
             images=image_batches,
@@ -74,6 +98,14 @@ class VisionLanguageChatCollator:
             prompt_end = min(sequence_start + prompt_length, labels.shape[1])
             labels[row_index, sequence_start:prompt_end] = -100
         batch["labels"] = labels
+        if self.log_batches:
+            LOGGER.info(
+                "SFT collator done rank=%s local_rank=%s sample_ids=%s input_shape=%s",
+                os.environ.get("RANK", "0"),
+                os.environ.get("LOCAL_RANK", "0"),
+                [sample.sample_id for sample in samples],
+                tuple(batch["input_ids"].shape),
+            )
         return batch
 
 

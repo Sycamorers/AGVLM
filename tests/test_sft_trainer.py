@@ -104,6 +104,54 @@ def test_train_config_accepts_save_strategy() -> None:
     assert config.save_strategy == "no"
 
 
+def test_train_config_accepts_checkpoint_output_dir() -> None:
+    config = TrainConfigSchema.model_validate(
+        {
+            "manifest_path": "data/manifests/partial_10pct/sft_manifest.jsonl",
+            "output_dir": "outputs/smoke/sft-qwen3-vl-4b",
+            "checkpoint_output_dir": (
+                "/orange/hmedeiros/qinruoyao/agvlm/outputs/smoke/sft-qwen3-vl-4b"
+            ),
+        }
+    )
+
+    assert config.checkpoint_output_dir == (
+        "/orange/hmedeiros/qinruoyao/agvlm/outputs/smoke/sft-qwen3-vl-4b"
+    )
+
+
+def test_train_config_accepts_sft_checkpoint_path() -> None:
+    config = TrainConfigSchema.model_validate(
+        {
+            "manifest_path": "data/manifests/partial_10pct/sft_manifest.jsonl",
+            "output_dir": "outputs/smoke/sft-qwen3-vl-4b",
+            "sft_checkpoint_path": "outputs/sft/previous-adapter",
+        }
+    )
+
+    assert config.sft_checkpoint_path == "outputs/sft/previous-adapter"
+
+
+def test_train_config_accepts_validation_generation_metrics_options() -> None:
+    config = TrainConfigSchema.model_validate(
+        {
+            "manifest_path": "data/manifests/partial_10pct/sft_manifest.jsonl",
+            "output_dir": "outputs/smoke/sft-qwen3-vl-4b",
+            "eval_generation_metrics": True,
+            "eval_generation_max_examples": 32,
+            "eval_generation_batch_size": 2,
+            "eval_generation_max_new_tokens": 64,
+            "eval_generation_save_predictions": True,
+        }
+    )
+
+    assert config.eval_generation_metrics is True
+    assert config.eval_generation_max_examples == 32
+    assert config.eval_generation_batch_size == 2
+    assert config.eval_generation_max_new_tokens == 64
+    assert config.eval_generation_save_predictions is True
+
+
 def test_train_config_accepts_eval_loss_and_overlap_guard_options() -> None:
     config = TrainConfigSchema.model_validate(
         {
@@ -141,6 +189,61 @@ def test_train_eval_overlap_guard_rejects_group_overlap() -> None:
 
     with pytest.raises(ValueError, match="Train/eval manifest overlap"):
         _assert_no_train_eval_overlap([train_row], [eval_row])
+
+
+def test_validation_generation_performance_logs_prefixed_metrics(monkeypatch, tmp_path) -> None:
+    from agri_vlm.schemas.dataset_schema import UnifiedSample
+    import agri_vlm.training.sft_trainer as sft_trainer
+
+    row = UnifiedSample.model_validate(
+        {
+            "sample_id": "sample-1",
+            "source_dataset": "plantvillage_vqa",
+            "task_type": "vqa",
+            "split": "validation",
+            "images": ["image-a.png"],
+            "messages": [
+                {
+                    "role": "system",
+                    "content": [{"type": "text", "text": "Agricultural RGB consultation only."}],
+                },
+                {
+                    "role": "user",
+                    "content": [{"type": "image", "image": "image-a.png"}],
+                },
+            ],
+            "target": {
+                "answer_text": "early blight",
+                "acceptable_answers": ["early blight"],
+            },
+            "verifier": {"mode": "exact_match", "accepted_answers": ["early blight"]},
+            "reward_meta": {"weights": {"exact_match": 1.0}},
+        }
+    )
+
+    monkeypatch.setattr(
+        sft_trainer,
+        "generate_predictions_from_loaded_model",
+        lambda *args, **kwargs: ["early blight"],
+    )
+
+    metrics = sft_trainer._run_validation_generation_performance(
+        model=object(),
+        processor=object(),
+        eval_rows=[row],
+        max_examples=1,
+        batch_size=1,
+        max_new_tokens=16,
+        metric_prefix="eval_performance",
+        step=7,
+        output_dir=tmp_path,
+        save_predictions=True,
+        device=None,
+    )
+
+    assert metrics["eval_performance_num_examples"] == 1
+    assert metrics["eval_performance_answer_exact_match"] == 1.0
+    assert (tmp_path / "validation_predictions" / "step-7.jsonl").exists()
 
 
 def test_peft_adapter_save_passes_raw_lora_state_dict(monkeypatch, tmp_path) -> None:

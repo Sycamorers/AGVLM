@@ -96,7 +96,7 @@ def _validate_image(path: Path, mode: str) -> Optional[str]:
         return _validate_image_header(path)
     try:
         with Image.open(path) as image:
-            image.verify()
+            image.convert("RGB").load()
     except Exception as exc:
         return "%s: %s" % (type(exc).__name__, exc)
     return None

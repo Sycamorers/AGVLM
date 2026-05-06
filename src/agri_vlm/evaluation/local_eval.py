@@ -9,22 +9,13 @@ from agri_vlm.evaluation.reporting import build_prediction_rows
 from agri_vlm.rewards.composite import build_reward_input, compute_composite_reward
 
 
-def run_local_eval_bundle(model_config: Any, eval_config: Any) -> Dict[str, Any]:
-    rows = read_manifest(eval_config.manifest_path)
-    if eval_config.max_examples:
-        rows = rows[: eval_config.max_examples]
-    if eval_config.prediction_mode == "oracle":
-        predictions = oracle_predictions(rows)
-    elif eval_config.prediction_mode == "model":
-        predictions = generate_predictions(
-            rows,
-            model_config,
-            eval_config.max_new_tokens,
-            batch_size=eval_config.batch_size,
-            checkpoint_path=eval_config.checkpoint_path,
+def score_local_predictions(rows: List[Any], predictions: List[str]) -> Dict[str, Any]:
+    """Compute local agricultural validation metrics from generated predictions."""
+    if len(rows) != len(predictions):
+        raise ValueError(
+            "Prediction count does not match evaluation rows: rows=%s predictions=%s"
+            % (len(rows), len(predictions))
         )
-    else:
-        predictions = [row.messages[-1].content[-1].text for row in rows]
 
     label_refs: List[str] = []
     label_preds: List[str] = []
@@ -76,6 +67,27 @@ def run_local_eval_bundle(model_config: Any, eval_config: Any) -> Dict[str, Any]
         "average_reward": sum(reward_totals) / float(len(reward_totals)) if reward_totals else 0.0,
     }
     metrics.update(decision_metrics)
+    return metrics
+
+
+def run_local_eval_bundle(model_config: Any, eval_config: Any) -> Dict[str, Any]:
+    rows = read_manifest(eval_config.manifest_path)
+    if eval_config.max_examples:
+        rows = rows[: eval_config.max_examples]
+    if eval_config.prediction_mode == "oracle":
+        predictions = oracle_predictions(rows)
+    elif eval_config.prediction_mode == "model":
+        predictions = generate_predictions(
+            rows,
+            model_config,
+            eval_config.max_new_tokens,
+            batch_size=eval_config.batch_size,
+            checkpoint_path=eval_config.checkpoint_path,
+        )
+    else:
+        predictions = [row.messages[-1].content[-1].text for row in rows]
+
+    metrics = score_local_predictions(rows, predictions)
     return {
         "metrics": metrics,
         "predictions": build_prediction_rows(rows, predictions),

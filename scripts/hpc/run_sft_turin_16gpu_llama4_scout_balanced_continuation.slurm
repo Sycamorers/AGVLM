@@ -1,5 +1,5 @@
 #!/bin/bash -l
-#SBATCH --job-name=agri-vlm-sft-llama4-16g-stable
+#SBATCH --job-name=agri-vlm-sft-llama4-bal
 #SBATCH --partition=hpg-turin
 #SBATCH --nodes=8
 #SBATCH --ntasks-per-node=1
@@ -7,8 +7,6 @@
 #SBATCH --gpus-per-node=2
 #SBATCH --mem=128G
 #SBATCH --time=3-00:00:00
-#SBATCH --mail-user=zijing.huang@ufl.edu
-#SBATCH --mail-type=BEGIN,END,FAIL,REQUEUE,TIME_LIMIT,TIME_LIMIT_90
 #SBATCH --output=logs/slurm/%x-%j.out
 #SBATCH --error=logs/slurm/%x-%j.err
 
@@ -48,13 +46,17 @@ export TORCH_NCCL_ASYNC_ERROR_HANDLING=1
 export TORCH_NCCL_DUMP_ON_TIMEOUT=1
 export TORCH_NCCL_TRACE_BUFFER_SIZE=1048576
 export MASTER_ADDR="$(scontrol show hostnames "$SLURM_JOB_NODELIST" | head -n 1)"
-export MASTER_PORT="$((28600 + SLURM_JOB_ID % 1000))"
-RUN_DIR="$PWD/outputs/sft/llama4-scout-17b-16e-lora-full-turin-16gpu-zero3"
-CHECKPOINT_RUN_DIR="/orange/hmedeiros/qinruoyao/agvlm/outputs/sft/llama4-scout-17b-16e-lora-full-turin-16gpu-zero3"
+export MASTER_PORT="$((29600 + SLURM_JOB_ID % 1000))"
 
-mkdir -p "$AGRI_VLM_DATA_ROOT" "$HF_HOME" "$HUGGINGFACE_HUB_CACHE" "$HF_XET_CACHE" "$TRANSFORMERS_CACHE" "$TMPDIR" "$TRITON_CACHE_DIR" "$RUN_DIR" "$CHECKPOINT_RUN_DIR"
+RUN_DIR="$PWD/outputs/sft/llama4-scout-17b-16e-lora-balanced-continuation-turin-16gpu-zero3"
+CHECKPOINT_RUN_DIR="/orange/hmedeiros/qinruoyao/agvlm/outputs/sft/llama4-scout-17b-16e-lora-balanced-continuation-turin-16gpu-zero3"
+
+mkdir -p "$AGRI_VLM_DATA_ROOT" "$HF_HOME" "$HUGGINGFACE_HUB_CACHE" "$HF_XET_CACHE" "$TRANSFORMERS_CACHE" "$TMPDIR" "$TRITON_CACHE_DIR" "$RUN_DIR" "$CHECKPOINT_RUN_DIR" logs/slurm
 
 python scripts/verify_environment.py
+python scripts/data/build_balanced_sft_manifest.py \
+  --config configs/data/sft_train_llama4_balanced_continuation.yaml
+
 TRAIN_EXIT=0
 set +e
 srun --kill-on-bad-exit=1 --export=ALL,TORCH_CUDA_ARCH_LIST=8.9 --ntasks="$SLURM_NNODES" --ntasks-per-node=1 bash -lc '
@@ -80,7 +82,7 @@ launch=(python -m torch.distributed.run \
   --max_restarts 0 \
   scripts/train/train_sft.py \
   --model-config configs/model/llama4_scout_17b_16e_turin_24g_lowres.yaml \
-  --train-config configs/train/sft_lora_turin_16gpu_llama4_scout_zero3_stable.yaml)
+  --train-config configs/train/sft_lora_turin_16gpu_llama4_scout_balanced_continuation.yaml)
 if command -v prlimit >/dev/null 2>&1; then
   prlimit --core=0:0 -- "${launch[@]}"
 else
@@ -96,5 +98,5 @@ fi
 
 rm -rf "$TRITON_CACHE_DIR"
 
-echo "TensorBoard: tensorboard --logdir $RUN_DIR/tensorboard --host 0.0.0.0 --port 6007"
+echo "TensorBoard: tensorboard --logdir $RUN_DIR/tensorboard --host 0.0.0.0 --port 6008"
 exit "$TRAIN_EXIT"

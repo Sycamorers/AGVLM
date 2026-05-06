@@ -42,6 +42,8 @@ Then open `http://localhost:6006`.
 
 ## Current SFT Log Note
 
+May 6, 2026 note: the 4x B200 AGBASE-disjoint continuation was cancelled at step `500` after the step-500 loss eval completed but before a checkpoint was saved. The job was still using GPUs; the expensive path was inline distributed generation metrics. For future large SFT runs, keep `eval_generation_metrics: false` in the training config and run generation evaluation separately on checkpoints.
+
 The latest visible L4 SFT log, `logs/slurm/agri-vlm-sft-full-l4-30580348.err`, failed with CUDA OOM during fp32 loss conversion in the default model loss. The current config/code mitigation is:
 
 - `loss_chunk_size: 1024`

@@ -20,6 +20,7 @@ class RunArtifacts:
 
     run_name: str
     output_dir: Path
+    checkpoint_output_dir: Path
     metrics_dir: Path
     metrics_jsonl_path: Path
     legacy_metrics_jsonl_path: Path
@@ -132,6 +133,11 @@ def prepare_run_artifacts(
     """Create stable run paths and write rank-zero provenance files."""
     repo_root = _repo_root()
     output_dir = ensure_dir(Path(train_config.output_dir))
+    checkpoint_output_dir = ensure_dir(
+        Path(train_config.checkpoint_output_dir)
+        if getattr(train_config, "checkpoint_output_dir", None)
+        else output_dir
+    )
     run_name = train_config.run_name or run_name_from_output_dir(output_dir)
     metrics_dir = ensure_dir(output_dir / "metrics")
     artifact_dir = ensure_dir(Path(train_config.artifact_dir) if train_config.artifact_dir else output_dir / "artifacts")
@@ -141,6 +147,7 @@ def prepare_run_artifacts(
     artifacts = RunArtifacts(
         run_name=run_name,
         output_dir=output_dir,
+        checkpoint_output_dir=checkpoint_output_dir,
         metrics_dir=metrics_dir,
         metrics_jsonl_path=metrics_dir / "train_metrics.jsonl",
         legacy_metrics_jsonl_path=output_dir / "metrics.jsonl",
@@ -174,6 +181,7 @@ def prepare_run_artifacts(
                 "hostname": socket.gethostname(),
                 "repo_root": str(repo_root),
                 "output_dir": str(output_dir),
+                "checkpoint_output_dir": str(checkpoint_output_dir),
                 "metrics_jsonl_path": str(artifacts.metrics_jsonl_path),
                 "legacy_metrics_jsonl_path": str(artifacts.legacy_metrics_jsonl_path),
                 "tensorboard_dir": str(artifacts.tensorboard_dir),
@@ -194,10 +202,13 @@ def prepare_run_artifacts(
 
 def write_training_artifact_manifest(artifacts: RunArtifacts, extra: Optional[Dict[str, Any]] = None) -> None:
     """Write a small manifest that points paper scripts to the reusable outputs."""
-    checkpoint_dirs = sorted(path.name for path in artifacts.output_dir.glob("checkpoint-*") if path.is_dir())
+    checkpoint_dirs = sorted(
+        path.name for path in artifacts.checkpoint_output_dir.glob("checkpoint-*") if path.is_dir()
+    )
     payload: Dict[str, Any] = {
         "run_name": artifacts.run_name,
         "output_dir": str(artifacts.output_dir),
+        "checkpoint_output_dir": str(artifacts.checkpoint_output_dir),
         "checkpoints": checkpoint_dirs,
         "metrics_jsonl": str(artifacts.metrics_jsonl_path),
         "legacy_metrics_jsonl": str(artifacts.legacy_metrics_jsonl_path),

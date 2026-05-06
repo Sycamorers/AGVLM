@@ -1,0 +1,18 @@
+source_manifest_path: data/manifests/full/sft_manifest.valid_images.jsonl
+output_manifest_path: data/manifests/full/sft_train_llama4_disjoint_after_balanced_b200_agbase_max3.jsonl
+summary_output_path: data/manifests/full/sft_train_llama4_disjoint_after_balanced_b200_agbase_max3_summary.json
+exclude_manifest_paths:
+  - data/manifests/full/sft_train_llama4_max1_no_eval_overlap.jsonl
+  - data/manifests/full/sft_eval_llama4_max1_stratified512.jsonl
+  - data/manifests/full/local_holdout_eval.valid_images.jsonl
+  - data/manifests/full/mirage_mmst_eval.jsonl
+  - data/manifests/full/mirage_mmmt_eval.jsonl
+allowed_source_datasets:
+  - agbase
+allowed_task_types:
+  - consultation
+allowed_splits:
+  - train
+max_images_per_sample: 3
+seed: 31
+shuffle: true

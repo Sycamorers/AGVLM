@@ -87,3 +87,41 @@ def test_manifest_image_validation_reports_invalid_rows(tmp_path: Path) -> None:
     assert "UnidentifiedImageError" in invalid_rows[0]["image_errors"][0]["error"]
     summary = json.loads(summary_output.read_text(encoding="utf-8"))
     assert summary["invalid_rows"] == 1
+
+
+def test_manifest_image_validation_rejects_truncated_jpeg(tmp_path: Path) -> None:
+    repo_root = Path(__file__).resolve().parents[1]
+    data_root = tmp_path / "repo"
+    image_path = data_root / "data/raw/truncated.jpg"
+    save_solid_image(image_path, [40, 120, 70])
+    payload = image_path.read_bytes()
+    image_path.write_bytes(payload[: max(1, len(payload) // 2)])
+
+    manifest_path = tmp_path / "manifest.jsonl"
+    invalid_output = tmp_path / "invalid.jsonl"
+    write_jsonl(manifest_path, [_row("truncated", "data/raw/truncated.jpg")])
+
+    env = dict(os.environ)
+    env["PYTHONPATH"] = "src"
+    completed = subprocess.run(
+        [
+            sys.executable,
+            "scripts/data/validate_manifest_images.py",
+            "--manifest",
+            str(manifest_path),
+            "--repo-root",
+            str(data_root),
+            "--invalid-output",
+            str(invalid_output),
+            "--allow-invalid-with-report",
+        ],
+        cwd=repo_root,
+        env=env,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    assert completed.returncode == 0, completed.stdout + "\n" + completed.stderr
+    invalid_rows = [json.loads(line) for line in invalid_output.read_text(encoding="utf-8").splitlines()]
+    assert invalid_rows[0]["sample_id"] == "truncated"
+    assert "truncated" in invalid_rows[0]["image_errors"][0]["error"].lower()

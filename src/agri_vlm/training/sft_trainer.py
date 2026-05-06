@@ -1,13 +1,18 @@
 """Supervised fine-tuning entrypoints."""
 
+from __future__ import annotations
+
 import json
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from agri_vlm.data.manifest_io import read_manifest, summarize_manifest
+from agri_vlm.evaluation.inference import generate_predictions_from_loaded_model
+from agri_vlm.evaluation.local_eval import score_local_predictions
+from agri_vlm.evaluation.reporting import build_prediction_rows
 from agri_vlm.logging_utils import configure_logging
 from agri_vlm.modeling.freezing import apply_freezing
-from agri_vlm.modeling.model_factory import load_model
+from agri_vlm.modeling.model_factory import load_model, load_sft_checkpoint_model
 from agri_vlm.modeling.peft_setup import maybe_wrap_with_peft
 from agri_vlm.modeling.processor_factory import load_processor
 from agri_vlm.training.callbacks import JsonlMetricsCallback
@@ -19,7 +24,7 @@ from agri_vlm.utils.distributed import (
     destroy_distributed_process_group,
     get_distributed_context,
 )
-from agri_vlm.utils.io import ensure_dir
+from agri_vlm.utils.io import ensure_dir, write_jsonl
 
 
 class ManifestListDataset:
@@ -106,38 +111,189 @@ def _chunked_causal_lm_loss(
     return total_loss / valid_items
 
 
-def _build_sft_trainer_class(loss_chunk_size: int) -> Any:
+def _torch_dist_is_initialized() -> bool:
+    try:
+        import torch.distributed as dist
+    except Exception:  # pragma: no cover - torch is optional for dry-run tooling
+        return False
+    return dist.is_available() and dist.is_initialized()
+
+
+def _distributed_max_count(count: int, device: Optional[Any]) -> int:
+    if not _torch_dist_is_initialized():
+        return count
+    import torch
+    import torch.distributed as dist
+
+    backend = dist.get_backend()
+    tensor_device = device
+    if tensor_device is None:
+        tensor_device = "cuda" if backend == "nccl" and torch.cuda.is_available() else "cpu"
+    tensor = torch.tensor([count], device=tensor_device)
+    dist.all_reduce(tensor, op=dist.ReduceOp.MAX)
+    return int(tensor.item())
+
+
+def _all_gather_objects(payload: Any) -> List[Any]:
+    if not _torch_dist_is_initialized():
+        return [payload]
+    import torch.distributed as dist
+
+    gathered = [None for _ in range(dist.get_world_size())]
+    dist.all_gather_object(gathered, payload)
+    return gathered
+
+
+def _broadcast_object_from_zero(payload: Any) -> Any:
+    if not _torch_dist_is_initialized():
+        return payload
+    import torch.distributed as dist
+
+    values = [payload]
+    dist.broadcast_object_list(values, src=0)
+    return values[0]
+
+
+def _run_validation_generation_performance(
+    *,
+    model: Any,
+    processor: Any,
+    eval_rows: List[Any],
+    max_examples: int,
+    batch_size: int,
+    max_new_tokens: int,
+    metric_prefix: str,
+    step: int,
+    output_dir: Path,
+    save_predictions: bool,
+    device: Optional[Any],
+) -> Dict[str, Any]:
+    if not eval_rows:
+        raise ValueError("Validation generation metrics require a non-empty eval manifest.")
+
+    distributed_context = get_distributed_context()
+    selected_rows = eval_rows[:max_examples] if max_examples else list(eval_rows)
+    indexed_rows = list(enumerate(selected_rows))
+    local_items = indexed_rows[distributed_context.rank :: distributed_context.world_size]
+    real_local_count = len(local_items)
+
+    max_local_count = _distributed_max_count(real_local_count, device=device)
+    if max_local_count > real_local_count:
+        pad_item = local_items[-1] if local_items else indexed_rows[0]
+        local_items = [*local_items, *([pad_item] * (max_local_count - real_local_count))]
+
+    local_predictions = generate_predictions_from_loaded_model(
+        [row for _, row in local_items],
+        model=model,
+        processor=processor,
+        max_new_tokens=max_new_tokens,
+        batch_size=batch_size,
+        device=device,
+        synced_gpus=distributed_context.is_distributed and _torch_dist_is_initialized(),
+    )
+    local_payload = [
+        {
+            "index": index,
+            "sample": row.model_dump(mode="json"),
+            "prediction": prediction,
+        }
+        for (index, row), prediction in zip(local_items[:real_local_count], local_predictions[:real_local_count])
+    ]
+    gathered_payloads = _all_gather_objects(local_payload)
+
+    metrics = None
+    if distributed_context.is_main_process:
+        gathered = []
+        for payload in gathered_payloads:
+            gathered.extend(payload or [])
+        gathered = sorted(gathered, key=lambda item: item["index"])
+        scored_rows = [type(eval_rows[0]).model_validate(item["sample"]) for item in gathered]
+        predictions = [item["prediction"] for item in gathered]
+        raw_metrics = score_local_predictions(scored_rows, predictions)
+        metrics = {
+            "%s_%s" % (metric_prefix, key): value
+            for key, value in raw_metrics.items()
+            if isinstance(value, (int, float)) and not isinstance(value, bool)
+        }
+        if save_predictions:
+            predictions_path = output_dir / "validation_predictions" / ("step-%s.jsonl" % step)
+            write_jsonl(predictions_path, build_prediction_rows(scored_rows, predictions))
+
+    broadcast_metrics = _broadcast_object_from_zero(metrics)
+    return broadcast_metrics or {}
+
+
+def _build_sft_trainer_class(
+    loss_chunk_size: int,
+    validation_generation_config: Optional[Dict[str, Any]] = None,
+) -> Any:
     from transformers import Trainer
 
-    if loss_chunk_size <= 0:
+    validation_generation_config = validation_generation_config or {}
+    validation_generation_enabled = bool(validation_generation_config.get("enabled", False))
+
+    if loss_chunk_size <= 0 and not validation_generation_enabled:
         return Trainer
 
-    class ChunkedLossTrainer(Trainer):
-        def compute_loss(
-            self,
-            model: Any,
-            inputs: Dict[str, Any],
-            return_outputs: bool = False,
-            num_items_in_batch: Any = None,
-        ) -> Any:
-            labels = inputs["labels"]
-            model_inputs = dict(inputs)
-            model_inputs.pop("labels")
-            outputs = model(**model_inputs)
-            if isinstance(outputs, dict):
-                logits = outputs["logits"]
-            elif hasattr(outputs, "logits"):
-                logits = outputs.logits
-            else:
-                logits = outputs[0]
-            loss = _chunked_causal_lm_loss(
-                logits,
-                labels,
-                chunk_size=loss_chunk_size,
-            )
-            return (loss, outputs) if return_outputs else loss
+    class AgriSFTTrainer(Trainer):
+        if loss_chunk_size > 0:
 
-    return ChunkedLossTrainer
+            def compute_loss(
+                self,
+                model: Any,
+                inputs: Dict[str, Any],
+                return_outputs: bool = False,
+                num_items_in_batch: Any = None,
+            ) -> Any:
+                labels = inputs["labels"]
+                model_inputs = dict(inputs)
+                model_inputs.pop("labels")
+                outputs = model(**model_inputs)
+                if isinstance(outputs, dict):
+                    logits = outputs["logits"]
+                elif hasattr(outputs, "logits"):
+                    logits = outputs.logits
+                else:
+                    logits = outputs[0]
+                loss = _chunked_causal_lm_loss(
+                    logits,
+                    labels,
+                    chunk_size=loss_chunk_size,
+                )
+                return (loss, outputs) if return_outputs else loss
+
+        if validation_generation_enabled:
+
+            def evaluate(
+                self,
+                eval_dataset: Optional[Any] = None,
+                ignore_keys: Optional[List[str]] = None,
+                metric_key_prefix: str = "eval",
+            ) -> Dict[str, Any]:
+                metrics = super().evaluate(
+                    eval_dataset=eval_dataset,
+                    ignore_keys=ignore_keys,
+                    metric_key_prefix=metric_key_prefix,
+                )
+                performance_metrics = _run_validation_generation_performance(
+                    model=getattr(self, "model_wrapped", None) or self.model,
+                    processor=validation_generation_config["processor"],
+                    eval_rows=validation_generation_config["eval_rows"],
+                    max_examples=validation_generation_config["max_examples"],
+                    batch_size=validation_generation_config["batch_size"],
+                    max_new_tokens=validation_generation_config["max_new_tokens"],
+                    metric_prefix="%s_performance" % metric_key_prefix,
+                    step=self.state.global_step,
+                    output_dir=validation_generation_config["output_dir"],
+                    save_predictions=validation_generation_config["save_predictions"],
+                    device=self.args.device,
+                )
+                if performance_metrics:
+                    self.log(performance_metrics)
+                    metrics.update(performance_metrics)
+                return metrics
+
+    return AgriSFTTrainer
 
 
 def _build_dry_run_summary(train_rows: List[Any], eval_rows: List[Any], output_dir: Path) -> Dict[str, Any]:
@@ -232,8 +388,11 @@ def run_sft(model_config: Any, train_config: Any) -> Dict[str, Any]:
 
     train_rows = read_manifest(Path(train_config.manifest_path))
     eval_rows = []
-    if train_config.eval_manifest_path and Path(train_config.eval_manifest_path).exists():
-        eval_rows = read_manifest(Path(train_config.eval_manifest_path))
+    if train_config.eval_manifest_path:
+        eval_manifest_path = Path(train_config.eval_manifest_path)
+        if not eval_manifest_path.exists():
+            raise FileNotFoundError("SFT eval manifest path does not exist: %s" % eval_manifest_path)
+        eval_rows = read_manifest(eval_manifest_path)
 
     original_train_rows = len(train_rows)
     original_eval_rows = len(eval_rows)
@@ -260,6 +419,7 @@ def run_sft(model_config: Any, train_config: Any) -> Dict[str, Any]:
         distributed_context=distributed_context,
         dry_run=train_config.dry_run,
     )
+    checkpoint_output_dir = run_artifacts.checkpoint_output_dir
 
     if train_config.dry_run:
         return _build_dry_run_summary(train_rows, eval_rows, output_dir)
@@ -269,6 +429,7 @@ def run_sft(model_config: Any, train_config: Any) -> Dict[str, Any]:
     try:
         configure_torch_runtime(tf32=train_config.tf32)
         ensure_dir(output_dir)
+        ensure_dir(checkpoint_output_dir)
         set_seed(train_config.seed)
         logger.info("Starting SFT with distributed context: %s", distributed_context.as_dict())
         if train_config.max_images_per_sample is not None:
@@ -284,7 +445,7 @@ def run_sft(model_config: Any, train_config: Any) -> Dict[str, Any]:
             raise ValueError("No SFT training rows remain after applying the configured filters.")
 
         training_args = TrainingArguments(
-            output_dir=str(output_dir),
+            output_dir=str(checkpoint_output_dir),
             per_device_train_batch_size=train_config.per_device_train_batch_size,
             per_device_eval_batch_size=train_config.per_device_eval_batch_size,
             gradient_accumulation_steps=train_config.gradient_accumulation_steps,
@@ -324,15 +485,42 @@ def run_sft(model_config: Any, train_config: Any) -> Dict[str, Any]:
         )
 
         processor = load_processor(model_config)
-        model = load_model(
-            model_config.model_name_or_path,
-            model_config=model_config,
-            distributed_context=distributed_context,
-        )
-        freeze_stats = apply_freezing(model, train_config.freeze)
-        model = maybe_wrap_with_peft(model, train_config=train_config)
+        if train_config.sft_checkpoint_path:
+            model = load_sft_checkpoint_model(
+                model_config=model_config,
+                checkpoint_path=train_config.sft_checkpoint_path,
+                distributed_context=distributed_context,
+                is_trainable=True,
+            )
+            freeze_stats = apply_freezing(model, train_config.freeze)
+        else:
+            model = load_model(
+                model_config.model_name_or_path,
+                model_config=model_config,
+                distributed_context=distributed_context,
+            )
+            freeze_stats = apply_freezing(model, train_config.freeze)
+            model = maybe_wrap_with_peft(model, train_config=train_config)
 
-        trainer_class = _build_sft_trainer_class(train_config.loss_chunk_size)
+        validation_generation_config = None
+        if train_config.eval_generation_metrics:
+            if not eval_rows:
+                raise ValueError("eval_generation_metrics is enabled but no validation rows are available.")
+            validation_generation_config = {
+                "enabled": True,
+                "processor": processor,
+                "eval_rows": eval_rows,
+                "max_examples": train_config.eval_generation_max_examples,
+                "batch_size": train_config.eval_generation_batch_size,
+                "max_new_tokens": train_config.eval_generation_max_new_tokens,
+                "output_dir": output_dir,
+                "save_predictions": train_config.eval_generation_save_predictions,
+            }
+
+        trainer_class = _build_sft_trainer_class(
+            train_config.loss_chunk_size,
+            validation_generation_config=validation_generation_config,
+        )
         trainer = trainer_class(
             model=model,
             args=training_args,
@@ -347,12 +535,13 @@ def run_sft(model_config: Any, train_config: Any) -> Dict[str, Any]:
             ],
         )
 
-        resume_path = resolve_resume_checkpoint(output_dir, train_config.resume_from_checkpoint)
+        resume_path = resolve_resume_checkpoint(checkpoint_output_dir, train_config.resume_from_checkpoint)
         trainer.train(resume_from_checkpoint=str(resume_path) if resume_path else None)
-        _save_trained_model(trainer, train_config=train_config, output_dir=output_dir)
+        _save_trained_model(trainer, train_config=train_config, output_dir=checkpoint_output_dir)
         if trainer.is_world_process_zero():
-            processor.save_pretrained(output_dir)
+            processor.save_pretrained(checkpoint_output_dir)
         summary = _build_dry_run_summary(train_rows, eval_rows, output_dir)
+        summary["checkpoint_output_dir"] = str(checkpoint_output_dir)
         summary["freeze_stats"] = freeze_stats
         if trainer.is_world_process_zero():
             write_training_artifact_manifest(run_artifacts, extra={"freeze_stats": freeze_stats})

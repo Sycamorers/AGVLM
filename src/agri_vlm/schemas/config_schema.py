@@ -54,6 +54,7 @@ class TrainConfigSchema(BaseModel):
 
     manifest_path: str
     output_dir: str
+    checkpoint_output_dir: Optional[str] = None
     eval_manifest_path: Optional[str] = None
     seed: int = 17
     per_device_train_batch_size: int = 1
@@ -69,6 +70,11 @@ class TrainConfigSchema(BaseModel):
     save_steps: int = 100
     save_strategy: str = "steps"
     eval_steps: int = 100
+    eval_generation_metrics: bool = False
+    eval_generation_max_examples: int = Field(default=0, ge=0)
+    eval_generation_batch_size: int = Field(default=1, ge=1)
+    eval_generation_max_new_tokens: int = Field(default=128, ge=1)
+    eval_generation_save_predictions: bool = False
     save_total_limit: int = 2
     prediction_loss_only: bool = True
     bf16: bool = True
@@ -84,6 +90,7 @@ class TrainConfigSchema(BaseModel):
     dry_run: bool = False
     smoke_max_samples: int = 8
     deepspeed: Optional[str] = None
+    sft_checkpoint_path: Optional[str] = None
     max_images_per_sample: Optional[int] = Field(default=None, ge=1)
     fail_on_train_eval_overlap: bool = True
     resume_from_checkpoint: Optional[str] = "auto"
