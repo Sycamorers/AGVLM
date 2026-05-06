@@ -2,31 +2,46 @@
 
 ## P0 Critical
 
-- Rerun or resume full SFT after the L4 OOM.
-  - Action: submit the L4 full SFT config with `loss_chunk_size: 1024`, or use the B200 full config if L4 remains memory-bound.
-  - Files: `configs/train/sft_lora_full_l4_multigpu.yaml`, `scripts/hpc/run_sft_full_l4.slurm`, `src/agri_vlm/training/sft_trainer.py`
-  - Evidence: `logs/slurm/agri-vlm-sft-full-l4-30580348.err` failed with CUDA OOM during fp32 loss conversion.
-  - Rationale: the first full Agri-SFT checkpoint blocks post-SFT eval and GRPO.
+- Submit the 100-step Llama 4 Scout B200 max3 probe after HPG maintenance.
+  - Action: run `sbatch --export=ALL,TRAIN_CONFIG=configs/train/sft_lora_b200_4gpu_llama4_scout_full_max3_from_balanced_probe.yaml scripts/hpc/run_sft_b200_4gpu_llama4_scout_full_max3_from_balanced.slurm`.
+  - Files: `configs/train/sft_lora_b200_4gpu_llama4_scout_full_max3_from_balanced_probe.yaml`, `scripts/hpc/run_sft_b200_4gpu_llama4_scout_full_max3_from_balanced.slurm`
+  - Evidence: the retained upstream adapter exists at `/orange/hmedeiros/qinruoyao/agvlm/outputs/sft/llama4-scout-17b-16e-lora-balanced-continuation-b200-4gpu-from-step500-peft`.
+  - Success check: no OOM, stable step time, loss metrics written, checkpoint write succeeds at step 50 or 100.
 
-- Run post-SFT benchmark on the same local holdout split.
-  - Action: after SFT writes a completed checkpoint, rerun `scripts/eval/run_benchmark.py` with `--checkpoint-path` against `local_holdout`, `mirage_mmst`, and `mirage_mmmt`.
+- Launch the full Llama 4 Scout B200 max3 SFT run if the probe is healthy.
+  - Action: run `sbatch scripts/hpc/run_sft_b200_4gpu_llama4_scout_full_max3_from_balanced.slurm`.
+  - Files: `configs/train/sft_lora_b200_4gpu_llama4_scout_full_max3_from_balanced.yaml`, `configs/data/sft_train_eval_llama4_max3.yaml`, `configs/deepspeed/zero3_lora_b200_no_offload.json`
+  - Rationale: this is the next publishable SFT checkpoint path; do not resume from the failed AGBASE-disjoint continuation.
+
+- Run post-SFT benchmark on the same local holdout and MIRAGE splits.
+  - Action: after a completed full checkpoint exists, rerun `scripts/eval/run_benchmark.py` with `--checkpoint-path` against `local_holdout`, `mirage_mmst`, and `mirage_mmmt`.
   - Files: `scripts/eval/run_benchmark.py`, `configs/eval/local_holdout_full.yaml`, `configs/eval/mirage_mmst_full.yaml`, `configs/eval/mirage_mmmt_full.yaml`
   - Rationale: the before/after comparison requested by the project depends on matching eval conditions pre- and post-fine-tuning.
 
-- Export SFT training artifacts once the run completes.
+- Export SFT training artifacts once the full run completes.
   - Action: run `PYTHONPATH=src python scripts/artifacts/export_training_artifacts.py --run-dir <sft_run_dir>`.
   - Files: `scripts/artifacts/export_training_artifacts.py`, `docs/results_artifacts.md`
   - Rationale: paper figures should be regenerated from raw metrics, not manually recreated.
 
 ## P1 Important
 
+- Keep generation evaluation out of large training jobs.
+  - Action: leave `eval_generation_metrics: false` in full SFT configs and run generation evaluation separately on selected checkpoints.
+  - Files: `configs/train/sft_lora_b200_4gpu_llama4_scout_full_max3_from_balanced.yaml`, `src/agri_vlm/evaluation/inference.py`
+  - Rationale: the May 6 AGBASE-disjoint job stalled after step-500 loss eval because inline distributed generation metrics were too expensive.
+
+- Review AGBASE target formatting before any future AGBASE-only or disjoint continuation.
+  - Action: inspect AGBASE rows and validation predictions for free-form target drift; decide whether to normalize labels, tighten prompts, or keep AGBASE only inside balanced mixtures.
+  - Files: `src/agri_vlm/data/normalizers.py`, `src/agri_vlm/data/conversation_format.py`, `outputs/benchmarks/` after future eval runs
+  - Rationale: the disjoint continuation degraded validation quality and should not be used as the next-stage base without data/target review.
+
 - Decide whether the evaluator should score normalized labels only or support free-form diagnoses.
-  - Action: review `outputs/benchmarks/base-qwen3-vl-4b_local_holdout_256/local_holdout/predictions.jsonl`, then either tighten prompts or broaden the metric normalization.
+  - Action: review future prediction JSONL outputs, then either tighten prompts or broaden the metric normalization.
   - Files: `src/agri_vlm/evaluation/local_eval.py`, `src/agri_vlm/evaluation/metrics.py`, `src/agri_vlm/data/conversation_format.py`
-  - Rationale: the base model inference path now works, but the current metric path gives all-zero scores because the model answers verbosely.
+  - Rationale: model inference can be valid even when exact/normalized scoring is too strict for verbose agricultural answers.
 
 - Improve PlantDoc multi-label handling.
-  - Action: replace the current “most frequent category per image” heuristic with a better deterministic policy or multi-target representation after reviewing the official annotation distribution.
+  - Action: replace the current "most frequent category per image" heuristic with a better deterministic policy or multi-target representation after reviewing the official annotation distribution.
   - Files: `src/agri_vlm/data/hf_download.py`, `src/agri_vlm/data/normalizers.py`
   - Rationale: the current mapping is explicit and usable, but it compresses multi-object annotations into one label.
 

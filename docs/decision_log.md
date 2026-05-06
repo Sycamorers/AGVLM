@@ -31,6 +31,20 @@ Deferred on purpose:
 - PlantDoc still uses a deterministic single-label reduction for multi-label annotations
 - manual staging is still required for IP102, AgBase resources, and Agri-LLaVA
 
+## 2026-05-06 Training Cleanup And Next Path
+
+Changed:
+- cancelled B200 job `31951103` after confirming it was stalled in inline distributed generation evaluation after step-500 loss eval
+- excluded the AGBASE-disjoint continuation from the next-stage base because validation quality degraded and no `checkpoint-500` was written
+- cleaned local `logs/` and `outputs/` plus obsolete Orange SFT checkpoints and failed run directories
+- retained only the balanced Llama 4 Scout adapter needed for the next stage:
+  - `/orange/hmedeiros/qinruoyao/agvlm/outputs/sft/llama4-scout-17b-16e-lora-balanced-continuation-b200-4gpu-from-step500-peft`
+- added B200 full max3 probe/full configs and a Slurm wrapper that rebuilds no-overlap train/eval manifests at launch
+
+Decision:
+- continue from the retained balanced adapter rather than retraining from scratch or resuming the AGBASE-disjoint run
+- keep inline generation metrics disabled for large SFT jobs and run generation evaluation separately on selected checkpoints
+
 ## External Verification Used
 
 - PlantVillage on Hugging Face:

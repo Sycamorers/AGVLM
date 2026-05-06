@@ -21,17 +21,20 @@ Decision-aware data should be organized into:
 
 The manifest schema already supports target decisions through `target.decision` and reward metadata. Dataset-specific access limitations must remain explicit in dataset reports and benchmark docs.
 
+The active SFT data path is the full Llama 4 max3 split built by `configs/data/sft_train_eval_llama4_max3.yaml`. It uses decode/aspect-valid source manifests, keeps up to three images per sample, and fails on train/eval image-group overlap.
+
 ## Training Method
 
 Stage 1: agricultural SFT.
 
 - Teaches crop disease, pest, symptom, VQA, and consultation response behavior.
-- Default path is LoRA/QLoRA with the vision encoder frozen.
-- The current full L4 SFT run is the active milestone.
+- Active path is Llama 4 Scout LoRA on 4x B200, initialized from the retained balanced adapter on Orange.
+- The next milestone is the 100-step full max3 probe, followed by the full max3 run if the probe is healthy.
+- The AGBASE-disjoint continuation is a failed debug path, not the next-stage base.
 
 Stage 2: GRPO policy optimization.
 
-- Starts from the SFT checkpoint.
+- Starts from the completed full max3 SFT checkpoint.
 - Uses reward modules for exact or normalized labels, synonyms, structured format, uncertainty calibration, clarify-vs-respond, management coverage, and hallucination penalty.
 - Reward component choices should map directly to the method section.
 
@@ -50,18 +53,19 @@ Report metrics beyond generic answer correctness:
 - average composite reward
 - task/category breakdowns when sample metadata supports them
 
-The evaluation code now emits the clarify precision, recall, unnecessary clarification, and premature answer metrics when decision labels are present.
+The evaluation code now emits the clarify precision, recall, unnecessary clarification, and premature answer metrics when decision labels are present. Generation evaluation should run separately from training on selected checkpoints so long SFT jobs are not blocked by distributed generation.
 
 ## Model Comparison
 
 Minimum publishable line:
 
-- Base Qwen3-VL-4B-Instruct
-- Agri-SFT
-- Agri-SFT + GRPO
+- Base Llama 4 Scout or retained balanced adapter baseline, depending on compute budget
+- Agri-SFT full max3
+- Agri-SFT full max3 + GRPO
 
-Extended baselines can be added without changing the benchmark result schema:
+Legacy and extended baselines can be added without changing the benchmark result schema:
 
+- Qwen3-VL-4B-Instruct
 - Qwen2.5-VL-7B-Instruct
 - Qwen2.5-VL-32B-Instruct
 - LLaVA-OneVision-Qwen2-7B

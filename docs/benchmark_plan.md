@@ -38,7 +38,7 @@ Evaluate:
 
 ```bash
 PYTHONPATH=src python scripts/eval/run_benchmark.py \
-  --model-config configs/model/qwen_vlm_4b.yaml \
+  --model-config configs/model/llama4_scout_17b_16e_turin_24g_lowres.yaml \
   --tasks mirage_mmst mirage_mmmt \
   --prediction-mode model \
   --checkpoint-path <checkpoint_or_adapter_dir> \
@@ -58,7 +58,7 @@ Evaluate:
 
 ```bash
 PYTHONPATH=src python scripts/eval/run_benchmark.py \
-  --model-config configs/model/qwen_vlm_4b.yaml \
+  --model-config configs/model/llama4_scout_17b_16e_turin_24g_lowres.yaml \
   --tasks local_holdout \
   --prediction-mode model \
   --checkpoint-path <checkpoint_or_adapter_dir> \

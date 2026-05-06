@@ -25,9 +25,10 @@ Stage A:
 - build SFT, RL, and evaluation manifests
 
 Stage B:
-- run SFT from `Qwen/Qwen3-VL-4B-Instruct`
+- run the active SFT path from `meta-llama/Llama-4-Scout-17B-16E-Instruct`
+- initialize from the retained balanced LoRA adapter on Orange for the next full max3 run
 - default to LoRA with the vision tower frozen
-- keep `Qwen/Qwen3-VL-8B-Instruct` as an optional larger config
+- keep Qwen configs as legacy smoke/debug baselines, not the current main training path
 
 Stage C:
 - run GRPO post-training on top of the SFT checkpoint
