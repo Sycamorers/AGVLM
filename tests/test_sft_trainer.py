@@ -78,6 +78,18 @@ def test_train_config_accepts_max_images_per_sample() -> None:
     assert config.max_images_per_sample == 5
 
 
+def test_train_config_accepts_gradient_checkpointing_reentrant_override() -> None:
+    config = TrainConfigSchema.model_validate(
+        {
+            "manifest_path": "data/manifests/partial_10pct/sft_manifest.jsonl",
+            "output_dir": "outputs/smoke/sft-phi4-reasoning-vision-15b",
+            "gradient_checkpointing_use_reentrant": True,
+        }
+    )
+
+    assert config.gradient_checkpointing_use_reentrant is True
+
+
 def test_train_config_accepts_deepspeed_and_max_steps() -> None:
     config = TrainConfigSchema.model_validate(
         {
@@ -178,6 +190,18 @@ def test_train_config_accepts_eval_loss_and_overlap_guard_options() -> None:
     assert config.fail_on_train_eval_overlap is True
 
 
+def test_train_config_accepts_dataloader_drop_last() -> None:
+    config = TrainConfigSchema.model_validate(
+        {
+            "manifest_path": "data/manifests/partial_10pct/sft_manifest.jsonl",
+            "output_dir": "outputs/smoke/sft-phi4-reasoning-vision-15b",
+            "dataloader_drop_last": True,
+        }
+    )
+
+    assert config.dataloader_drop_last is True
+
+
 def test_train_eval_overlap_guard_rejects_group_overlap() -> None:
     from agri_vlm.schemas.dataset_schema import UnifiedSample
     from agri_vlm.training.sft_trainer import _assert_no_train_eval_overlap
@@ -201,6 +225,30 @@ def test_train_eval_overlap_guard_rejects_group_overlap() -> None:
 
     with pytest.raises(ValueError, match="Train/eval manifest overlap"):
         _assert_no_train_eval_overlap([train_row], [eval_row])
+
+
+def test_training_args_use_non_reentrant_gradient_checkpointing() -> None:
+    from agri_vlm.training.sft_trainer import _gradient_checkpointing_kwargs
+
+    assert _gradient_checkpointing_kwargs(True) == {"use_reentrant": False}
+    assert _gradient_checkpointing_kwargs(True, use_reentrant=True) == {"use_reentrant": True}
+    assert _gradient_checkpointing_kwargs(False) is None
+
+
+def test_distributed_loss_validation_rejects_empty_labels_and_nonfinite_loss() -> None:
+    torch = pytest.importorskip("torch")
+
+    from agri_vlm.training.sft_trainer import _validate_distributed_loss_inputs
+
+    finite_loss = torch.tensor(1.0, requires_grad=True)
+    good_labels = torch.tensor([[1, -100]])
+    _validate_distributed_loss_inputs(finite_loss, good_labels, step=0)
+
+    with pytest.raises(ValueError, match="zero supervised label tokens"):
+        _validate_distributed_loss_inputs(finite_loss, torch.tensor([[-100, -100]]), step=0)
+
+    with pytest.raises(FloatingPointError, match="non-finite SFT loss"):
+        _validate_distributed_loss_inputs(torch.tensor(float("nan"), requires_grad=True), good_labels, step=0)
 
 
 def test_validation_generation_performance_logs_prefixed_metrics(monkeypatch, tmp_path) -> None:

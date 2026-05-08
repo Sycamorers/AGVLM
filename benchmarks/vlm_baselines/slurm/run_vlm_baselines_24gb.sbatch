@@ -23,6 +23,7 @@ export WANDB_MODE=disabled
 export TOKENIZERS_PARALLELISM=false
 export AGRI_VLM_DATA_ROOT="$PWD/data"
 export HF_HOME="${HF_HOME:-$PWD/.cache/huggingface}"
+export HF_TOKEN_PATH="${HF_TOKEN_PATH:-$HOME/.cache/huggingface/token}"
 export HUGGINGFACE_HUB_CACHE="${HUGGINGFACE_HUB_CACHE:-$HF_HOME/hub}"
 export TRANSFORMERS_CACHE="${TRANSFORMERS_CACHE:-$HF_HOME/transformers}"
 export HF_XET_CACHE="${HF_XET_CACHE:-$HF_HOME/xet}"
@@ -48,9 +49,11 @@ MAX_SAMPLES="${MAX_SAMPLES:-0}"
 MAX_NEW_TOKENS="${MAX_NEW_TOKENS:-128}"
 DTYPE="${DTYPE:-bf16}"
 QUANTIZATION="${QUANTIZATION:-none}"
+ATTN_IMPLEMENTATION="${ATTN_IMPLEMENTATION:-}"
 DEVICE="${DEVICE:-cuda:0}"
 OUTPUT_DIR="${OUTPUT_DIR:-benchmarks/vlm_baselines/results}"
 RUN_ALL="${RUN_ALL:-0}"
+MODEL_NAMES="${MODEL_NAMES:-}"
 MODEL_NAME="${MODEL_NAME:-HuggingFaceTB/SmolVLM2-2.2B-Instruct}"
 
 "${PYTHON_BIN}" benchmarks/vlm_baselines/split_dataset.py
@@ -70,6 +73,9 @@ run_model() {
     --device "$DEVICE"
     --output-dir "$OUTPUT_DIR"
   )
+  if [[ -n "$ATTN_IMPLEMENTATION" ]]; then
+    args+=(--attn-implementation "$ATTN_IMPLEMENTATION")
+  fi
   if [[ "$MAX_SAMPLES" != "0" ]]; then
     args+=(--max-samples "$MAX_SAMPLES")
   fi
@@ -85,7 +91,16 @@ run_model() {
   return "$exit_code"
 }
 
-if [[ "$RUN_ALL" == "1" ]]; then
+if [[ -n "$MODEL_NAMES" ]]; then
+  overall_exit=0
+  model_names_expanded="${MODEL_NAMES//,/ }"
+  for model in $model_names_expanded; do
+    if ! run_model "$model"; then
+      overall_exit=1
+    fi
+  done
+  exit "$overall_exit"
+elif [[ "$RUN_ALL" == "1" ]]; then
   models=(
     "HuggingFaceTB/SmolVLM2-2.2B-Instruct"
     "google/paligemma2-3b-mix-448"

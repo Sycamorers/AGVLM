@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import json
+import logging
+import os
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -25,6 +27,9 @@ from agri_vlm.utils.distributed import (
     get_distributed_context,
 )
 from agri_vlm.utils.io import ensure_dir, write_jsonl
+
+
+LOGGER = logging.getLogger("agri_vlm.training.sft")
 
 
 class ManifestListDataset:
@@ -54,6 +59,71 @@ def _filter_rows_by_max_images(rows: List[Any], *, max_images_per_sample: int | 
     return [row for row in rows if len(row.images) <= max_images_per_sample]
 
 
+def _gradient_checkpointing_kwargs(
+    enabled: bool,
+    use_reentrant: Optional[bool] = None,
+) -> Optional[Dict[str, bool]]:
+    if not enabled:
+        return None
+    return {"use_reentrant": bool(use_reentrant) if use_reentrant is not None else False}
+
+
+def _env_flag(name: str, default: bool = False) -> bool:
+    value = os.environ.get(name)
+    if value is None:
+        return default
+    return value.lower() in {"1", "true", "yes", "on"}
+
+
+def _distributed_debug_enabled(step: Optional[int] = None) -> bool:
+    if not _env_flag("AGRI_VLM_DISTRIBUTED_DEBUG", default=False):
+        return False
+    if step is None:
+        return True
+    max_steps = int(os.environ.get("AGRI_VLM_DISTRIBUTED_DEBUG_MAX_STEPS", "4"))
+    return step < max_steps
+
+
+def _tensor_shape_summary(payload: Dict[str, Any]) -> Dict[str, Any]:
+    summary: Dict[str, Any] = {}
+    for key, value in payload.items():
+        if hasattr(value, "shape"):
+            summary[key] = tuple(value.shape)
+    return summary
+
+
+def _log_distributed_debug(message: str, *, step: Optional[int] = None, **extra: Any) -> None:
+    if not _distributed_debug_enabled(step):
+        return
+    context = get_distributed_context()
+    LOGGER.info(
+        "dist_debug rank=%s/%s local_rank=%s step=%s %s %s",
+        context.rank,
+        context.world_size,
+        context.local_rank,
+        step,
+        message,
+        extra,
+    )
+
+
+def _validate_distributed_loss_inputs(loss: Any, labels: Any, *, step: Optional[int]) -> None:
+    import torch
+
+    loss_device = loss.device if hasattr(loss, "device") else labels.device
+    empty_labels = labels.ne(-100).sum().eq(0).to(device=loss_device, dtype=torch.int32)
+    nonfinite_loss = (~torch.isfinite(loss.detach())).to(device=loss_device, dtype=torch.int32).reshape(())
+    flags = torch.stack([empty_labels.reshape(()), nonfinite_loss])
+    if _torch_dist_is_initialized():
+        import torch.distributed as dist
+
+        dist.all_reduce(flags, op=dist.ReduceOp.MAX)
+    if int(flags[0].item()):
+        raise ValueError("At least one distributed rank produced an SFT batch with zero supervised label tokens.")
+    if int(flags[1].item()):
+        raise FloatingPointError("At least one distributed rank produced a non-finite SFT loss at step %s." % step)
+
+
 def _sample_group_key(row: Any) -> str:
     source_image_id = row.metadata.get("source_image_id") or row.images[0]
     return "%s::%s" % (row.source_dataset, source_image_id)
@@ -74,6 +144,21 @@ def _assert_no_train_eval_overlap(train_rows: List[Any], eval_rows: List[Any]) -
             "Build non-overlapping train/eval manifests before launching SFT."
             % (len(exact_overlap), len(group_overlap))
         )
+
+
+def _assert_distributed_row_counts(train_count: int, eval_count: int) -> None:
+    if not _torch_dist_is_initialized():
+        return
+    import torch
+    import torch.distributed as dist
+
+    device = "cuda" if dist.get_backend() == "nccl" and torch.cuda.is_available() else "cpu"
+    counts = torch.tensor([train_count, eval_count], device=device, dtype=torch.long)
+    gathered = [torch.zeros_like(counts) for _ in range(dist.get_world_size())]
+    dist.all_gather(gathered, counts)
+    unique_counts = {tuple(item.cpu().tolist()) for item in gathered}
+    if len(unique_counts) != 1:
+        raise RuntimeError("Distributed ranks loaded inconsistent SFT row counts: %s" % sorted(unique_counts))
 
 
 def _chunked_causal_lm_loss(
@@ -248,7 +333,20 @@ def _build_sft_trainer_class(
                 labels = inputs["labels"]
                 model_inputs = dict(inputs)
                 model_inputs.pop("labels")
-                outputs = model(**model_inputs)
+                step = getattr(self.state, "global_step", None)
+                if _distributed_debug_enabled(step):
+                    _log_distributed_debug(
+                        "compute_loss.begin",
+                        step=step,
+                        shapes=_tensor_shape_summary(inputs),
+                        supervised_tokens=int(labels.ne(-100).sum().item()),
+                    )
+                try:
+                    outputs = model(**model_inputs)
+                except Exception:
+                    _log_distributed_debug("compute_loss.forward_exception", step=step)
+                    raise
+                _log_distributed_debug("compute_loss.forward_done", step=step)
                 if isinstance(outputs, dict):
                     logits = outputs["logits"]
                 elif hasattr(outputs, "logits"):
@@ -260,6 +358,13 @@ def _build_sft_trainer_class(
                     labels,
                     chunk_size=loss_chunk_size,
                 )
+                _validate_distributed_loss_inputs(loss, labels, step=step)
+                if _distributed_debug_enabled(step):
+                    _log_distributed_debug(
+                        "compute_loss.loss_done",
+                        step=step,
+                        loss=float(loss.detach().float().cpu()),
+                    )
                 return (loss, outputs) if return_outputs else loss
 
         if validation_generation_enabled:
@@ -411,6 +516,7 @@ def run_sft(model_config: Any, train_config: Any) -> Dict[str, Any]:
         eval_rows = eval_rows[: train_config.smoke_max_samples]
     if train_config.fail_on_train_eval_overlap:
         _assert_no_train_eval_overlap(train_rows, eval_rows)
+    _assert_distributed_row_counts(len(train_rows), len(eval_rows))
 
     run_artifacts = prepare_run_artifacts(
         stage="sft",
@@ -470,11 +576,16 @@ def run_sft(model_config: Any, train_config: Any) -> Dict[str, Any]:
             eval_strategy="steps" if eval_rows else "no",
             remove_unused_columns=False,
             gradient_checkpointing=train_config.gradient_checkpointing,
+            gradient_checkpointing_kwargs=_gradient_checkpointing_kwargs(
+                train_config.gradient_checkpointing,
+                use_reentrant=train_config.gradient_checkpointing_use_reentrant,
+            ),
             seed=train_config.seed,
             data_seed=train_config.seed,
             dataloader_num_workers=train_config.dataloader_num_workers,
             dataloader_pin_memory=train_config.dataloader_pin_memory,
             dataloader_persistent_workers=train_config.dataloader_persistent_workers,
+            dataloader_drop_last=train_config.dataloader_drop_last,
             ddp_find_unused_parameters=train_config.ddp_find_unused_parameters,
             ddp_timeout=train_config.ddp_timeout,
             log_on_each_node=train_config.log_on_each_node,
@@ -485,6 +596,7 @@ def run_sft(model_config: Any, train_config: Any) -> Dict[str, Any]:
         )
 
         processor = load_processor(model_config)
+        _log_distributed_debug("processor_loaded")
         if train_config.sft_checkpoint_path:
             model = load_sft_checkpoint_model(
                 model_config=model_config,
@@ -493,14 +605,17 @@ def run_sft(model_config: Any, train_config: Any) -> Dict[str, Any]:
                 is_trainable=True,
             )
             freeze_stats = apply_freezing(model, train_config.freeze)
+            _log_distributed_debug("checkpoint_model_loaded", freeze_stats=freeze_stats)
         else:
             model = load_model(
                 model_config.model_name_or_path,
                 model_config=model_config,
                 distributed_context=distributed_context,
             )
+            _log_distributed_debug("base_model_loaded")
             freeze_stats = apply_freezing(model, train_config.freeze)
             model = maybe_wrap_with_peft(model, train_config=train_config)
+            _log_distributed_debug("peft_wrapped", freeze_stats=freeze_stats)
 
         validation_generation_config = None
         if train_config.eval_generation_metrics:
@@ -536,7 +651,9 @@ def run_sft(model_config: Any, train_config: Any) -> Dict[str, Any]:
         )
 
         resume_path = resolve_resume_checkpoint(checkpoint_output_dir, train_config.resume_from_checkpoint)
+        _log_distributed_debug("trainer_train_begin", resume_path=str(resume_path) if resume_path else None)
         trainer.train(resume_from_checkpoint=str(resume_path) if resume_path else None)
+        _log_distributed_debug("trainer_train_done")
         if train_config.save_final_model:
             logger.info("Saving final SFT model to %s", checkpoint_output_dir)
             _save_trained_model(trainer, train_config=train_config, output_dir=checkpoint_output_dir)

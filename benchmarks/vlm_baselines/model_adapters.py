@@ -26,6 +26,7 @@ class AdapterSpec:
     default_dtype: str = "bf16"
     default_quantization: str = "none"
     fallback_quantization: str = "4bit"
+    default_attn_implementation: str | None = None
     processor_kwargs: dict[str, Any] | None = None
     notes: str = ""
 
@@ -50,6 +51,7 @@ MODEL_SPECS: dict[str, AdapterSpec] = {
         loader_classes=["AutoModelForCausalLM"],
         prompt_style="phi4",
         trust_remote_code=True,
+        default_attn_implementation="eager",
         notes="Uses Phi-4 multimodal image placeholder prompt format.",
     ),
     "allenai/Molmo2-4B": AdapterSpec(
@@ -106,7 +108,7 @@ class HuggingFaceVLMAdapter:
         self.device = device
         self.dtype_name = dtype
         self.quantization = quantization
-        self.attn_implementation = attn_implementation
+        self.attn_implementation = attn_implementation or self.spec.default_attn_implementation
         self.processor: Any = None
         self.model: Any = None
         self.torch_dtype: Any = None
@@ -128,6 +130,14 @@ class HuggingFaceVLMAdapter:
         if self.spec.trust_remote_code:
             model_kwargs["trust_remote_code"] = True
         if self.attn_implementation:
+            config = transformers.AutoConfig.from_pretrained(
+                self.model_name,
+                trust_remote_code=self.spec.trust_remote_code,
+            )
+            for attr_name in ("_attn_implementation", "_attn_implementation_internal"):
+                if hasattr(config, attr_name):
+                    setattr(config, attr_name, self.attn_implementation)
+            model_kwargs["config"] = config
             model_kwargs["attn_implementation"] = self.attn_implementation
         if self.quantization == "4bit":
             bnb_config = transformers.BitsAndBytesConfig(
@@ -138,6 +148,9 @@ class HuggingFaceVLMAdapter:
             )
             model_kwargs["quantization_config"] = bnb_config
             model_kwargs["device_map"] = self._device_map()
+        elif self.device == "auto":
+            model_kwargs["device_map"] = "auto"
+            model_kwargs["torch_dtype"] = self.torch_dtype
         elif self.device.startswith("cuda"):
             model_kwargs["device_map"] = self._device_map()
             model_kwargs["torch_dtype"] = self.torch_dtype
@@ -243,7 +256,7 @@ class HuggingFaceVLMAdapter:
         elif self.spec.prompt_style == "qwen_vl":
             inputs, prompt = self._preprocess_qwen(sample, image_paths, pil_images)
         elif self.spec.prompt_style == "chat_tokenized_paths":
-            messages = build_chat_messages(sample.row, image_paths=image_paths, include_image_paths=True, include_system=False)
+            messages = self._build_path_chat_messages(sample, image_paths)
             inputs = self.processor.apply_chat_template(
                 messages,
                 tokenize=True,
@@ -262,6 +275,20 @@ class HuggingFaceVLMAdapter:
             "images_used": image_paths,
             "image_policy": self._image_policy_note(sample, image_paths),
         }
+
+    def _build_path_chat_messages(
+        self,
+        sample: BenchmarkSample,
+        image_paths: list[str],
+    ) -> list[dict[str, Any]]:
+        content: list[dict[str, Any]] = []
+        for image_path in image_paths:
+            resolved = Path(image_path)
+            if not resolved.is_absolute():
+                resolved = REPO_ROOT / resolved
+            content.append({"type": "image", "image": str(resolved)})
+        content.append({"type": "text", "text": sample.prompt})
+        return [{"role": "user", "content": content}]
 
     def _preprocess_qwen(
         self,

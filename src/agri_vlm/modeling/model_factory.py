@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from types import MethodType
 from typing import Any, Dict, Optional
 
 from agri_vlm.utils.distributed import DistributedContext
@@ -127,6 +128,60 @@ def _prepare_phi4_multimodal_vision_only(model: Any, model_config: Any) -> None:
         parameter.requires_grad = train_image_embedding
 
 
+def _is_phi4_vision_model(model_config: Any) -> bool:
+    model_name = "%s %s" % (
+        getattr(model_config, "name", ""),
+        getattr(model_config, "model_name_or_path", ""),
+    )
+    lower_name = model_name.lower()
+    return "phi-4-reasoning-vision" in lower_name or "phi4_reasoning_vision" in lower_name
+
+
+def _project_phi4_feature_sequence(model: Any, image_features: Any) -> Any:
+    import torch
+
+    if not image_features:
+        return image_features
+    if not all(torch.is_tensor(feature) and feature.ndim >= 2 for feature in image_features):
+        return [model.get_model().mm_projector(feature) for feature in image_features]
+
+    lengths = [int(feature.shape[0]) for feature in image_features]
+    projected = model.get_model().mm_projector(torch.cat(list(image_features), dim=0))
+    return list(torch.split(projected, lengths, dim=0))
+
+
+def _patch_phi4_vision_projector_for_zero3(model: Any, model_config: Any) -> None:
+    """Vectorize repeated Phi-4 image projector calls so ZeRO-3 sees one call per rank."""
+    if not _is_phi4_vision_model(model_config):
+        return
+    if not hasattr(model, "encode_images") or getattr(model, "_agri_vlm_vectorized_phi4_projector", False):
+        return
+    if getattr(getattr(model, "get_model", lambda: None)(), "mm_projector", None) is None:
+        return
+
+    def encode_images(self: Any, images: Any) -> Any:
+        image_features = self.get_model().get_vision_tower()(images)
+
+        if isinstance(image_features, list) and image_features and isinstance(image_features[0], list):
+            batch_sizes = [len(batch) for batch in image_features]
+            flat_features = [feature for batch in image_features for feature in batch]
+            projected_flat = _project_phi4_feature_sequence(self, flat_features)
+            projected_batches = []
+            offset = 0
+            for batch_size in batch_sizes:
+                projected_batches.append(projected_flat[offset : offset + batch_size])
+                offset += batch_size
+            return projected_batches
+
+        if isinstance(image_features, list):
+            return _project_phi4_feature_sequence(self, image_features)
+
+        return self.get_model().mm_projector(image_features)
+
+    model.encode_images = MethodType(encode_images, model)
+    model._agri_vlm_vectorized_phi4_projector = True
+
+
 def load_model(
     model_name_or_path: str,
     model_config: Any,
@@ -137,9 +192,18 @@ def load_model(
     model_cls = _resolve_model_class(model_config)
     model = model_cls.from_pretrained(model_name_or_path, **kwargs)
     _prepare_phi4_multimodal_vision_only(model, model_config)
+    _patch_phi4_vision_projector_for_zero3(model, model_config)
     if model_config.gradient_checkpointing and hasattr(model, "gradient_checkpointing_enable"):
         try:
-            model.gradient_checkpointing_enable()
+            try:
+                use_reentrant = getattr(model_config, "gradient_checkpointing_use_reentrant", None)
+                model.gradient_checkpointing_enable(
+                    gradient_checkpointing_kwargs={
+                        "use_reentrant": bool(use_reentrant) if use_reentrant is not None else False
+                    }
+                )
+            except TypeError:
+                model.gradient_checkpointing_enable()
         except ValueError as exc:
             raise ValueError(
                 "%s does not support gradient checkpointing. Set `gradient_checkpointing: false` "

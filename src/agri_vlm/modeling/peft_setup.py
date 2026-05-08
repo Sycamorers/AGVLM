@@ -29,5 +29,7 @@ def maybe_wrap_with_peft(model: Any, train_config: Any) -> Any:
             model,
             use_gradient_checkpointing=train_config.gradient_checkpointing,
         )
+    elif train_config.gradient_checkpointing and hasattr(model, "enable_input_require_grads"):
+        model.enable_input_require_grads()
 
     return get_peft_model(model, build_lora_config(train_config))

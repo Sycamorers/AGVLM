@@ -3,9 +3,9 @@ eval_manifest_path: data/manifests/full/sft_eval_phi4_max3_stratified512.jsonl
 output_dir: outputs/sft/phi4-reasoning-vision-15b-full-max3-turin-16gpu
 checkpoint_output_dir: /orange/hmedeiros/qinruoyao/agvlm/outputs/sft/phi4-reasoning-vision-15b-full-max3-turin-16gpu
 seed: 41
-per_device_train_batch_size: 2
-per_device_eval_batch_size: 2
-gradient_accumulation_steps: 1
+per_device_train_batch_size: 1
+per_device_eval_batch_size: 1
+gradient_accumulation_steps: 4
 num_train_epochs: 1
 max_steps: -1
 learning_rate: 5.0e-6
@@ -26,8 +26,9 @@ prediction_loss_only: true
 bf16: true
 fp16: false
 gradient_checkpointing: true
+gradient_checkpointing_use_reentrant: true
 loss_chunk_size: 64
-use_peft: false
+use_peft: true
 report_to:
   - tensorboard
 run_name: sft-phi4-reasoning-vision-15b-full-max3-turin-16gpu
@@ -42,7 +43,8 @@ resume_from_checkpoint: null
 dataloader_num_workers: 0
 dataloader_pin_memory: true
 dataloader_persistent_workers: false
-ddp_find_unused_parameters: true
+dataloader_drop_last: true
+ddp_find_unused_parameters: false
 ddp_timeout: 3600
 log_on_each_node: false
 save_on_each_node: false

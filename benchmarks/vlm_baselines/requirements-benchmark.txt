@@ -1,6 +1,8 @@
 # Benchmark-only additions. Install on top of the repository environment.
 # The main pyproject already pins torch, transformers, accelerate, bitsandbytes,
 # Pillow, PyYAML, numpy, pandas, and scikit-learn for the full project env.
+backoff>=2.2
+num2words>=0.5.14
 qwen-vl-utils>=0.0.8
 molmo_utils
 decord2; platform_system == "Linux"

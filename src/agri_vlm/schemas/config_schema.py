@@ -44,6 +44,7 @@ class ModelConfigSchema(BaseModel):
     device_map: Optional[str] = "auto"
     distributed_device_map: str = "local_process"
     gradient_checkpointing: bool = True
+    gradient_checkpointing_use_reentrant: Optional[bool] = None
     low_cpu_mem_usage: bool = True
     use_cache: bool = False
     max_pixels: Optional[int] = None
@@ -84,6 +85,7 @@ class TrainConfigSchema(BaseModel):
     bf16: bool = True
     fp16: bool = False
     gradient_checkpointing: bool = True
+    gradient_checkpointing_use_reentrant: Optional[bool] = None
     loss_chunk_size: int = Field(default=0, ge=0)
     use_peft: bool = True
     report_to: List[str] = Field(default_factory=lambda: ["tensorboard"])
@@ -102,6 +104,7 @@ class TrainConfigSchema(BaseModel):
     dataloader_num_workers: int = 0
     dataloader_pin_memory: bool = True
     dataloader_persistent_workers: bool = False
+    dataloader_drop_last: bool = False
     ddp_find_unused_parameters: Optional[bool] = False
     ddp_timeout: int = 1800
     log_on_each_node: bool = False

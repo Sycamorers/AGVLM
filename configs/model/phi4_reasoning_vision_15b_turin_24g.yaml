@@ -13,6 +13,7 @@ trust_remote_code: true
 device_map: auto
 distributed_device_map: none
 gradient_checkpointing: true
+gradient_checkpointing_use_reentrant: true
 low_cpu_mem_usage: true
 use_cache: false
 max_pixels: null

@@ -26,10 +26,10 @@ Generated max3 manifests:
 - `data/manifests/full/sft_train_eval_phi4_max3_summary.json`
 
 The Slurm wrapper runs a short batch-size preflight over
-`PHI4_BATCH_CANDIDATES` before the full run. The default candidate list is
-`4 3 2 1`, and the first passing per-device batch size is used for full
-training. Preflight diagnostics write under `outputs/preflight/`; full training
-artifacts must write under `outputs/sft/`.
+`PHI4_BATCH_CANDIDATES` before the full run. The default candidate list is `1`,
+which keeps the per-rank image fan-in bounded while gradient accumulation
+preserves the intended effective global batch. Preflight diagnostics write under
+`outputs/preflight/`; full training artifacts must write under `outputs/sft/`.
 
 ## Launch
 
@@ -41,7 +41,7 @@ Useful overrides:
 
 ```bash
 sbatch \
-  --export=ALL,PHI4_BATCH_CANDIDATES="3 2 1" \
+  --export=ALL,PHI4_BATCH_CANDIDATES="2 1" \
   scripts/hpc/run_sft_turin_16gpu_phi4_reasoning_vision_15b_full_max3.slurm
 ```
 

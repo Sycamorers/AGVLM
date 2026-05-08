@@ -1,5 +1,6 @@
 import os
 import subprocess
+import sys
 from pathlib import Path
 
 import pytest
@@ -11,6 +12,7 @@ def test_smoke_pipeline_runs() -> None:
     repo_root = Path(__file__).resolve().parents[1]
     env = dict(os.environ)
     env["PYTHONPATH"] = "src"
+    env["PYTHON_BIN"] = sys.executable
     completed = subprocess.run(
         ["bash", "scripts/run_smoke_test.sh"],
         cwd=repo_root,
