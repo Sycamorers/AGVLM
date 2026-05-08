@@ -16,7 +16,7 @@ benchmarks:
       - PYTHONPATH=src python scripts/data/normalize_all.py --download-mode full --fraction 1.0
       - PYTHONPATH=src python scripts/data/build_eval_manifest.py --download-mode full --fraction 1.0
     eval_commands:
-      - PYTHONPATH=src python scripts/eval/run_benchmark.py --model-config configs/model/qwen_vlm_4b.yaml --tasks mirage_mmst mirage_mmmt --prediction-mode model --output-dir outputs/benchmarks/<model_name>
+      - PYTHONPATH=src python scripts/eval/run_benchmark.py --model-config configs/model/phi4_reasoning_vision_15b_turin_24g.yaml --tasks mirage_mmst mirage_mmmt --prediction-mode model --output-dir outputs/benchmarks/<model_name>
     readiness_paths:
       - path: "{data_root}/manifests/{subset_tag}/mirage_mmst_eval.jsonl"
         kind: manifest
@@ -42,7 +42,7 @@ benchmarks:
       - PYTHONPATH=src python scripts/data/normalize_all.py --download-mode full --fraction 1.0
       - PYTHONPATH=src python scripts/data/build_eval_manifest.py --download-mode full --fraction 1.0
     eval_commands:
-      - PYTHONPATH=src python scripts/eval/run_benchmark.py --model-config configs/model/qwen_vlm_4b.yaml --tasks local_holdout --prediction-mode model --output-dir outputs/benchmarks/<model_name>
+      - PYTHONPATH=src python scripts/eval/run_benchmark.py --model-config configs/model/phi4_reasoning_vision_15b_turin_24g.yaml --tasks local_holdout --prediction-mode model --output-dir outputs/benchmarks/<model_name>
     readiness_paths:
       - path: "{data_root}/manifests/{subset_tag}/local_holdout_eval.jsonl"
         kind: manifest

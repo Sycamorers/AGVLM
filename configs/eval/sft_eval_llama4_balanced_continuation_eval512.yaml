@@ -1,5 +1,0 @@
- manifest_path: data/manifests/full/sft_eval_llama4_max1_stratified512.jsonl
-output_path: outputs/eval/full/llama4_scout_sft_balanced_continuation_eval512_metrics.json
-batch_size: 1
-max_new_tokens: 128
-prediction_mode: oracle

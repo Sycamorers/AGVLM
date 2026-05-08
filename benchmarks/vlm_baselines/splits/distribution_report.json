@@ -1,0 +1,228 @@
+{
+  "duplicate_sample_id_count_across_split_manifests": 120,
+  "extra": {
+    "active_train_manifest": "data/manifests/full/sft_train_phi4_max3_no_eval_overlap.jsonl",
+    "active_training_summary": {
+      "eval_by_dataset": {
+        "ip102": 215,
+        "mirage": 28,
+        "plantdoc": 19,
+        "plantvillage_vqa": 250
+      },
+      "eval_by_split": {
+        "dev": 28,
+        "holdout": 364,
+        "validation": 120
+      },
+      "eval_by_task_type": {
+        "clarify_or_respond": 28,
+        "classification": 234,
+        "vqa": 250
+      },
+      "eval_output_path": "/blue/hmedeiros/qinruoyao/agvlm/data/manifests/full/sft_eval_phi4_max3_stratified512.jsonl",
+      "eval_pool_rows": 28296,
+      "eval_rows": 512,
+      "eval_sample_size": 512,
+      "eval_splits": [
+        "validation",
+        "dev"
+      ],
+      "excluded": {
+        "eval_overlap": 21269,
+        "max_images": 2599,
+        "split": 9264
+      },
+      "holdout_manifest_path": "/blue/hmedeiros/qinruoyao/agvlm/data/manifests/full/local_holdout_eval.decode_aspect_valid_images.jsonl",
+      "max_images_per_sample": 3,
+      "min_eval_samples_per_stratum": 16,
+      "overlap": {
+        "exact_sample_id": 0,
+        "group_key": 0
+      },
+      "source_manifest_path": "/blue/hmedeiros/qinruoyao/agvlm/data/manifests/full/sft_manifest.decode_aspect_valid_images.jsonl",
+      "train_by_dataset": {
+        "agbase": 40738,
+        "agrillava": 1839,
+        "ip102": 40614,
+        "mirage": 24019,
+        "plantdoc": 2111,
+        "plantvillage": 43503,
+        "plantvillage_vqa": 139690
+      },
+      "train_by_task_type": {
+        "clarify_or_respond": 6482,
+        "classification": 86228,
+        "consultation": 60114,
+        "vqa": 139690
+      },
+      "train_output_path": "/blue/hmedeiros/qinruoyao/agvlm/data/manifests/full/sft_train_phi4_max3_no_eval_overlap.jsonl",
+      "train_rows": 292514,
+      "train_splits": [
+        "train"
+      ]
+    },
+    "policy": {
+      "mode": "reuse_existing_held_out_eval",
+      "notes": [
+        "The repository has an active no-overlap held-out eval manifest, not a source split named test.",
+        "Benchmark split 'test' is an alias for the full active 512-row held-out eval manifest.",
+        "Benchmark split 'val' contains rows from the official source split tag 'validation'.",
+        "No training manifest, dataset file, checkpoint, tokenizer, LoRA adapter, log, or output directory is modified."
+      ],
+      "seed": 42,
+      "source_eval_manifest": "data/manifests/full/sft_eval_phi4_max3_stratified512.jsonl",
+      "test_manifest": "test_manifest.jsonl",
+      "val_manifest": "val_manifest.jsonl"
+    }
+  },
+  "missing_image_examples": [],
+  "missing_image_file_count": 0,
+  "missing_image_sample_count": 0,
+  "missing_text_prompt_count": 0,
+  "per_split_source_dataset": {
+    "test": {
+      "ip102": 215,
+      "mirage": 28,
+      "plantdoc": 19,
+      "plantvillage_vqa": 250
+    },
+    "val": {
+      "ip102": 120
+    }
+  },
+  "per_split_task_type": {
+    "test": {
+      "clarify_or_respond": 28,
+      "classification": 234,
+      "vqa": 250
+    },
+    "val": {
+      "classification": 120
+    }
+  },
+  "samples_per_label_or_answer_top100": {
+    "1 rice leaf roller": 5,
+    "102 Cicadellidae": 22,
+    "11 rice water weevil": 7,
+    "13 grain spreader thrips": 2,
+    "15 grub": 2,
+    "16 mole cricket": 6,
+    "17 wireworm": 2,
+    "19 black cutworm": 4,
+    "20 large cutworm": 1,
+    "21 yellow cutworm": 6,
+    "22 red spider": 2,
+    "23 corn borer": 12,
+    "24 army worm": 6,
+    "25 aphids": 15,
+    "26 Potosiabre vitarsis": 3,
+    "27 peach borer": 2,
+    "28 english grain aphid": 2,
+    "29 green bug": 4,
+    "30 bird cherry oataphid": 4,
+    "31 wheat blossom midge": 3,
+    "34 wheat phloeothrips": 2,
+    "35 wheat sawfly": 2,
+    "38 flea beetle": 7,
+    "39 cabbage army worm": 3,
+    "4 asiatic rice borer": 4,
+    "40 beet army worm": 7,
+    "46 flax budworm": 12,
+    "47 alfalfa plant bug": 2,
+    "49 Locustoidea": 3,
+    "5 yellow rice borer": 4,
+    "51 legume blister beetle": 2,
+    "52 blister beetle": 11,
+    "55 Thrips": 5,
+    "58 Apolygus lucorum": 2,
+    "59 Limacodidae": 6,
+    "60 Viteus vitifoliae": 2,
+    "61 Colomerus vitis": 6,
+    "65 Pseudococcus comstocki Kuwana": 3,
+    "67 Ampelophaga": 5,
+    "68 Lycorma delicatula": 33,
+    "69 Xylotrechus": 7,
+    "70 Cicadella viridis": 11,
+    "71 Miridae": 17,
+    "75 Panonchus citri McGregor": 2,
+    "77 Icerya purchasi Maskell": 10,
+    "78 Unaspis yanonensis": 5,
+    "8 brown plant hopper": 4,
+    "83 Aleurocanthus spiniferus": 3,
+    "84 Tetradacus c Bactrocera minax": 3,
+    "87 Prodenia litura": 4,
+    "9 white backed plant hopper": 8,
+    "92 Aphis citricola Vander Goot": 2,
+    "93 Scirtothrips dorsalis Hood": 4,
+    "94 Dasineura sp": 4,
+    "96 Salurnis marginella Guerr": 2,
+    "98 Chlumetia transversa": 3,
+    "A healthy leaf would be uniformly green and free of the evidence of orange or brown pustular structures.": 4,
+    "A healthy version of this plant would not exhibit the evidence of orange or brown pustular structures.": 2,
+    "Apple": 2,
+    "Could you please describe the symptoms you are observing on the leaves, such as discoloration, spots, or wilting? Additionally, any information on your watering schedule, sunlight exposure, and recent treatments or changes would be helpful. If possible, please provide details from the attached images.": 1,
+    "Diagnosis: Huanglongbing (HLB), or citrus greening.": 5,
+    "If the plant were healthy, the evidence of orange or brown pustular structures would be absent.": 2,
+    "No": 69,
+    "Orange": 6,
+    "Soybean": 4,
+    "The causal agent is the Tomato Yellow Leaf Curl Virus.": 3,
+    "The cause is the bacterium Candidatus Liberibacter asiaticus, leading to Huanglongbing.": 7,
+    "The condition is identified as Late Blight.": 3,
+    "The diagnosis is Bacterial Spot.": 3,
+    "The diagnosis is Septoria Leaf Spot.": 3,
+    "The diagnosis is Target Spot.": 3,
+    "The diagnosis is Tomato Yellow Leaf Curl Virus (TYLCV).": 3,
+    "The disease is Target Spot, marked by dark, concentric 'bullseye' lesions.": 2,
+    "The fungus Alternaria solani, which causes Early Blight, is responsible.": 1,
+    "The key visual difference would be the absence of evidence of orange or brown pustular structures.": 3,
+    "The large, dark, water-soaked lesions are a key sign of Late Blight.": 2,
+    "The leaf shows blotchy, asymmetrical yellowing, a classic symptom of HLB.": 7,
+    "The leaf shows symptoms of Early Blight.": 3,
+    "The pest responsible is the Two-spotted spider mite.": 1,
+    "The plant is affected by Bacterial Spot disease.": 2,
+    "The plant is suffering from a Late Blight infection.": 2,
+    "The plant is suffering from a fungal infection: Septoria Leaf Spot.": 2,
+    "The stippling and fine webbing are clear signs of a Spider Mite infestation.": 2,
+    "The symptoms are characteristic of Apple scab.": 1,
+    "These 'bullseye' lesions are a tell-tale sign of Early Blight.": 2,
+    "This is Bacterial Spot. Note the small, dark, water-soaked lesions.": 2,
+    "This is Septoria Leaf Spot, characterized by small, circular spots with dark borders.": 3,
+    "This is a healthy plant leaf.": 3,
+    "This is a viral infection: TYLCV.": 6,
+    "This is citrus greening disease.": 7,
+    "This is damage from Spider Mites.": 6,
+    "This tomato leaf shows classic signs of TYLCV, like yellowing and curling.": 5,
+    "Tomato": 9,
+    "Yes": 41,
+    "potato leaf early blight": 2,
+    "potato leaf late blight": 3,
+    "squash powdery mildew leaf": 3,
+    "tomato leaf bacterial spot": 2,
+    "tomato leaf mosaic virus": 2,
+    "tomato mold leaf": 1
+  },
+  "samples_per_original_split": {
+    "dev": 28,
+    "holdout": 364,
+    "validation": 240
+  },
+  "samples_per_source_dataset": {
+    "ip102": 335,
+    "mirage": 28,
+    "plantdoc": 19,
+    "plantvillage_vqa": 250
+  },
+  "samples_per_split": {
+    "test": 512,
+    "val": 120
+  },
+  "samples_per_task_type": {
+    "clarify_or_respond": 28,
+    "classification": 354,
+    "vqa": 250
+  },
+  "skipped_samples": {},
+  "total_samples": 632,
+  "unique_sample_count": 512
+}

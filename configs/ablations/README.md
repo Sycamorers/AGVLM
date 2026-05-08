@@ -18,7 +18,7 @@ Example:
 
 ```bash
 PYTHONPATH=src python scripts/train/train_rl_grpo.py \
-  --model-config configs/model/qwen_vlm_4b_l4.yaml \
+  --model-config configs/model/phi4_reasoning_vision_15b_turin_24g.yaml \
   --train-config configs/ablations/rl_grpo_no_clarify_vs_respond.yaml
 ```
 

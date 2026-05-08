@@ -1,0 +1,48 @@
+models:
+  - name: HuggingFaceTB/SmolVLM2-2.2B-Instruct
+    expected_gpus: 1
+    default_dtype: bf16
+    default_quantization: none
+    fallback_quantization: 4bit
+    batch_size: 1
+    notes: Image-text-to-text adapter. Run sequentially on one 24GB GPU.
+
+  - name: google/paligemma2-3b-mix-448
+    expected_gpus: 1
+    default_dtype: bf16
+    default_quantization: none
+    fallback_quantization: 4bit
+    batch_size: 1
+    notes: Single-image model; multi-image samples use the first image and record that policy.
+
+  - name: microsoft/Phi-4-multimodal-instruct
+    expected_gpus: 1
+    default_dtype: bf16
+    default_quantization: none
+    fallback_quantization: 4bit
+    batch_size: 1
+    notes: Uses remote-code Phi-4 multimodal adapter. Quantize only after OOM.
+
+  - name: allenai/Molmo2-4B
+    expected_gpus: 1
+    default_dtype: bf16
+    default_quantization: none
+    fallback_quantization: 4bit
+    batch_size: 1
+    notes: Uses remote-code Molmo2 processor/model with chat template.
+
+  - name: llava-hf/llava-onevision-qwen2-7b-ov-hf
+    expected_gpus: 1
+    default_dtype: bf16
+    default_quantization: none
+    fallback_quantization: 4bit
+    batch_size: 1
+    notes: Largest listed baseline. Keep max_new_tokens conservative; 4-bit fallback is explicit if OOM.
+
+  - name: Qwen/Qwen2.5-VL-3B-Instruct
+    expected_gpus: 1
+    default_dtype: bf16
+    default_quantization: none
+    fallback_quantization: 4bit
+    batch_size: 1
+    notes: Uses qwen-vl-utils when available and caps processor pixel budget by default.

@@ -1,0 +1,5 @@
+results/
+results_smoke/
+tmp/
+*.out
+*.err

@@ -33,6 +33,7 @@ class ModelConfigSchema(BaseModel):
     model_name_or_path: str
     processor_name_or_path: Optional[str] = None
     transformers_model_class: Optional[str] = None
+    attn_implementation_kwarg: str = "attn_implementation"
     torch_dtype: str = "bfloat16"
     attn_implementation: Optional[str] = "flash_attention_2"
     use_flash_attention_2: bool = True
@@ -47,6 +48,9 @@ class ModelConfigSchema(BaseModel):
     use_cache: bool = False
     max_pixels: Optional[int] = None
     min_pixels: Optional[int] = None
+    processor_kwargs: Dict[str, Any] = Field(default_factory=dict)
+    phi4_vision_only: bool = False
+    phi4_train_image_embedding: bool = False
 
 
 class TrainConfigSchema(BaseModel):
@@ -87,6 +91,7 @@ class TrainConfigSchema(BaseModel):
     logging_dir: Optional[str] = None
     artifact_dir: Optional[str] = None
     save_run_metadata: bool = True
+    save_final_model: bool = True
     dry_run: bool = False
     smoke_max_samples: int = 8
     deepspeed: Optional[str] = None

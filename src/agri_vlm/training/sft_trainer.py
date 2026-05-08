@@ -537,9 +537,13 @@ def run_sft(model_config: Any, train_config: Any) -> Dict[str, Any]:
 
         resume_path = resolve_resume_checkpoint(checkpoint_output_dir, train_config.resume_from_checkpoint)
         trainer.train(resume_from_checkpoint=str(resume_path) if resume_path else None)
-        _save_trained_model(trainer, train_config=train_config, output_dir=checkpoint_output_dir)
-        if trainer.is_world_process_zero():
-            processor.save_pretrained(checkpoint_output_dir)
+        if train_config.save_final_model:
+            logger.info("Saving final SFT model to %s", checkpoint_output_dir)
+            _save_trained_model(trainer, train_config=train_config, output_dir=checkpoint_output_dir)
+            if trainer.is_world_process_zero():
+                processor.save_pretrained(checkpoint_output_dir)
+        else:
+            logger.info("Skipping final SFT model save because save_final_model=false.")
         summary = _build_dry_run_summary(train_rows, eval_rows, output_dir)
         summary["checkpoint_output_dir"] = str(checkpoint_output_dir)
         summary["freeze_stats"] = freeze_stats

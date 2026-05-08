@@ -14,7 +14,7 @@ from agri_vlm.utils.distributed import rank_zero_print
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--model-config", default="configs/model/qwen_vlm_4b.yaml")
+    parser.add_argument("--model-config", default="configs/model/phi4_reasoning_vision_15b_turin_24g.yaml")
     parser.add_argument("--train-config", default="configs/train/sft_lora.yaml")
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--resume-from-checkpoint", default=None)

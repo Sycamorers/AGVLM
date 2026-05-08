@@ -22,6 +22,7 @@ def test_load_processor_forwards_pixel_limits(monkeypatch) -> None:
         trust_remote_code=False,
         min_pixels=3136,
         max_pixels=1003520,
+        processor_kwargs={},
     )
 
     processor = load_processor(model_config)
@@ -33,3 +34,33 @@ def test_load_processor_forwards_pixel_limits(monkeypatch) -> None:
         "max_pixels": 1003520,
     }
     assert processor.tokenizer.pad_token == "<eos>"
+
+
+def test_load_processor_forwards_custom_processor_kwargs(monkeypatch) -> None:
+    calls = {}
+
+    class DummyAutoProcessor:
+        @staticmethod
+        def from_pretrained(name, **kwargs):
+            calls["name"] = name
+            calls["kwargs"] = kwargs
+            tokenizer = SimpleNamespace(pad_token="<pad>", eos_token="<eos>")
+            return SimpleNamespace(tokenizer=tokenizer)
+
+    monkeypatch.setitem(sys.modules, "transformers", SimpleNamespace(AutoProcessor=DummyAutoProcessor))
+    model_config = SimpleNamespace(
+        model_name_or_path="base-model",
+        processor_name_or_path="processor-model",
+        trust_remote_code=True,
+        min_pixels=None,
+        max_pixels=None,
+        processor_kwargs={"dynamic_hd": 16},
+    )
+
+    load_processor(model_config)
+
+    assert calls["name"] == "processor-model"
+    assert calls["kwargs"] == {
+        "trust_remote_code": True,
+        "dynamic_hd": 16,
+    }

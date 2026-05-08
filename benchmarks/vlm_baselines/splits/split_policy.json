@@ -1,0 +1,13 @@
+{
+  "mode": "reuse_existing_held_out_eval",
+  "notes": [
+    "The repository has an active no-overlap held-out eval manifest, not a source split named test.",
+    "Benchmark split 'test' is an alias for the full active 512-row held-out eval manifest.",
+    "Benchmark split 'val' contains rows from the official source split tag 'validation'.",
+    "No training manifest, dataset file, checkpoint, tokenizer, LoRA adapter, log, or output directory is modified."
+  ],
+  "seed": 42,
+  "source_eval_manifest": "data/manifests/full/sft_eval_phi4_max3_stratified512.jsonl",
+  "test_manifest": "test_manifest.jsonl",
+  "val_manifest": "val_manifest.jsonl"
+}

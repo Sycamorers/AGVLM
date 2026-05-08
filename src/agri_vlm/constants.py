@@ -2,8 +2,7 @@
 
 APP_NAME = "agri-vlm-v1"
 
-DEFAULT_MODEL_ID = "Qwen/Qwen3-VL-4B-Instruct"
-OPTIONAL_MODEL_ID = "Qwen/Qwen3-VL-8B-Instruct"
+DEFAULT_MODEL_ID = "microsoft/Phi-4-reasoning-vision-15B"
 
 TASK_TYPE_CLASSIFICATION = "classification"
 TASK_TYPE_VQA = "vqa"

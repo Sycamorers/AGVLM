@@ -51,7 +51,7 @@ def _git_value(repo_root: Path, *args: str) -> str | None:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--model-config", default="configs/model/qwen_vlm_4b.yaml")
+    parser.add_argument("--model-config", default="configs/model/phi4_reasoning_vision_15b_turin_24g.yaml")
     parser.add_argument(
         "--tasks",
         nargs="+",

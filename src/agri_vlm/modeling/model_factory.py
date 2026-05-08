@@ -65,7 +65,8 @@ def build_model_init_kwargs(
         kwargs["device_map"] = device_map
     attn_implementation = _resolve_attn_implementation(model_config)
     if attn_implementation:
-        kwargs["attn_implementation"] = attn_implementation
+        attn_kwarg = getattr(model_config, "attn_implementation_kwarg", "attn_implementation")
+        kwargs[attn_kwarg] = attn_implementation
     dtype = torch_dtype_from_name(model_config.torch_dtype)
     kwargs["torch_dtype"] = dtype
 
@@ -93,12 +94,37 @@ def _resolve_model_class(model_config: Any) -> Any:
     for class_name in (
         "AutoModelForImageTextToText",
         "AutoModelForVision2Seq",
-        "Qwen3VLForConditionalGeneration",
     ):
         model_cls = getattr(transformers, class_name, None)
         if model_cls is not None:
             return model_cls
     raise ImportError("No compatible multimodal model loader is available in transformers.")
+
+
+def _prepare_phi4_multimodal_vision_only(model: Any, model_config: Any) -> None:
+    if not getattr(model_config, "phi4_vision_only", False):
+        return
+    if hasattr(model, "set_lora_adapter"):
+        model.set_lora_adapter("vision")
+
+    for module in model.modules():
+        for adapter_attr in ("lora_A", "lora_B"):
+            adapters = getattr(module, adapter_attr, None)
+            if adapters is not None and "speech" in adapters:
+                del adapters["speech"]
+
+    embed_tokens_extend = getattr(getattr(model, "model", None), "embed_tokens_extend", None)
+    if embed_tokens_extend is None:
+        return
+    if hasattr(embed_tokens_extend, "audio_embed"):
+        delattr(embed_tokens_extend, "audio_embed")
+
+    image_embed = getattr(embed_tokens_extend, "image_embed", None)
+    if image_embed is None:
+        return
+    train_image_embedding = bool(getattr(model_config, "phi4_train_image_embedding", False))
+    for parameter in image_embed.parameters():
+        parameter.requires_grad = train_image_embedding
 
 
 def load_model(
@@ -110,6 +136,7 @@ def load_model(
     kwargs = build_model_init_kwargs(model_config, distributed_context=distributed_context)
     model_cls = _resolve_model_class(model_config)
     model = model_cls.from_pretrained(model_name_or_path, **kwargs)
+    _prepare_phi4_multimodal_vision_only(model, model_config)
     if model_config.gradient_checkpointing and hasattr(model, "gradient_checkpointing_enable"):
         try:
             model.gradient_checkpointing_enable()

@@ -1,6 +1,6 @@
 manifest_path: data/manifests/partial_10pct/sft_manifest.jsonl
 eval_manifest_path: data/manifests/partial_10pct/local_holdout_eval.jsonl
-output_dir: outputs/smoke/sft-qwen3-vl-4b
+output_dir: outputs/smoke/sft-phi4-reasoning-vision-15b
 seed: 17
 per_device_train_batch_size: 1
 per_device_eval_batch_size: 1
@@ -20,9 +20,9 @@ gradient_checkpointing: true
 use_peft: true
 report_to:
   - tensorboard
-run_name: sft-smoke-qwen3-vl-4b
+run_name: sft-smoke-phi4-reasoning-vision-15b
 dry_run: true
-smoke_max_samples: 4
+smoke_max_samples: 1
 resume_from_checkpoint: auto
 dataloader_num_workers: 0
 dataloader_pin_memory: true

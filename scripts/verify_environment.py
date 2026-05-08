@@ -15,6 +15,10 @@ from typing import Any, Dict, List, Optional
 
 
 REQUIRED_PACKAGES = ["yaml", "pydantic", "PIL", "tensorboard"]
+MIN_PACKAGE_VERSIONS = {
+    "torch": "2.7.1",
+    "transformers": "4.57.1",
+}
 OPTIONAL_PACKAGES = [
     "torch",
     "torchvision",
@@ -45,6 +49,17 @@ def try_import(name: str) -> str:
     except Exception as exc:  # pragma: no cover - diagnostic path
         return "missing (%s)" % exc.__class__.__name__
     return getattr(module, "__version__", "ok")
+
+
+def version_is_at_least(found: str, minimum: str) -> bool:
+    try:
+        from packaging.version import Version
+    except Exception:
+        return True
+    try:
+        return Version(found.split("+", 1)[0]) >= Version(minimum)
+    except Exception:
+        return True
 
 
 def run_command(command: List[str]) -> Optional[str]:
@@ -165,7 +180,12 @@ def main() -> int:
             failures.append(package)
 
     for package in OPTIONAL_PACKAGES:
-        print("optional[%s]=%s" % (package, try_import(package)))
+        version = try_import(package)
+        print("optional[%s]=%s" % (package, version))
+        minimum = MIN_PACKAGE_VERSIONS.get(package)
+        if minimum:
+            if version.startswith("missing") or not version_is_at_least(version, minimum):
+                failures.append("%s>=%s" % (package, minimum))
 
     print("system_cuda=%s" % json.dumps(detect_system_cuda(), sort_keys=True))
     print("gpu_inventory=%s" % json.dumps(detect_gpu_inventory(), sort_keys=True))

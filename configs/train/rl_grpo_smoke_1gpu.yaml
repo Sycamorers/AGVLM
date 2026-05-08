@@ -1,7 +1,7 @@
-sft_checkpoint_path: outputs/sft/qwen3-vl-4b-lora
+sft_checkpoint_path: outputs/sft/phi4-reasoning-vision-15b-full-max3-turin-16gpu
 manifest_path: data/manifests/partial_10pct/rl_manifest.jsonl
 eval_manifest_path: data/manifests/partial_10pct/local_holdout_eval.jsonl
-output_dir: outputs/smoke/rl-qwen3-vl-4b
+output_dir: outputs/smoke/rl-phi4-reasoning-vision-15b
 seed: 29
 per_device_train_batch_size: 1
 gradient_accumulation_steps: 1
@@ -17,7 +17,7 @@ gradient_checkpointing: true
 use_peft: true
 report_to:
   - tensorboard
-run_name: grpo-smoke-qwen3-vl-4b
+run_name: grpo-smoke-phi4-reasoning-vision-15b
 dry_run: true
 smoke_max_samples: 4
 resume_from_checkpoint: auto

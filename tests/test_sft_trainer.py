@@ -58,7 +58,7 @@ def test_train_config_accepts_loss_chunk_size() -> None:
     config = TrainConfigSchema.model_validate(
         {
             "manifest_path": "data/manifests/partial_10pct/sft_manifest.jsonl",
-            "output_dir": "outputs/smoke/sft-qwen3-vl-4b",
+            "output_dir": "outputs/smoke/sft-phi4-reasoning-vision-15b",
             "loss_chunk_size": 1024,
         }
     )
@@ -70,7 +70,7 @@ def test_train_config_accepts_max_images_per_sample() -> None:
     config = TrainConfigSchema.model_validate(
         {
             "manifest_path": "data/manifests/partial_10pct/sft_manifest.jsonl",
-            "output_dir": "outputs/smoke/sft-qwen3-vl-4b",
+            "output_dir": "outputs/smoke/sft-phi4-reasoning-vision-15b",
             "max_images_per_sample": 5,
         }
     )
@@ -82,7 +82,7 @@ def test_train_config_accepts_deepspeed_and_max_steps() -> None:
     config = TrainConfigSchema.model_validate(
         {
             "manifest_path": "data/manifests/partial_10pct/sft_manifest.jsonl",
-            "output_dir": "outputs/smoke/sft-qwen3-vl-4b",
+            "output_dir": "outputs/smoke/sft-phi4-reasoning-vision-15b",
             "deepspeed": "configs/deepspeed/zero3_qlora_turin_24g.json",
             "max_steps": 1,
         }
@@ -96,7 +96,7 @@ def test_train_config_accepts_save_strategy() -> None:
     config = TrainConfigSchema.model_validate(
         {
             "manifest_path": "data/manifests/partial_10pct/sft_manifest.jsonl",
-            "output_dir": "outputs/smoke/sft-qwen3-vl-4b",
+            "output_dir": "outputs/smoke/sft-phi4-reasoning-vision-15b",
             "save_strategy": "no",
         }
     )
@@ -104,19 +104,31 @@ def test_train_config_accepts_save_strategy() -> None:
     assert config.save_strategy == "no"
 
 
+def test_train_config_accepts_save_final_model() -> None:
+    config = TrainConfigSchema.model_validate(
+        {
+            "manifest_path": "data/manifests/partial_10pct/sft_manifest.jsonl",
+            "output_dir": "outputs/preflight/sft-phi4-reasoning-vision-15b",
+            "save_final_model": False,
+        }
+    )
+
+    assert config.save_final_model is False
+
+
 def test_train_config_accepts_checkpoint_output_dir() -> None:
     config = TrainConfigSchema.model_validate(
         {
             "manifest_path": "data/manifests/partial_10pct/sft_manifest.jsonl",
-            "output_dir": "outputs/smoke/sft-qwen3-vl-4b",
+            "output_dir": "outputs/smoke/sft-phi4-reasoning-vision-15b",
             "checkpoint_output_dir": (
-                "/orange/hmedeiros/qinruoyao/agvlm/outputs/smoke/sft-qwen3-vl-4b"
+                "/orange/hmedeiros/qinruoyao/agvlm/outputs/smoke/sft-phi4-reasoning-vision-15b"
             ),
         }
     )
 
     assert config.checkpoint_output_dir == (
-        "/orange/hmedeiros/qinruoyao/agvlm/outputs/smoke/sft-qwen3-vl-4b"
+        "/orange/hmedeiros/qinruoyao/agvlm/outputs/smoke/sft-phi4-reasoning-vision-15b"
     )
 
 
@@ -124,7 +136,7 @@ def test_train_config_accepts_sft_checkpoint_path() -> None:
     config = TrainConfigSchema.model_validate(
         {
             "manifest_path": "data/manifests/partial_10pct/sft_manifest.jsonl",
-            "output_dir": "outputs/smoke/sft-qwen3-vl-4b",
+            "output_dir": "outputs/smoke/sft-phi4-reasoning-vision-15b",
             "sft_checkpoint_path": "outputs/sft/previous-adapter",
         }
     )
@@ -136,7 +148,7 @@ def test_train_config_accepts_validation_generation_metrics_options() -> None:
     config = TrainConfigSchema.model_validate(
         {
             "manifest_path": "data/manifests/partial_10pct/sft_manifest.jsonl",
-            "output_dir": "outputs/smoke/sft-qwen3-vl-4b",
+            "output_dir": "outputs/smoke/sft-phi4-reasoning-vision-15b",
             "eval_generation_metrics": True,
             "eval_generation_max_examples": 32,
             "eval_generation_batch_size": 2,
@@ -156,7 +168,7 @@ def test_train_config_accepts_eval_loss_and_overlap_guard_options() -> None:
     config = TrainConfigSchema.model_validate(
         {
             "manifest_path": "data/manifests/partial_10pct/sft_manifest.jsonl",
-            "output_dir": "outputs/smoke/sft-qwen3-vl-4b",
+            "output_dir": "outputs/smoke/sft-phi4-reasoning-vision-15b",
             "prediction_loss_only": True,
             "fail_on_train_eval_overlap": True,
         }

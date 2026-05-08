@@ -1,81 +1,19 @@
 # Benchmark Plan
 
-## Benchmark Matrix
+After the Phi-4 SFT run completes, benchmark the selected checkpoint directory
+against:
 
-| Benchmark | Role | Preparation | Current Integration | Paper Use |
-| --- | --- | --- | --- | --- |
-| MIRAGE | Primary consultation benchmark | Automatic Hugging Face download plus normalization | implemented for MMST and MMMT | main external consultation and clarify-vs-respond result |
-| AgMMU | Knowledge-intensive agriculture benchmark | manual staging until access and schema are verified | planned | agricultural expert knowledge grounding |
-| AgroBench | Broad agricultural capability benchmark | manual staging until official source and schema are pinned | planned | breadth and generalization |
-| Local holdout | Internal deployment-relevant benchmark | generated from normalized local manifests | implemented | in-distribution and ambiguity-heavy analysis |
+- local holdout
+- MIRAGE MMST
+- MIRAGE MMMT
 
-## Status Command
-
-```bash
-PYTHONPATH=src python scripts/benchmarks/benchmark_status.py \
-  --download-mode full \
-  --fraction 1.0
-```
-
-Outputs:
-
-- `outputs/artifacts/reports/benchmark_status.json`
-- `outputs/artifacts/reports/benchmark_status.md`
-
-The status report distinguishes implemented benchmarks from planned or blocked benchmarks and lists missing required paths.
-
-## MIRAGE
-
-Prepare:
-
-```bash
-PYTHONPATH=src python scripts/data/download_public_datasets.py --download-mode full --fraction 1.0 --datasets mirage
-PYTHONPATH=src python scripts/data/normalize_all.py --download-mode full --fraction 1.0
-PYTHONPATH=src python scripts/data/build_eval_manifest.py --download-mode full --fraction 1.0
-```
-
-Evaluate:
+Use:
 
 ```bash
 PYTHONPATH=src python scripts/eval/run_benchmark.py \
-  --model-config configs/model/llama4_scout_17b_16e_turin_24g_lowres.yaml \
-  --tasks mirage_mmst mirage_mmmt \
+  --model-config configs/model/phi4_reasoning_vision_15b_turin_24g.yaml \
+  --checkpoint-path <checkpoint_or_run_dir> \
+  --tasks local_holdout mirage_mmst mirage_mmmt \
   --prediction-mode model \
-  --checkpoint-path <checkpoint_or_adapter_dir> \
-  --output-dir outputs/benchmarks/<model_name>
+  --output-dir outputs/benchmarks/phi4-reasoning-vision-15b-full-max3
 ```
-
-## Local Holdout
-
-Prepare:
-
-```bash
-PYTHONPATH=src python scripts/data/normalize_all.py --download-mode full --fraction 1.0
-PYTHONPATH=src python scripts/data/build_eval_manifest.py --download-mode full --fraction 1.0
-```
-
-Evaluate:
-
-```bash
-PYTHONPATH=src python scripts/eval/run_benchmark.py \
-  --model-config configs/model/llama4_scout_17b_16e_turin_24g_lowres.yaml \
-  --tasks local_holdout \
-  --prediction-mode model \
-  --checkpoint-path <checkpoint_or_adapter_dir> \
-  --output-dir outputs/benchmarks/<model_name>
-```
-
-## AgMMU and AgroBench
-
-These are explicitly planned, not silently integrated.
-
-Required before use:
-
-- verify official download source, license, and citation requirements
-- stage raw data under `data/raw/agmmu/full` or `data/raw/agrobench/full`
-- add normalizers under `scripts/data/` and `src/agri_vlm/data/`
-- add `configs/eval/agmmu_full.yaml` or `configs/eval/agrobench_full.yaml`
-- add task entries to `scripts/eval/run_benchmark.py`
-- record readiness with `scripts/benchmarks/benchmark_status.py`
-
-Until those steps are complete, the status report will mark them as planned or blocked.

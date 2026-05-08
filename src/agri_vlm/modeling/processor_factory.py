@@ -19,6 +19,7 @@ def load_processor(model_config: Any, checkpoint_path: Optional[str] = None) -> 
         if any((checkpoint_dir / name).exists() for name in processor_files):
             processor_name = str(checkpoint_dir)
     processor_kwargs = {"trust_remote_code": model_config.trust_remote_code}
+    processor_kwargs.update(getattr(model_config, "processor_kwargs", {}) or {})
     if model_config.min_pixels is not None:
         processor_kwargs["min_pixels"] = model_config.min_pixels
     if model_config.max_pixels is not None:

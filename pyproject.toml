@@ -30,7 +30,7 @@ dependencies = [
   "tensorboard>=2.18,<3",
   "torch>=2.8.0,<2.9",
   "torchvision>=0.23.0,<0.24",
-  "transformers>=4.56.1,<5",
+  "transformers>=4.57.1,<5",
   "trl>=0.25.0,<0.26.0",
   "typing_extensions>=4.12,<5"
 ]
@@ -49,10 +49,6 @@ deepspeed = [
 vllm = [
   "vllm>=0.11.0,<0.12"
 ]
-qwen-utils = [
-  "qwen-vl-utils>=0.0.14,<0.1"
-]
-
 [tool.setuptools]
 package-dir = {"" = "src"}
 
