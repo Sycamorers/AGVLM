@@ -108,6 +108,31 @@ def test_manifest_builders_filter_and_merge(tmp_path: Path) -> None:
     assert len(read_manifest(tmp_path / "holdout.jsonl")) >= 1
 
 
+def test_build_rl_manifest_makes_duplicate_sample_ids_unique(tmp_path: Path) -> None:
+    source_path = tmp_path / "source.jsonl"
+    duplicate = sample_row("dup", "mirage", "vqa", "train")
+    second_duplicate = sample_row("dup", "mirage", "vqa", "train")
+    second_duplicate["images"] = ["data/raw/_smoke/dup_alt.png"]
+    write_manifest(source_path, [duplicate, second_duplicate])
+
+    rl_output = tmp_path / "rl.jsonl"
+    rl_rows = build_rl_manifest(
+        source_paths=[source_path],
+        output_path=rl_output,
+        allowed_task_types=["vqa"],
+        exclude_splits=["test"],
+        allowed_verifier_modes=["exact_match"],
+        max_answer_words=10,
+        max_images_per_sample=1,
+    )
+
+    sample_ids = [row["sample_id"] for row in rl_rows]
+    assert len(sample_ids) == len(set(sample_ids))
+    assert sample_ids[0] == "dup"
+    assert sample_ids[1].startswith("dup-rl-0002-")
+    assert rl_rows[1]["metadata"]["original_sample_id"] == "dup"
+
+
 def test_build_sft_train_eval_manifests_removes_eval_overlap(tmp_path: Path) -> None:
     source_path = tmp_path / "sft_source.jsonl"
     holdout_path = tmp_path / "holdout.jsonl"

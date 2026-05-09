@@ -4,7 +4,11 @@ import json
 from pathlib import Path
 from typing import Any, Dict, List
 
-from transformers.processing_utils import ProcessorMixin
+try:
+    from transformers.processing_utils import ProcessorMixin
+except ImportError:  # pragma: no cover - transformers is optional for dry-run/safety tests
+    class ProcessorMixin:  # type: ignore[no-redef]
+        pass
 
 from agri_vlm.data.conversation_format import sample_to_prompt_messages
 from agri_vlm.data.manifest_io import read_manifest, summarize_manifest
@@ -18,6 +22,18 @@ from agri_vlm.utils.checkpointing import resolve_resume_checkpoint
 from agri_vlm.utils.distributed import configure_torch_runtime, get_distributed_context
 from agri_vlm.utils.image import open_image
 from agri_vlm.utils.io import ensure_dir
+
+
+SFT_CHECKPOINT_PLACEHOLDER_TOKENS = (
+    "<",
+    ">",
+    "final_sft_checkpoint",
+    "final-sft-checkpoint",
+    "checkpoint_or_adapter",
+    "placeholder",
+    "replace_me",
+    "todo",
+)
 
 
 def _build_rl_dry_run_summary(rows: List[Any], output_dir: Path) -> Dict[str, Any]:
@@ -76,6 +92,55 @@ def _wrap_generate_with_autocast(model: Any, dtype: Any) -> None:
     model.generate = generate_with_autocast
 
 
+def _is_placeholder_checkpoint_path(checkpoint_path: str) -> bool:
+    normalized = checkpoint_path.strip().lower()
+    return any(token in normalized for token in SFT_CHECKPOINT_PLACEHOLDER_TOKENS)
+
+
+def _is_base_model_checkpoint_path(checkpoint_path: str, model_config: Any) -> bool:
+    candidates = {
+        str(getattr(model_config, "model_name_or_path", "") or "").strip(),
+        str(getattr(model_config, "processor_name_or_path", "") or "").strip(),
+        str(getattr(model_config, "name", "") or "").strip(),
+    }
+    normalized_checkpoint = checkpoint_path.strip()
+    if normalized_checkpoint in candidates:
+        return True
+    path = Path(normalized_checkpoint).expanduser()
+    for candidate in candidates:
+        if not candidate:
+            continue
+        candidate_path = Path(candidate).expanduser()
+        if path == candidate_path:
+            return True
+        if path.exists() and candidate_path.exists() and path.resolve() == candidate_path.resolve():
+            return True
+    return False
+
+
+def validate_rl_sft_checkpoint_path(model_config: Any, train_config: Any) -> Path:
+    """Validate the mandatory completed-SFT checkpoint for non-dry-run GRPO."""
+    checkpoint_path = str(getattr(train_config, "sft_checkpoint_path", "") or "").strip()
+    if not checkpoint_path:
+        raise ValueError("Non-dry-run GRPO requires `sft_checkpoint_path` to point to a completed SFT checkpoint.")
+    if _is_placeholder_checkpoint_path(checkpoint_path):
+        raise ValueError(
+            "Non-dry-run GRPO cannot use placeholder `sft_checkpoint_path`: %s" % checkpoint_path
+        )
+    if _is_base_model_checkpoint_path(checkpoint_path, model_config):
+        raise ValueError(
+            "Non-dry-run GRPO must start from a completed SFT checkpoint, not the raw/base model: %s"
+            % checkpoint_path
+        )
+    resolved_path = Path(checkpoint_path).expanduser()
+    if not resolved_path.exists():
+        raise FileNotFoundError(
+            "Configured `sft_checkpoint_path` does not exist. Wait for SFT completion or set a real adapter/checkpoint path: %s"
+            % checkpoint_path
+        )
+    return resolved_path
+
+
 class ProcessorDTypeAdapter(ProcessorMixin):
     """Cast processor multimodal tensors to the dtype used by the loaded model."""
 
@@ -110,6 +175,8 @@ def run_rl_grpo(model_config: Any, train_config: Any) -> Dict[str, Any]:
     """Run GRPO training on top of the SFT checkpoint."""
     distributed_context = get_distributed_context(set_device=True)
     logger = configure_logging(logger_name="agri_vlm.training.rl")
+    if not train_config.dry_run:
+        validate_rl_sft_checkpoint_path(model_config=model_config, train_config=train_config)
     rows = read_manifest(Path(train_config.manifest_path))
     if train_config.smoke_max_samples:
         rows = rows[: train_config.smoke_max_samples]
@@ -176,6 +243,7 @@ def run_rl_grpo(model_config: Any, train_config: Any) -> Dict[str, Any]:
         weight_decay=train_config.weight_decay,
         warmup_ratio=train_config.warmup_ratio,
         num_train_epochs=train_config.num_train_epochs,
+        max_steps=train_config.max_steps,
         max_grad_norm=train_config.max_grad_norm,
         logging_steps=train_config.logging_steps,
         logging_dir=str(run_artifacts.tensorboard_dir),

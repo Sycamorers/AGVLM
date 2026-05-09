@@ -49,6 +49,45 @@ The full run writes local artifacts under `outputs/sft/` and checkpoint
 artifacts under `/orange/hmedeiros/qinruoyao/agvlm/outputs/sft/`. It should not
 write full-training artifacts under `outputs/smoke/`.
 
+## RLFT Readiness
+
+The current RLFT target is rule-based GRPO post-training for
+`microsoft/Phi-4-reasoning-vision-15B` initialized from a completed Phi-4 SFT
+checkpoint or adapter. Formal RLFT is pending SFT completion; the RLFT code/data
+pipeline is prepared, but non-dry-run GRPO must not start from the raw base
+model.
+
+Build and validate the full reward-verifiable RL manifest:
+
+```bash
+make rl-data-full
+make rl-audit-full
+make rl-reward-check-full
+make rl-format-check-full
+make rl-phi4-readiness
+```
+
+The readiness dry-run uses:
+
+```bash
+PYTHONPATH=src python scripts/train/train_rl_grpo.py \
+  --model-config configs/model/phi4_reasoning_vision_15b_turin_24g.yaml \
+  --train-config configs/train/rl_grpo_phi4_reasoning_vision_15b_b200_4gpu_readiness.yaml \
+  --dry-run
+```
+
+After SFT completes and the checkpoint placeholder is replaced, start with the
+smoke-after-SFT Slurm path:
+
+```bash
+sbatch \
+  --export=ALL,TRAIN_CONFIG=configs/train/rl_grpo_phi4_reasoning_vision_15b_b200_4gpu_smoke_after_sft.yaml \
+  scripts/hpc/run_rl_grpo_b200_4gpu_phi4_reasoning_vision_15b.slurm
+```
+
+See `docs/rlft_design.md` and `docs/rlft_pipeline.md` for the reward design,
+gates, commands, and post-RL evaluation plan.
+
 ## Data
 
 The active split is built from decode/aspect-valid source manifests and removes

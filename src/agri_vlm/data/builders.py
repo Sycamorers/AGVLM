@@ -50,6 +50,35 @@ def _counter_dict(rows: Sequence[Dict[str, Any]], field: str) -> Dict[str, int]:
     return dict(Counter(str(row.get(field, "")) for row in rows))
 
 
+def _with_unique_sample_ids(rows: Sequence[Any], salt: str) -> List[Dict[str, Any]]:
+    counts: Counter[str] = Counter()
+    payloads: List[Dict[str, Any]] = []
+    for row in rows:
+        payload = row.model_dump(mode="json") if hasattr(row, "model_dump") else dict(row)
+        sample_id = str(payload["sample_id"])
+        counts[sample_id] += 1
+        if counts[sample_id] > 1:
+            metadata = dict(payload.get("metadata") or {})
+            metadata.setdefault("original_sample_id", sample_id)
+            payload["metadata"] = metadata
+            duplicate_key = jsonable_duplicate_key(payload)
+            payload["sample_id"] = "%s-rl-%04d-%s" % (
+                sample_id,
+                counts[sample_id],
+                _stable_hex(duplicate_key, salt)[:8],
+            )
+        payloads.append(payload)
+    return payloads
+
+
+def jsonable_duplicate_key(row: Dict[str, Any]) -> str:
+    return "%s::%s::%s" % (
+        row.get("sample_id"),
+        ",".join(str(path) for path in row.get("images") or []),
+        str((row.get("target") or {}).get("answer_text") or ""),
+    )
+
+
 def _sample_stratified(
     rows: Sequence[Dict[str, Any]],
     *,
@@ -221,9 +250,10 @@ def build_rl_manifest(
     )
     if max_images_per_sample is not None:
         rewardable_rows = [row for row in rewardable_rows if len(row.images) <= max_images_per_sample]
+    unique_rows = _with_unique_sample_ids(rewardable_rows, salt="rl-manifest")
     return [
         sample.model_dump(mode="json")
-        for sample in write_manifest(output_path, [row.model_dump(mode="json") for row in rewardable_rows])
+        for sample in write_manifest(output_path, unique_rows)
     ]
 
 

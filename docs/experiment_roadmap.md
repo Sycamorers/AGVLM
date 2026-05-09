@@ -15,3 +15,19 @@ After SFT completes:
 - run local holdout and MIRAGE benchmarks
 - run separate generation evaluation
 - decide whether the checkpoint is strong enough to seed GRPO
+
+## RLFT Phase Gates
+
+GRPO RLFT is prepared as a rule-based post-training stage, not full RLHF. It
+must start from a completed Phi-4 SFT checkpoint or adapter.
+
+- full RL manifest built
+- manifest audit passed
+- reward sanity passed
+- dataset-format check passed
+- CPU-safe tests passed
+- readiness dry-run passed
+- waiting for SFT checkpoint
+- smoke-after-SFT pending
+- full 4x B200 GRPO pending
+- post-RL eval pending

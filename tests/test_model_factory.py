@@ -1,4 +1,7 @@
+import importlib.util
 from types import SimpleNamespace
+
+import pytest
 
 from agri_vlm.modeling import model_factory
 from agri_vlm.modeling.model_factory import (
@@ -10,6 +13,13 @@ from agri_vlm.modeling.model_factory import (
 from agri_vlm.utils.distributed import DistributedContext
 
 
+requires_torch = pytest.mark.skipif(
+    importlib.util.find_spec("torch") is None,
+    reason="torch is not installed in this lightweight test environment",
+)
+
+
+@requires_torch
 def test_bf16_distributed_model_init_omits_device_map_and_quantizer() -> None:
     model_config = SimpleNamespace(
         attn_implementation="sdpa",
@@ -82,6 +92,7 @@ def test_prepare_phi4_vision_only_removes_speech_adapter_and_trains_image_embedd
     assert image_parameter.requires_grad is True
 
 
+@requires_torch
 def test_phi4_projector_patch_vectorizes_image_feature_list() -> None:
     import torch
 
@@ -134,6 +145,7 @@ def test_phi4_projector_patch_vectorizes_image_feature_list() -> None:
     assert torch.equal(outputs[2], torch.full((1, 3), 3.0))
 
 
+@requires_torch
 def test_load_model_uses_non_reentrant_gradient_checkpointing(monkeypatch) -> None:
     class FakeModel:
         def __init__(self):
