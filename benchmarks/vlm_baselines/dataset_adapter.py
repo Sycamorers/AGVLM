@@ -121,17 +121,26 @@ def output_instruction(row: dict[str, Any]) -> str:
     yes_no_refs = {normalize_text(ref) for ref in refs if ref}
 
     if reward_meta.get("structured_output_required") or mode == "structured" or target.get("structured"):
-        return "Output valid JSON only."
+        return (
+            "Respond using these line-start section headers exactly once:\n"
+            "Diagnosis:\nEvidence:\nUncertainty:\nManagement:\nFollow-up:"
+        )
     if mode == "clarify" or task_type == "clarify_or_respond":
-        return "Decide whether the case needs more information. Answer with exactly one label: clarify or respond."
+        return (
+            "Decide whether the case needs more information.\n"
+            "Respond in this format:\nDecision: <clarify or respond>\nAnswer: <short answer or clarifying question>"
+        )
     if mode == "label" or target.get("canonical_label"):
-        return "Answer with only the most specific crop issue, disease, pest, or label. Do not include explanations."
+        return "Respond in this format:\nAnswer: <most specific crop issue, disease, pest, or label>"
     if yes_no_refs and yes_no_refs.issubset({"yes", "no"}):
-        return "Answer with only Yes or No."
+        return "Respond in this format:\nAnswer: <Yes or No>"
     if task_type == "vqa" or mode == "exact_match":
-        return "Answer with a short direct answer only."
+        return "Respond in this format:\nAnswer: <short direct answer>"
     if task_type == "consultation":
-        return "Provide a concise agricultural consultation response grounded in the image."
+        return (
+            "Respond using these line-start section headers exactly once:\n"
+            "Diagnosis:\nEvidence:\nUncertainty:\nManagement:\nFollow-up:"
+        )
     return "Answer concisely."
 
 
@@ -353,14 +362,15 @@ LEAKAGE_KEYS = [
 
 def group_key(row: dict[str, Any]) -> str:
     metadata = row.get("metadata") or {}
+    source_dataset = str(row.get("source_dataset") or metadata.get("source_dataset") or "missing_dataset")
     for key in LEAKAGE_KEYS:
         value = row.get(key) or metadata.get(key)
         if value:
-            return "%s:%s" % (key, value)
+            return "%s:%s:%s" % (source_dataset, key, value)
     images = row.get("images") or []
     if images:
-        return "source_file_stem:%s" % Path(str(images[0])).stem
-    return "sample_id:%s" % row.get("sample_id", "")
+        return "%s:source_file_stem:%s" % (source_dataset, Path(str(images[0])).stem)
+    return "%s:sample_id:%s" % (source_dataset, row.get("sample_id", ""))
 
 
 def stratum_key(row: dict[str, Any]) -> str:

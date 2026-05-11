@@ -1,0 +1,948 @@
+{
+  "allow_fallback_split": false,
+  "combined": {
+    "examples_by_phase_task_type": {
+      "rl_benchmark": {
+        "clarify_or_respond": [
+          {
+            "benchmark_split": "test",
+            "images": [
+              "data/raw/mirage/full/images/MMMT_Decomp/train/MMMT_Decomp-train-002017-01.png"
+            ],
+            "sample_id": "mirage-#828652-rl-0002-c589c536",
+            "source_dataset": "mirage",
+            "target_preview": "{'acceptable_answers': ['Could you provide more information about the soil conditions, such as pH and nutrient levels, as well as any recent changes in watering practices or environmental conditions? "
+          },
+          {
+            "benchmark_split": "test",
+            "images": [
+              "data/raw/mirage/full/images/MMMT_Direct/dev/MMMT_Direct-dev-000370-01.png"
+            ],
+            "sample_id": "mirage-#882398-rl-0002-49e92c24",
+            "source_dataset": "mirage",
+            "target_preview": "{'acceptable_answers': ['Could you provide more details about the environmental conditions, such as temperature and rainfall, during the growing period? Additionally, how often are you watering the pl"
+          },
+          {
+            "benchmark_split": "test",
+            "images": [
+              "data/raw/mirage/full/images/MMMT_Decomp/train/MMMT_Decomp-train-001024-01.png"
+            ],
+            "sample_id": "mirage-#887598-rl-0003-60f0d2f2",
+            "source_dataset": "mirage",
+            "target_preview": "{'acceptable_answers': ['Could you provide more information about the surrounding environment, such as whether there are deer or other wildlife in the area, any recent weather conditions, or if there "
+          }
+        ],
+        "classification": [
+          {
+            "benchmark_split": "val",
+            "images": [
+              "data/raw/plantvillage/full/images/train/013530.png"
+            ],
+            "sample_id": "plantvillage-train-013530",
+            "source_dataset": "plantvillage",
+            "target_preview": "{'acceptable_answers': [], 'answer_text': 'orange haunglongbing citrus greening', 'canonical_label': 'orange haunglongbing citrus greening', 'canonical_labels': [], 'decision': None, 'structured': {}}"
+          },
+          {
+            "benchmark_split": "val",
+            "images": [
+              "data/raw/ip102/full/ip102_v1.1/images/62659.jpg"
+            ],
+            "sample_id": "ip102-ip102-v1-1-images-62659-jpg",
+            "source_dataset": "ip102",
+            "target_preview": "{'acceptable_answers': [], 'answer_text': '86 Bactrocera tsuneonis', 'canonical_label': '86 Bactrocera tsuneonis', 'canonical_labels': [], 'decision': None, 'structured': {}}"
+          },
+          {
+            "benchmark_split": "val",
+            "images": [
+              "data/raw/ip102/full/ip102_v1.1/images/46864.jpg"
+            ],
+            "sample_id": "ip102-ip102-v1-1-images-46864-jpg",
+            "source_dataset": "ip102",
+            "target_preview": "{'acceptable_answers': [], 'answer_text': '68 Lycorma delicatula', 'canonical_label': '68 Lycorma delicatula', 'canonical_labels': [], 'decision': None, 'structured': {}}"
+          }
+        ],
+        "consultation": [
+          {
+            "benchmark_split": "val",
+            "images": [
+              "data/raw/agbase/full/872454/872454_1.jpg"
+            ],
+            "sample_id": "agbase-agbase-872454",
+            "source_dataset": "agbase",
+            "target_preview": "{'acceptable_answers': [], 'answer_text': 'Species: azalea\\nSymptoms: fungus-like growth or lichen on major stems and smaller branches', 'canonical_label': 'azalea', 'canonical_labels': [], 'decision'"
+          },
+          {
+            "benchmark_split": "val",
+            "images": [
+              "data/raw/agbase/full/861511/861511_1.jpg"
+            ],
+            "sample_id": "agbase-agbase-861511",
+            "source_dataset": "agbase",
+            "target_preview": "{'acceptable_answers': [], 'answer_text': 'Species: rose\\nManagement: prune back to the desired height or remove at the base by cutting it back to the ground. you could potentially use an herbicide th"
+          },
+          {
+            "benchmark_split": "val",
+            "images": [
+              "data/raw/agbase/full/656930/656930_1.jpg"
+            ],
+            "sample_id": "agbase-agbase-656930",
+            "source_dataset": "agbase",
+            "target_preview": "{'acceptable_answers': [], 'answer_text': 'Species: red maple\\nSymptoms: hard black and hard white fungus or canker on the bark near the base of the trunk, destroying the bark', 'canonical_label': 're"
+          }
+        ],
+        "vqa": [
+          {
+            "benchmark_split": "val",
+            "images": [
+              "data/raw/plantvillage_vqa/full/images/train/image_029985.JPG"
+            ],
+            "sample_id": "plantvillage_vqa-image_029985.JPG-088227",
+            "source_dataset": "plantvillage_vqa",
+            "target_preview": "{'acceptable_answers': ['Soybean'], 'answer_text': 'Soybean', 'canonical_label': None, 'canonical_labels': [], 'decision': None, 'structured': {}}"
+          },
+          {
+            "benchmark_split": "val",
+            "images": [
+              "data/raw/plantvillage_vqa/full/images/train/image_014624.JPG"
+            ],
+            "sample_id": "plantvillage_vqa-image_014624.JPG-042749",
+            "source_dataset": "plantvillage_vqa",
+            "target_preview": "{'acceptable_answers': ['Yes'], 'answer_text': 'Yes', 'canonical_label': None, 'canonical_labels': [], 'decision': None, 'structured': {}}"
+          },
+          {
+            "benchmark_split": "val",
+            "images": [
+              "data/raw/plantvillage_vqa/full/images/train/image_007630.JPG"
+            ],
+            "sample_id": "plantvillage_vqa-image_007630.JPG-173016",
+            "source_dataset": "plantvillage_vqa",
+            "target_preview": "{'acceptable_answers': ['No'], 'answer_text': 'No', 'canonical_label': None, 'canonical_labels': [], 'decision': None, 'structured': {}}"
+          }
+        ]
+      },
+      "sft_benchmark": {
+        "clarify_or_respond": [
+          {
+            "benchmark_split": "test",
+            "images": [
+              "data/raw/mirage/full/images/MMMT_Direct/dev/MMMT_Direct-dev-000014-01.png",
+              "data/raw/mirage/full/images/MMMT_Direct/dev/MMMT_Direct-dev-000014-02.png",
+              "data/raw/mirage/full/images/MMMT_Direct/dev/MMMT_Direct-dev-000014-03.png"
+            ],
+            "sample_id": "mirage-#840265",
+            "source_dataset": "mirage",
+            "target_preview": "{'acceptable_answers': ['Could you please describe the symptoms you are observing on the leaves, such as discoloration, spots, or wilting? Additionally, any information on your watering schedule, sunl"
+          },
+          {
+            "benchmark_split": "test",
+            "images": [
+              "data/raw/mirage/full/images/MMMT_Direct/dev/MMMT_Direct-dev-000348-01.png",
+              "data/raw/mirage/full/images/MMMT_Direct/dev/MMMT_Direct-dev-000348-02.png",
+              "data/raw/mirage/full/images/MMMT_Direct/dev/MMMT_Direct-dev-000348-03.png"
+            ],
+            "sample_id": "mirage-#821855",
+            "source_dataset": "mirage",
+            "target_preview": "{'acceptable_answers': ['Could you provide more information about your geographic location, the time of year when the holes started appearing, the type of grass or lawn you have, and any recent treatm"
+          },
+          {
+            "benchmark_split": "test",
+            "images": [
+              "data/raw/mirage/full/images/MMMT_Direct/dev/MMMT_Direct-dev-000264-01.png",
+              "data/raw/mirage/full/images/MMMT_Direct/dev/MMMT_Direct-dev-000264-02.png"
+            ],
+            "sample_id": "mirage-#839670",
+            "source_dataset": "mirage",
+            "target_preview": "{'acceptable_answers': [\"Could you provide more information about the watering schedule or recent weather conditions, soil conditions, and if you've noticed any pests or diseases on the tree? Addition"
+          }
+        ],
+        "classification": [
+          {
+            "benchmark_split": "val",
+            "images": [
+              "data/raw/ip102/full/ip102_v1.1/images/22963.jpg"
+            ],
+            "sample_id": "ip102-ip102-v1-1-images-22963-jpg",
+            "source_dataset": "ip102",
+            "target_preview": "{'acceptable_answers': [], 'answer_text': '28 english grain aphid', 'canonical_label': '28 english grain aphid', 'canonical_labels': [], 'decision': None, 'structured': {}}"
+          },
+          {
+            "benchmark_split": "val",
+            "images": [
+              "data/raw/ip102/full/ip102_v1.1/images/19429.jpg"
+            ],
+            "sample_id": "ip102-ip102-v1-1-images-19429-jpg",
+            "source_dataset": "ip102",
+            "target_preview": "{'acceptable_answers': [], 'answer_text': '25 aphids', 'canonical_label': '25 aphids', 'canonical_labels': [], 'decision': None, 'structured': {}}"
+          },
+          {
+            "benchmark_split": "val",
+            "images": [
+              "data/raw/ip102/full/ip102_v1.1/images/65192.jpg"
+            ],
+            "sample_id": "ip102-ip102-v1-1-images-65192-jpg",
+            "source_dataset": "ip102",
+            "target_preview": "{'acceptable_answers': [], 'answer_text': '92 Aphis citricola Vander Goot', 'canonical_label': '92 Aphis citricola Vander Goot', 'canonical_labels': [], 'decision': None, 'structured': {}}"
+          }
+        ],
+        "vqa": [
+          {
+            "benchmark_split": "test",
+            "images": [
+              "data/raw/plantvillage_vqa/full/images/train/image_016685.JPG"
+            ],
+            "sample_id": "plantvillage_vqa-image_016685.JPG-174949",
+            "source_dataset": "plantvillage_vqa",
+            "target_preview": "{'acceptable_answers': ['No'], 'answer_text': 'No', 'canonical_label': None, 'canonical_labels': [], 'decision': None, 'structured': {}}"
+          },
+          {
+            "benchmark_split": "test",
+            "images": [
+              "data/raw/plantvillage_vqa/full/images/train/image_020227.JPG"
+            ],
+            "sample_id": "plantvillage_vqa-image_020227.JPG-059114",
+            "source_dataset": "plantvillage_vqa",
+            "target_preview": "{'acceptable_answers': ['The cause is the bacterium Candidatus Liberibacter asiaticus, leading to Huanglongbing.'], 'answer_text': 'The cause is the bacterium Candidatus Liberibacter asiaticus, leadin"
+          },
+          {
+            "benchmark_split": "test",
+            "images": [
+              "data/raw/plantvillage_vqa/full/images/train/image_041298.JPG"
+            ],
+            "sample_id": "plantvillage_vqa-image_041298.JPG-121425",
+            "source_dataset": "plantvillage_vqa",
+            "target_preview": "{'acceptable_answers': ['The fungus Alternaria solani, which causes Early Blight, is responsible.'], 'answer_text': 'The fungus Alternaria solani, which causes Early Blight, is responsible.', 'canonic"
+          }
+        ]
+      }
+    },
+    "rows_by_phase_split": {
+      "rl_benchmark": {
+        "test": 1573,
+        "val": 369
+      },
+      "sft_benchmark": {
+        "test": 392,
+        "val": 120
+      }
+    },
+    "rows_by_source_dataset": {
+      "agbase": 222,
+      "ip102": 1006,
+      "mirage": 105,
+      "plantdoc": 69,
+      "plantvillage": 657,
+      "plantvillage_vqa": 395
+    },
+    "rows_by_task_type": {
+      "clarify_or_respond": 71,
+      "classification": 1732,
+      "consultation": 256,
+      "vqa": 395
+    }
+  },
+  "max_samples": 0,
+  "output_dir": "/blue/hmedeiros/qinruoyao/agvlm/benchmarks/vlm_baselines/splits",
+  "phases": {
+    "rl_benchmark": {
+      "contains_public_test_data": false,
+      "duplicate_sample_id_count": 0,
+      "duplicate_sample_id_examples": [],
+      "examples_by_task_type": {
+        "clarify_or_respond": [
+          {
+            "benchmark_split": "test",
+            "images": [
+              "data/raw/mirage/full/images/MMMT_Decomp/train/MMMT_Decomp-train-002017-01.png"
+            ],
+            "sample_id": "mirage-#828652-rl-0002-c589c536",
+            "source_dataset": "mirage",
+            "target_preview": "{'acceptable_answers': ['Could you provide more information about the soil conditions, such as pH and nutrient levels, as well as any recent changes in watering practices or environmental conditions? "
+          },
+          {
+            "benchmark_split": "test",
+            "images": [
+              "data/raw/mirage/full/images/MMMT_Direct/dev/MMMT_Direct-dev-000370-01.png"
+            ],
+            "sample_id": "mirage-#882398-rl-0002-49e92c24",
+            "source_dataset": "mirage",
+            "target_preview": "{'acceptable_answers': ['Could you provide more details about the environmental conditions, such as temperature and rainfall, during the growing period? Additionally, how often are you watering the pl"
+          },
+          {
+            "benchmark_split": "test",
+            "images": [
+              "data/raw/mirage/full/images/MMMT_Decomp/train/MMMT_Decomp-train-001024-01.png"
+            ],
+            "sample_id": "mirage-#887598-rl-0003-60f0d2f2",
+            "source_dataset": "mirage",
+            "target_preview": "{'acceptable_answers': ['Could you provide more information about the surrounding environment, such as whether there are deer or other wildlife in the area, any recent weather conditions, or if there "
+          }
+        ],
+        "classification": [
+          {
+            "benchmark_split": "val",
+            "images": [
+              "data/raw/plantvillage/full/images/train/013530.png"
+            ],
+            "sample_id": "plantvillage-train-013530",
+            "source_dataset": "plantvillage",
+            "target_preview": "{'acceptable_answers': [], 'answer_text': 'orange haunglongbing citrus greening', 'canonical_label': 'orange haunglongbing citrus greening', 'canonical_labels': [], 'decision': None, 'structured': {}}"
+          },
+          {
+            "benchmark_split": "val",
+            "images": [
+              "data/raw/ip102/full/ip102_v1.1/images/62659.jpg"
+            ],
+            "sample_id": "ip102-ip102-v1-1-images-62659-jpg",
+            "source_dataset": "ip102",
+            "target_preview": "{'acceptable_answers': [], 'answer_text': '86 Bactrocera tsuneonis', 'canonical_label': '86 Bactrocera tsuneonis', 'canonical_labels': [], 'decision': None, 'structured': {}}"
+          },
+          {
+            "benchmark_split": "val",
+            "images": [
+              "data/raw/ip102/full/ip102_v1.1/images/46864.jpg"
+            ],
+            "sample_id": "ip102-ip102-v1-1-images-46864-jpg",
+            "source_dataset": "ip102",
+            "target_preview": "{'acceptable_answers': [], 'answer_text': '68 Lycorma delicatula', 'canonical_label': '68 Lycorma delicatula', 'canonical_labels': [], 'decision': None, 'structured': {}}"
+          }
+        ],
+        "consultation": [
+          {
+            "benchmark_split": "val",
+            "images": [
+              "data/raw/agbase/full/872454/872454_1.jpg"
+            ],
+            "sample_id": "agbase-agbase-872454",
+            "source_dataset": "agbase",
+            "target_preview": "{'acceptable_answers': [], 'answer_text': 'Species: azalea\\nSymptoms: fungus-like growth or lichen on major stems and smaller branches', 'canonical_label': 'azalea', 'canonical_labels': [], 'decision'"
+          },
+          {
+            "benchmark_split": "val",
+            "images": [
+              "data/raw/agbase/full/861511/861511_1.jpg"
+            ],
+            "sample_id": "agbase-agbase-861511",
+            "source_dataset": "agbase",
+            "target_preview": "{'acceptable_answers': [], 'answer_text': 'Species: rose\\nManagement: prune back to the desired height or remove at the base by cutting it back to the ground. you could potentially use an herbicide th"
+          },
+          {
+            "benchmark_split": "val",
+            "images": [
+              "data/raw/agbase/full/656930/656930_1.jpg"
+            ],
+            "sample_id": "agbase-agbase-656930",
+            "source_dataset": "agbase",
+            "target_preview": "{'acceptable_answers': [], 'answer_text': 'Species: red maple\\nSymptoms: hard black and hard white fungus or canker on the bark near the base of the trunk, destroying the bark', 'canonical_label': 're"
+          }
+        ],
+        "vqa": [
+          {
+            "benchmark_split": "val",
+            "images": [
+              "data/raw/plantvillage_vqa/full/images/train/image_029985.JPG"
+            ],
+            "sample_id": "plantvillage_vqa-image_029985.JPG-088227",
+            "source_dataset": "plantvillage_vqa",
+            "target_preview": "{'acceptable_answers': ['Soybean'], 'answer_text': 'Soybean', 'canonical_label': None, 'canonical_labels': [], 'decision': None, 'structured': {}}"
+          },
+          {
+            "benchmark_split": "val",
+            "images": [
+              "data/raw/plantvillage_vqa/full/images/train/image_014624.JPG"
+            ],
+            "sample_id": "plantvillage_vqa-image_014624.JPG-042749",
+            "source_dataset": "plantvillage_vqa",
+            "target_preview": "{'acceptable_answers': ['Yes'], 'answer_text': 'Yes', 'canonical_label': None, 'canonical_labels': [], 'decision': None, 'structured': {}}"
+          },
+          {
+            "benchmark_split": "val",
+            "images": [
+              "data/raw/plantvillage_vqa/full/images/train/image_007630.JPG"
+            ],
+            "sample_id": "plantvillage_vqa-image_007630.JPG-173016",
+            "source_dataset": "plantvillage_vqa",
+            "target_preview": "{'acceptable_answers': ['No'], 'answer_text': 'No', 'canonical_label': None, 'canonical_labels': [], 'decision': None, 'structured': {}}"
+          }
+        ]
+      },
+      "missing_image_examples": [],
+      "missing_image_file_count": 0,
+      "missing_image_sample_count": 0,
+      "multi_image_distribution": {
+        "1": 1942
+      },
+      "phase": "rl_benchmark",
+      "prompt_leakage": {
+        "ground_truth_leakage_count": 0,
+        "ground_truth_leakage_examples": [],
+        "notes": "Prompt hits are heuristic. Yes/no questions may contain candidate labels without leaking the yes/no answer.",
+        "prompt_leakage_count": 43,
+        "prompt_leakage_examples": [
+          {
+            "reference": "clarify",
+            "sample_id": "mirage-#828652-rl-0002-c589c536",
+            "task_type": "clarify_or_respond"
+          },
+          {
+            "reference": "clarify",
+            "sample_id": "mirage-#882398-rl-0002-49e92c24",
+            "task_type": "clarify_or_respond"
+          },
+          {
+            "reference": "clarify",
+            "sample_id": "mirage-#887598-rl-0003-60f0d2f2",
+            "task_type": "clarify_or_respond"
+          },
+          {
+            "reference": "clarify",
+            "sample_id": "mirage-#830395",
+            "task_type": "clarify_or_respond"
+          },
+          {
+            "reference": "clarify",
+            "sample_id": "mirage-#875665-rl-0002-9a7c2129",
+            "task_type": "clarify_or_respond"
+          },
+          {
+            "reference": "clarify",
+            "sample_id": "mirage-#840393-rl-0002-7006be3b",
+            "task_type": "clarify_or_respond"
+          },
+          {
+            "reference": "clarify",
+            "sample_id": "mirage-#841641-rl-0002-5418b4f1",
+            "task_type": "clarify_or_respond"
+          },
+          {
+            "reference": "respond",
+            "sample_id": "mirage-#830650-rl-0002-12af9f60",
+            "task_type": "clarify_or_respond"
+          },
+          {
+            "reference": "clarify",
+            "sample_id": "mirage-#882150",
+            "task_type": "clarify_or_respond"
+          },
+          {
+            "reference": "respond",
+            "sample_id": "mirage-#828388-rl-0002-b4b3d9d2",
+            "task_type": "clarify_or_respond"
+          },
+          {
+            "reference": "clarify",
+            "sample_id": "mirage-#830653-rl-0002-270dbe5f",
+            "task_type": "clarify_or_respond"
+          },
+          {
+            "reference": "clarify",
+            "sample_id": "mirage-#831368-rl-0002-125a4c9d",
+            "task_type": "clarify_or_respond"
+          },
+          {
+            "reference": "clarify",
+            "sample_id": "mirage-#876523",
+            "task_type": "clarify_or_respond"
+          },
+          {
+            "reference": "clarify",
+            "sample_id": "mirage-#875998",
+            "task_type": "clarify_or_respond"
+          },
+          {
+            "reference": "clarify",
+            "sample_id": "mirage-#874487",
+            "task_type": "clarify_or_respond"
+          },
+          {
+            "reference": "clarify",
+            "sample_id": "mirage-#831449",
+            "task_type": "clarify_or_respond"
+          },
+          {
+            "reference": "clarify",
+            "sample_id": "mirage-#875141",
+            "task_type": "clarify_or_respond"
+          },
+          {
+            "reference": "clarify",
+            "sample_id": "mirage-#875932-rl-0002-6b133ed7",
+            "task_type": "clarify_or_respond"
+          },
+          {
+            "reference": "clarify",
+            "sample_id": "mirage-#835219",
+            "task_type": "clarify_or_respond"
+          },
+          {
+            "reference": "clarify",
+            "sample_id": "mirage-#832692",
+            "task_type": "clarify_or_respond"
+          }
+        ]
+      },
+      "public_test_examples": [],
+      "rl_holdout_filter": {
+        "filter_policy": "drop exact sample_id or group_key overlap with RL train manifest before benchmark split",
+        "filtered_train_overlap_rows": 2154,
+        "source_holdout_rows": 4096
+      },
+      "rows_by_crop_disease": {
+        "crop": {
+          "Apple": 35,
+          "Blueberry": 12,
+          "Cherry (including sour)": 26,
+          "Corn (maize)": 39,
+          "Grape": 40,
+          "Orange": 80,
+          "Peach": 45,
+          "Pepper, bell": 31,
+          "Potato": 28,
+          "Raspberry": 6,
+          "Soybean": 72,
+          "Squash": 23,
+          "Strawberry": 14,
+          "Tomato": 206,
+          "allium molly": 1,
+          "ant": 1,
+          "apple": 2,
+          "apple tree": 7,
+          "arborvitae": 2,
+          "aspen": 2,
+          "autumn blaze maple": 2,
+          "azalea": 3,
+          "bamboo": 1,
+          "banana tree": 1,
+          "bee": 2,
+          "beetle": 1,
+          "blue spruce": 1,
+          "blueberry": 1,
+          "bush beans": 1,
+          "butterbur": 1,
+          "cabbage": 1,
+          "cacao": 1,
+          "camellia": 2,
+          "cherry tree": 6,
+          "choke cherry": 1,
+          "chokecherry": 1,
+          "common mullein": 1,
+          "creeping charlie": 1,
+          "crepe myrtle": 1,
+          "cutworm": 2,
+          "daylily": 2,
+          "dogwood": 4,
+          "english ivy": 1,
+          "european spider": 1,
+          "fig tree": 1,
+          "fir": 1,
+          "firebush": 1,
+          "flowering cherry": 1,
+          "fly honeysuckle": 1,
+          "fruit tree": 1,
+          "garlic chives": 1,
+          "grape": 1,
+          "grass": 4,
+          "henbit": 1,
+          "hibiscus": 2,
+          "hornet": 1,
+          "hydrangea": 3,
+          "jap jap m (likely a plant, but exact type unclear)": 1,
+          "juniper": 1,
+          "lesser celandine": 2,
+          "lilac": 3,
+          "lilac tree": 1,
+          "lily": 2,
+          "liriope": 1,
+          "live oak": 1,
+          "missing": 1063,
+          "mugo pine": 1,
+          "mushroom": 1,
+          "none": 7,
+          "oak": 2,
+          "oak tree": 3,
+          "oregano": 1,
+          "pear": 1,
+          "pecan tree, black walnut tree": 1,
+          "peony": 2,
+          "pine tree": 1,
+          "plant": 3,
+          "plum tree": 1,
+          "ponderosa pine": 1,
+          "potato": 1,
+          "purple deadnettle": 1,
+          "pyracantha": 1,
+          "red maple": 2,
+          "red pine tree": 1,
+          "rhubarb": 1,
+          "rose": 3,
+          "saint augustine grass": 1,
+          "tomato": 3,
+          "tree": 2,
+          "tree (likely linden)": 1,
+          "vegetable": 1,
+          "vegetable garden": 1,
+          "vegetable plants": 1,
+          "viburnum": 2,
+          "white pine": 1,
+          "wild black cherry (prunus serotina)": 1,
+          "wild sarsaparilla": 1,
+          "wolf spider": 1,
+          "zinnia": 2,
+          "zucchini": 1
+        },
+        "disease": {
+          "Apple Scab Leaf": 3,
+          "Apple leaf": 2,
+          "Apple scab": 5,
+          "Bacterial spot": 75,
+          "Bell pepper leaf": 2,
+          "Black rot": 17,
+          "Blueberry leaf": 3,
+          "Cedar apple rust": 2,
+          "Cercospora leaf spot Gray leaf spot": 8,
+          "Cherry leaf": 3,
+          "Common rust": 14,
+          "Corn leaf blight": 2,
+          "Corn rust leaf": 5,
+          "Early blight": 30,
+          "Esca (Black Measles)": 10,
+          "Haunglongbing (Citrus greening)": 80,
+          "Late blight": 34,
+          "Leaf Mold": 7,
+          "Leaf blight (Isariopsis Leaf Spot)": 13,
+          "Leaf scorch": 10,
+          "Northern Leaf Blight": 6,
+          "Peach leaf": 2,
+          "Potato leaf early blight": 2,
+          "Powdery mildew": 38,
+          "Septoria leaf spot": 19,
+          "Spider mites Two-spotted spider mite": 14,
+          "Squash Powdery mildew leaf": 3,
+          "Target Spot": 18,
+          "Tomato Septoria leaf spot": 4,
+          "Tomato Yellow Leaf Curl Virus": 69,
+          "Tomato leaf late blight": 3,
+          "Tomato leaf yellow virus": 2,
+          "Tomato mold leaf": 3,
+          "Tomato mosaic virus": 6,
+          "allium molly": 1,
+          "apple": 2,
+          "apple tree": 4,
+          "arborvitae": 2,
+          "aspen": 2,
+          "azalea": 2,
+          "banana tree": 1,
+          "bee": 2,
+          "blue spruce": 1,
+          "bush beans": 1,
+          "cacao": 1,
+          "camellia": 1,
+          "cedar apple rust": 2,
+          "cherry tree": 2,
+          "common potato scab": 1,
+          "creeping charlie": 1,
+          "crepe myrtle": 1,
+          "cutworm": 2,
+          "daylily": 2,
+          "dogwood": 3,
+          "early blight (possible) or septoria leaf spot": 1,
+          "english ivy": 1,
+          "fir": 1,
+          "fruit tree": 1,
+          "grape": 1,
+          "grape leaf": 2,
+          "grass": 4,
+          "gummosis (leucostoma persoonia formerly cytospora canker)": 1,
+          "healthy": 182,
+          "henbit": 1,
+          "hibiscus": 2,
+          "hornet": 1,
+          "hydrangea": 1,
+          "incomplete pollination or choanephora rot": 1,
+          "jap jap m (likely a plant, but exact type unclear)": 1,
+          "leaf galls": 1,
+          "lesser celandine": 2,
+          "lilac": 3,
+          "lily": 2,
+          "live oak": 1,
+          "missing": 1013,
+          "mushroom": 1,
+          "none": 7,
+          "oak": 1,
+          "oak tree": 3,
+          "pear": 1,
+          "peony": 2,
+          "pine needle scale": 1,
+          "pine tree": 1,
+          "plant": 3,
+          "ponderosa pine": 1,
+          "possibly cherry leaf spot, powdery mildew, or phytophthora root, crown, and collar rot": 1,
+          "possibly peach tree borer and/or canker disease": 1,
+          "purple deadnettle": 1,
+          "red maple": 2,
+          "red pine tree": 1,
+          "rhubarb": 1,
+          "rose": 3,
+          "shot hole disease": 1,
+          "tomato": 2,
+          "tree": 2,
+          "vegetable garden": 1,
+          "viburnum": 1,
+          "white pine": 1,
+          "wild sarsaparilla": 1,
+          "zinnia": 2
+        }
+      },
+      "rows_by_source_dataset": {
+        "agbase": 222,
+        "ip102": 791,
+        "mirage": 77,
+        "plantdoc": 50,
+        "plantvillage": 657,
+        "plantvillage_vqa": 145
+      },
+      "rows_by_split": {
+        "test": 1573,
+        "val": 369
+      },
+      "rows_by_task_type": {
+        "clarify_or_respond": 43,
+        "classification": 1498,
+        "consultation": 256,
+        "vqa": 145
+      },
+      "train_eval_overlap": {
+        "exact_sample_id_count": 0,
+        "exact_sample_id_examples": [],
+        "group_key_count": 0,
+        "group_key_examples": []
+      },
+      "unique_image_groups": 1942
+    },
+    "sft_benchmark": {
+      "contains_public_test_data": false,
+      "duplicate_sample_id_count": 0,
+      "duplicate_sample_id_examples": [],
+      "examples_by_task_type": {
+        "clarify_or_respond": [
+          {
+            "benchmark_split": "test",
+            "images": [
+              "data/raw/mirage/full/images/MMMT_Direct/dev/MMMT_Direct-dev-000014-01.png",
+              "data/raw/mirage/full/images/MMMT_Direct/dev/MMMT_Direct-dev-000014-02.png",
+              "data/raw/mirage/full/images/MMMT_Direct/dev/MMMT_Direct-dev-000014-03.png"
+            ],
+            "sample_id": "mirage-#840265",
+            "source_dataset": "mirage",
+            "target_preview": "{'acceptable_answers': ['Could you please describe the symptoms you are observing on the leaves, such as discoloration, spots, or wilting? Additionally, any information on your watering schedule, sunl"
+          },
+          {
+            "benchmark_split": "test",
+            "images": [
+              "data/raw/mirage/full/images/MMMT_Direct/dev/MMMT_Direct-dev-000348-01.png",
+              "data/raw/mirage/full/images/MMMT_Direct/dev/MMMT_Direct-dev-000348-02.png",
+              "data/raw/mirage/full/images/MMMT_Direct/dev/MMMT_Direct-dev-000348-03.png"
+            ],
+            "sample_id": "mirage-#821855",
+            "source_dataset": "mirage",
+            "target_preview": "{'acceptable_answers': ['Could you provide more information about your geographic location, the time of year when the holes started appearing, the type of grass or lawn you have, and any recent treatm"
+          },
+          {
+            "benchmark_split": "test",
+            "images": [
+              "data/raw/mirage/full/images/MMMT_Direct/dev/MMMT_Direct-dev-000264-01.png",
+              "data/raw/mirage/full/images/MMMT_Direct/dev/MMMT_Direct-dev-000264-02.png"
+            ],
+            "sample_id": "mirage-#839670",
+            "source_dataset": "mirage",
+            "target_preview": "{'acceptable_answers': [\"Could you provide more information about the watering schedule or recent weather conditions, soil conditions, and if you've noticed any pests or diseases on the tree? Addition"
+          }
+        ],
+        "classification": [
+          {
+            "benchmark_split": "val",
+            "images": [
+              "data/raw/ip102/full/ip102_v1.1/images/22963.jpg"
+            ],
+            "sample_id": "ip102-ip102-v1-1-images-22963-jpg",
+            "source_dataset": "ip102",
+            "target_preview": "{'acceptable_answers': [], 'answer_text': '28 english grain aphid', 'canonical_label': '28 english grain aphid', 'canonical_labels': [], 'decision': None, 'structured': {}}"
+          },
+          {
+            "benchmark_split": "val",
+            "images": [
+              "data/raw/ip102/full/ip102_v1.1/images/19429.jpg"
+            ],
+            "sample_id": "ip102-ip102-v1-1-images-19429-jpg",
+            "source_dataset": "ip102",
+            "target_preview": "{'acceptable_answers': [], 'answer_text': '25 aphids', 'canonical_label': '25 aphids', 'canonical_labels': [], 'decision': None, 'structured': {}}"
+          },
+          {
+            "benchmark_split": "val",
+            "images": [
+              "data/raw/ip102/full/ip102_v1.1/images/65192.jpg"
+            ],
+            "sample_id": "ip102-ip102-v1-1-images-65192-jpg",
+            "source_dataset": "ip102",
+            "target_preview": "{'acceptable_answers': [], 'answer_text': '92 Aphis citricola Vander Goot', 'canonical_label': '92 Aphis citricola Vander Goot', 'canonical_labels': [], 'decision': None, 'structured': {}}"
+          }
+        ],
+        "vqa": [
+          {
+            "benchmark_split": "test",
+            "images": [
+              "data/raw/plantvillage_vqa/full/images/train/image_016685.JPG"
+            ],
+            "sample_id": "plantvillage_vqa-image_016685.JPG-174949",
+            "source_dataset": "plantvillage_vqa",
+            "target_preview": "{'acceptable_answers': ['No'], 'answer_text': 'No', 'canonical_label': None, 'canonical_labels': [], 'decision': None, 'structured': {}}"
+          },
+          {
+            "benchmark_split": "test",
+            "images": [
+              "data/raw/plantvillage_vqa/full/images/train/image_020227.JPG"
+            ],
+            "sample_id": "plantvillage_vqa-image_020227.JPG-059114",
+            "source_dataset": "plantvillage_vqa",
+            "target_preview": "{'acceptable_answers': ['The cause is the bacterium Candidatus Liberibacter asiaticus, leading to Huanglongbing.'], 'answer_text': 'The cause is the bacterium Candidatus Liberibacter asiaticus, leadin"
+          },
+          {
+            "benchmark_split": "test",
+            "images": [
+              "data/raw/plantvillage_vqa/full/images/train/image_041298.JPG"
+            ],
+            "sample_id": "plantvillage_vqa-image_041298.JPG-121425",
+            "source_dataset": "plantvillage_vqa",
+            "target_preview": "{'acceptable_answers': ['The fungus Alternaria solani, which causes Early Blight, is responsible.'], 'answer_text': 'The fungus Alternaria solani, which causes Early Blight, is responsible.', 'canonic"
+          }
+        ]
+      },
+      "missing_image_examples": [],
+      "missing_image_file_count": 0,
+      "missing_image_sample_count": 0,
+      "multi_image_distribution": {
+        "1": 489,
+        "2": 9,
+        "3": 14
+      },
+      "phase": "sft_benchmark",
+      "prompt_leakage": {
+        "ground_truth_leakage_count": 0,
+        "ground_truth_leakage_examples": [],
+        "notes": "Prompt hits are heuristic. Yes/no questions may contain candidate labels without leaking the yes/no answer.",
+        "prompt_leakage_count": 0,
+        "prompt_leakage_examples": []
+      },
+      "public_test_examples": [],
+      "rows_by_crop_disease": {
+        "crop": {
+          "missing": 512
+        },
+        "disease": {
+          "Cherry leaf": 1,
+          "Corn rust leaf": 1,
+          "Peach leaf": 1,
+          "Potato leaf early blight": 2,
+          "Potato leaf late blight": 3,
+          "Raspberry leaf": 1,
+          "Squash Powdery mildew leaf": 3,
+          "Tomato Early blight leaf": 1,
+          "Tomato leaf bacterial spot": 2,
+          "Tomato leaf mosaic virus": 2,
+          "Tomato mold leaf": 1,
+          "grape leaf": 1,
+          "missing": 493
+        }
+      },
+      "rows_by_source_dataset": {
+        "ip102": 215,
+        "mirage": 28,
+        "plantdoc": 19,
+        "plantvillage_vqa": 250
+      },
+      "rows_by_split": {
+        "test": 392,
+        "val": 120
+      },
+      "rows_by_task_type": {
+        "clarify_or_respond": 28,
+        "classification": 234,
+        "vqa": 250
+      },
+      "train_eval_overlap": {
+        "exact_sample_id_count": 0,
+        "exact_sample_id_examples": [],
+        "group_key_count": 0,
+        "group_key_examples": []
+      },
+      "unique_image_groups": 508
+    }
+  },
+  "rl_sources": {
+    "holdout_manifest": "data/manifests/full/rl_local_holdout_eval.jsonl",
+    "train_manifest": "data/manifests/full/rl_manifest.jsonl"
+  },
+  "seed": 42,
+  "sft_sources": {
+    "eval_manifest": "data/manifests/full/sft_eval_phi4_max3_stratified512.jsonl",
+    "summary": {
+      "eval_by_dataset": {
+        "ip102": 215,
+        "mirage": 28,
+        "plantdoc": 19,
+        "plantvillage_vqa": 250
+      },
+      "eval_by_split": {
+        "dev": 28,
+        "holdout": 364,
+        "validation": 120
+      },
+      "eval_by_task_type": {
+        "clarify_or_respond": 28,
+        "classification": 234,
+        "vqa": 250
+      },
+      "eval_output_path": "/blue/hmedeiros/qinruoyao/agvlm/data/manifests/full/sft_eval_phi4_max3_stratified512.jsonl",
+      "eval_pool_rows": 28296,
+      "eval_rows": 512,
+      "eval_sample_size": 512,
+      "eval_splits": [
+        "validation",
+        "dev"
+      ],
+      "excluded": {
+        "eval_overlap": 21269,
+        "max_images": 2599,
+        "split": 9264
+      },
+      "holdout_manifest_path": "/blue/hmedeiros/qinruoyao/agvlm/data/manifests/full/local_holdout_eval.decode_aspect_valid_images.jsonl",
+      "max_images_per_sample": 3,
+      "min_eval_samples_per_stratum": 16,
+      "overlap": {
+        "exact_sample_id": 0,
+        "group_key": 0
+      },
+      "source_manifest_path": "/blue/hmedeiros/qinruoyao/agvlm/data/manifests/full/sft_manifest.decode_aspect_valid_images.jsonl",
+      "train_by_dataset": {
+        "agbase": 40738,
+        "agrillava": 1839,
+        "ip102": 40614,
+        "mirage": 24019,
+        "plantdoc": 2111,
+        "plantvillage": 43503,
+        "plantvillage_vqa": 139690
+      },
+      "train_by_task_type": {
+        "clarify_or_respond": 6482,
+        "classification": 86228,
+        "consultation": 60114,
+        "vqa": 139690
+      },
+      "train_output_path": "/blue/hmedeiros/qinruoyao/agvlm/data/manifests/full/sft_train_phi4_max3_no_eval_overlap.jsonl",
+      "train_rows": 292514,
+      "train_splits": [
+        "train"
+      ]
+    },
+    "train_manifest": "data/manifests/full/sft_train_phi4_max3_no_eval_overlap.jsonl"
+  }
+}

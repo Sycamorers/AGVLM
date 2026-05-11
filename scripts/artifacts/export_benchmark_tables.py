@@ -19,8 +19,13 @@ def parse_args() -> argparse.Namespace:
         nargs=2,
         action="append",
         metavar=("MODEL_NAME", "SUMMARY_OR_DIR"),
-        required=True,
+        default=None,
         help="Model label plus benchmark summary.json path or its parent directory.",
+    )
+    parser.add_argument(
+        "--summary-table",
+        default="benchmarks/vlm_baselines/results/metrics/summary_table.csv",
+        help="Phase-aware VLM baseline summary CSV to export when --run is not provided.",
     )
     parser.add_argument("--output-root", default="outputs/artifacts")
     parser.add_argument("--table-name", default="benchmark_results")
@@ -80,7 +85,23 @@ def _write_csv(path: Path, rows: List[Dict[str, Any]]) -> None:
 def _write_markdown(path: Path, rows: List[Dict[str, Any]]) -> None:
     ensure_dir(path.parent)
     metric_keys = sorted({key for row in rows for key in row if key.startswith("metric_")})
-    columns = ["model_name", "task", "num_predictions", *metric_keys]
+    if any("phase" in row for row in rows):
+        preferred = [
+            "phase",
+            "split",
+            "model_key",
+            "checkpoint_type",
+            "num_examples",
+            "task_macro_average",
+            "classification_macro_f1",
+            "vqa_relaxed_accuracy",
+            "clarify_macro_f1",
+            "consultation_structured_section_compliance",
+        ]
+        keys = sorted({key for row in rows for key in row})
+        columns = [key for key in preferred if key in keys]
+    else:
+        columns = ["model_name", "task", "num_predictions", *metric_keys]
     lines = [
         "# Benchmark Results",
         "",
@@ -94,6 +115,32 @@ def _write_markdown(path: Path, rows: List[Dict[str, Any]]) -> None:
 
 def main() -> int:
     args = parse_args()
+    output_root = Path(args.output_root)
+    if not args.run:
+        source = Path(args.summary_table)
+        if not source.exists():
+            raise FileNotFoundError("Benchmark summary table not found: %s" % source)
+        rows: List[Dict[str, Any]] = []
+        with source.open("r", encoding="utf-8", newline="") as handle:
+            reader = csv.DictReader(handle)
+            rows = [dict(row) for row in reader]
+        if not rows:
+            rows = []
+        csv_path = output_root / "tables" / ("%s.csv" % args.table_name)
+        markdown_path = output_root / "tables" / ("%s.md" % args.table_name)
+        manifest_path = output_root / "reports" / ("%s_manifest.json" % args.table_name)
+        _write_csv(csv_path, rows)
+        _write_markdown(markdown_path, rows)
+        manifest = {
+            "rows": len(rows),
+            "source_summary_table": str(source),
+            "csv_path": str(csv_path),
+            "markdown_path": str(markdown_path),
+        }
+        write_json(manifest_path, manifest)
+        print(json.dumps(manifest, indent=2, sort_keys=True))
+        return 0
+
     rows: List[Dict[str, Any]] = []
     summaries = []
     for model_name, path_like in args.run:
@@ -103,7 +150,6 @@ def main() -> int:
     if not rows:
         raise ValueError("No benchmark task rows were found in the provided summaries.")
 
-    output_root = Path(args.output_root)
     csv_path = output_root / "tables" / ("%s.csv" % args.table_name)
     markdown_path = output_root / "tables" / ("%s.md" % args.table_name)
     manifest_path = output_root / "reports" / ("%s_manifest.json" % args.table_name)

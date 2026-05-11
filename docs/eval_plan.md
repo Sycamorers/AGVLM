@@ -1,36 +1,89 @@
 # Eval Plan
 
-## MIRAGE-MMST
+## Evaluation Surfaces
 
-Local implementation:
-- answer exact match where references are short
-- structured consultation reward signals for management-style outputs
+Two evaluation surfaces are maintained:
 
-## MIRAGE-MMMT
+- `sft_benchmark`: held-out SFT benchmark for external baselines and the completed SFT model.
+- `rl_benchmark`: reward-verifiable held-out RL benchmark for external baselines, completed SFT model, and completed RL model.
 
-Local implementation:
-- clarify/respond decision accuracy
-- answer exact match where references are deterministic
+The surfaces must remain clearly labeled in predictions, metrics, summary tables, and final reports.
 
-## Local holdout
+## Prediction Format
 
-Built from non-overlapping PlantDoc, IP102, and PlantVillageVQA samples.
+Classification and short VQA should parse `Answer:` first.
 
-Reported metrics:
-- label accuracy
-- macro F1 for label tasks
-- exact match for short-answer tasks
-- clarify accuracy when applicable
-- clarify precision and recall when decision labels are present
-- unnecessary clarification rate
-- premature answer rate
-- average composite reward for held-out outputs
+Clarify tasks should parse:
 
-## Smoke evaluation
+```text
+Decision: <clarify or respond>
+Answer: <short answer or clarifying question>
+```
 
-The smoke pipeline uses:
-- synthetic normalized data
-- dry-run SFT and RL
-- oracle local evaluation
+Consultation tasks should parse line-start headers:
 
-This verifies repository wiring without requiring benchmark-only datasets or model downloads.
+```text
+Diagnosis:
+Evidence:
+Uncertainty:
+Management:
+Follow-up:
+```
+
+Loose substrings do not count as structured section compliance.
+
+## SFT Evaluation
+
+Models:
+
+- external baselines from `baseline_models.yaml`
+- completed SFT checkpoint or adapter from `agvlm_checkpoint_models.yaml`
+
+Data:
+
+- `benchmarks/vlm_baselines/splits/sft_val_manifest.jsonl`
+- `benchmarks/vlm_baselines/splits/sft_test_manifest.jsonl`
+
+Primary decision:
+
+- compare the completed SFT model against external baselines on agricultural classification and VQA while tracking invalid outputs and multi-image limitations.
+
+## RL Evaluation
+
+Models:
+
+- external baselines
+- completed SFT checkpoint
+- completed RL checkpoint
+
+Data:
+
+- `benchmarks/vlm_baselines/splits/rl_val_manifest.jsonl`
+- `benchmarks/vlm_baselines/splits/rl_test_manifest.jsonl`
+
+Primary decision:
+
+- compare RL against SFT to test whether reward-verifiable behavior improved without degrading core classification/VQA.
+
+Report:
+
+- classification and VQA metrics
+- clarify decision metrics
+- structured consultation diagnostics
+- forbidden claim and overconfidence diagnostics
+- optional reward scores only as diagnostics
+
+## Smoke and Dry-Run Evaluation
+
+Dry-runs validate configs and samples without model loads:
+
+```bash
+PYTHONPATH=benchmarks/vlm_baselines python3 benchmarks/vlm_baselines/run_baselines.py \
+  --phase sft \
+  --split val \
+  --model-name HuggingFaceTB/SmolVLM2-2.2B-Instruct \
+  --max-samples 2 \
+  --dry-run
+```
+
+CPU-safe tests cover parser, metrics, splits, checkpoint config validation, and summary table generation.

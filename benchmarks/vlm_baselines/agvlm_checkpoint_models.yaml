@@ -1,0 +1,34 @@
+models:
+  agvlm_phi4_sft_completed:
+    model_name: agvlm_phi4_sft_completed
+    adapter_type: agvlm_sft
+    checkpoint_type: sft
+    base_model_name_or_path: microsoft/Phi-4-reasoning-vision-15B
+    processor_name_or_path: microsoft/Phi-4-reasoning-vision-15B
+    checkpoint_path: CHANGE_ME_COMPLETED_SFT_CHECKPOINT_OR_MERGED_MODEL
+    adapter_path: CHANGE_ME_COMPLETED_SFT_ADAPTER_IF_LORA
+    initialized_from_sft_checkpoint: ""
+    trust_remote_code: true
+    max_images: 3
+    image_policy: all_images
+    dtype: bf16
+    quantization: none
+    model_family: phi4_reasoning_vision
+    notes: Replace checkpoint_path or adapter_path after SFT completes. Placeholder entries are validation warnings in status checks and fatal when selected for a run.
+
+  agvlm_phi4_rl_completed:
+    model_name: agvlm_phi4_rl_completed
+    adapter_type: agvlm_rl
+    checkpoint_type: rl
+    base_model_name_or_path: microsoft/Phi-4-reasoning-vision-15B
+    processor_name_or_path: microsoft/Phi-4-reasoning-vision-15B
+    checkpoint_path: CHANGE_ME_COMPLETED_RL_CHECKPOINT_OR_MERGED_MODEL
+    adapter_path: CHANGE_ME_COMPLETED_RL_ADAPTER_IF_LORA
+    initialized_from_sft_checkpoint: CHANGE_ME_COMPLETED_SFT_CHECKPOINT_USED_TO_INITIALIZE_RL
+    trust_remote_code: true
+    max_images: 3
+    image_policy: all_images
+    dtype: bf16
+    quantization: none
+    model_family: phi4_reasoning_vision
+    notes: Replace checkpoint_path or adapter_path after RL completes. RL entries must record the SFT checkpoint used to initialize RL.

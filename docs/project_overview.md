@@ -1,56 +1,70 @@
 # Project Overview
 
-## Scope
+## Goal
 
-This repository is the operating system for a ground-level RGB agricultural VLM paper. V1 is scoped to agricultural consultation from ordinary field or crop images, with emphasis on disease identification, pest identification, symptom interpretation, management-oriented advice, and clarify-vs-respond behavior.
+AGVLM is a config-driven research codebase for an agriculture-specialized vision-language model. V1 targets ground-level RGB agricultural scenarios: crop disease, pest and symptom understanding, short VQA, structured consultation, management suggestions, and clarify-vs-respond behavior.
 
-The default path is not a generic all-purpose VLM assistant. All data preparation, training, evaluation, and paper artifacts should support agricultural consultation.
+The default path is not a generic all-purpose VLM assistant. Training, data construction, evaluation, and reporting should stay scoped to agricultural consultation from field, crop, pest, disease, and plant symptom images.
 
-## Paper Thesis
+## Expected Behavior
 
-General-purpose VLMs often answer too early when agricultural evidence is incomplete. This project formulates agricultural consultation as a decision-aware task: the model should either answer when the image and context are sufficient, or ask a high-value clarification question when they are not.
+The model should:
 
-Primary contribution candidates:
+- recognize crop, disease, pest, and visible symptom evidence
+- answer short agricultural VQA questions
+- provide structured agronomic reasoning when consultation is requested
+- give management suggestions when appropriate
+- ask clarifying questions when image/question evidence is insufficient
+- avoid overconfident diagnoses and unsafe recommendations
 
-- Clarify-vs-respond task definition for agricultural consultation.
-- Decision-aware data construction with direct-answer, clarify-first, and clarify-to-resolution examples.
-- Two-stage post-training: agricultural SFT followed by policy optimization for consultation decision behavior.
-- Reliability-oriented evaluation beyond answer accuracy.
+## Stage Plan
+
+Stage 0: data acquisition, normalization, and manifests
+
+- Normalize public and manual agricultural datasets into repository JSONL manifests.
+- Preserve explicit documentation for gated, licensed, or manual dataset steps.
+- Construct train/eval splits with image-group leakage checks.
+
+Stage 1: SFT
+
+- Active model path: `microsoft/Phi-4-reasoning-vision-15B`.
+- Active data path: full max-3-image agricultural SFT split.
+- Purpose: teach task format, agricultural vocabulary, visual-language grounding, and answer style.
+- Output: completed SFT checkpoint or adapter.
+- Benchmark: external baselines plus completed SFT model on the SFT held-out benchmark split.
+
+Stage 2: RL / GRPO
+
+- Starts only from the completed SFT checkpoint or adapter.
+- Purpose: improve reward-verifiable behavior: output format, accepted-answer correctness, consultation sections, clarify-vs-respond, management coverage, uncertainty control, and forbidden claim avoidance.
+- Output: completed RL checkpoint or adapter.
+- Benchmark: external baselines plus completed SFT and RL models on the RL held-out benchmark split.
+
+Stage 3: result packaging
+
+- Export benchmark tables and training curves.
+- Write final reports and paper-ready tables.
+- Document limitations and failure modes.
 
 ## Repository Roles
 
-- Training codebase: SFT and GRPO entrypoints under `scripts/train/`, with library code under `src/agri_vlm/training/`.
-- Benchmark codebase: local holdout and MIRAGE entrypoints today, with registry support for AgMMU and AgroBench readiness tracking.
-- Artifact system: reusable metrics, figures, tables, reports, resolved configs, and run metadata under `outputs/`.
-- Progress reference: project stage, blockers, active milestone, and next actions tracked in `docs/progress_tracker.md`.
+- `src/agri_vlm/`: package code.
+- `scripts/data/`: data normalization and manifest construction.
+- `scripts/train/`: thin training wrappers around library code.
+- `scripts/eval/`: thin evaluation wrappers around library code.
+- `benchmarks/vlm_baselines/`: inference-only external baseline and project checkpoint benchmark harness.
+- `docs/`: project, benchmark, evaluation, and handoff documentation.
+- `reports/`: readiness, audit, and stage reports.
 
 ## Output Convention
 
+Benchmark outputs belong under:
+
 ```text
-outputs/
-  sft/<run_name>/
-    resolved_config.yaml
-    run_metadata.json
-    artifact_manifest.json
-    metrics/train_metrics.jsonl
-    metrics.jsonl
-    tensorboard/
-    artifacts/
-    checkpoint-*/
-  rl/<run_name>/
-    resolved_config.yaml
-    run_metadata.json
-    artifact_manifest.json
-    metrics/train_metrics.jsonl
-    tensorboard/
-  benchmarks/<model_or_run_name>/
-    summary.json
-    <task>/metrics.json
-    <task>/predictions.jsonl
-  artifacts/
-    figures/
-    tables/
-    reports/
+benchmarks/vlm_baselines/results/
+outputs/benchmark/
+reports/
+docs/
 ```
 
-Rank-zero training writes the provenance files and structured metric logs. TensorBoard event files are written by the trainer integration.
+Training outputs remain under `outputs/sft/` or `outputs/rl/`. Benchmark code must not write into training output directories.

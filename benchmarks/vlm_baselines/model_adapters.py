@@ -6,6 +6,7 @@ in lightweight environments.
 
 from __future__ import annotations
 
+import copy
 from dataclasses import dataclass
 import gc
 from pathlib import Path
@@ -76,6 +77,14 @@ MODEL_SPECS: dict[str, AdapterSpec] = {
         processor_kwargs={"min_pixels": 256 * 28 * 28, "max_pixels": 1280 * 28 * 28},
         notes="Uses qwen-vl-utils when installed; processor pixel budget is capped by default.",
     ),
+    "microsoft/Phi-4-reasoning-vision-15B": AdapterSpec(
+        model_name="microsoft/Phi-4-reasoning-vision-15B",
+        loader_classes=["AutoModelForCausalLM", "AutoModelForImageTextToText"],
+        prompt_style="phi4",
+        trust_remote_code=True,
+        default_attn_implementation="eager",
+        notes="Project base model for SFT/RL checkpoint benchmarking.",
+    ),
 }
 
 
@@ -93,18 +102,40 @@ class HuggingFaceVLMAdapter:
         dtype: str = "bf16",
         quantization: str = "none",
         attn_implementation: str | None = None,
+        model_entry: dict[str, Any] | None = None,
     ) -> None:
         self.model_name = model_name
-        self.spec = MODEL_SPECS.get(
+        self.model_entry = dict(model_entry or {})
+        self.base_model_name_or_path = str(
+            self.model_entry.get("base_model_name_or_path") or self.model_entry.get("model_name") or model_name
+        )
+        self.checkpoint_path = str(self.model_entry.get("checkpoint_path") or "")
+        self.adapter_path = str(self.model_entry.get("adapter_path") or "")
+        self.processor_name_or_path = str(
+            self.model_entry.get("processor_name_or_path")
+            or self.checkpoint_path
+            or self.base_model_name_or_path
+            or model_name
+        )
+        spec = MODEL_SPECS.get(
             model_name,
-            AdapterSpec(
+            MODEL_SPECS.get(
+                self.base_model_name_or_path,
+                AdapterSpec(
                 model_name=model_name,
                 loader_classes=["AutoModelForImageTextToText", "AutoModelForVision2Seq", "AutoModelForCausalLM"],
                 prompt_style="chat_prompt_images",
-                trust_remote_code=True,
+                trust_remote_code=bool(self.model_entry.get("trust_remote_code", True)),
                 notes="Generic fallback adapter for image-text-to-text models.",
+                ),
             ),
         )
+        self.spec = copy.copy(spec)
+        if self.model_entry.get("trust_remote_code") is not None:
+            self.spec.trust_remote_code = bool(self.model_entry.get("trust_remote_code"))
+        if self.model_entry.get("max_images") == 1 or self.model_entry.get("image_policy") == "first_image":
+            self.spec.supports_multi_image = False
+            self.spec.single_image_policy = "first_and_log"
         self.device = device
         self.dtype_name = dtype
         self.quantization = quantization
@@ -122,7 +153,7 @@ class HuggingFaceVLMAdapter:
         processor_kwargs = dict(self.spec.processor_kwargs or {})
         if self.spec.trust_remote_code:
             processor_kwargs["trust_remote_code"] = True
-        self.processor = transformers.AutoProcessor.from_pretrained(self.model_name, **processor_kwargs)
+        self.processor = transformers.AutoProcessor.from_pretrained(self.processor_name_or_path, **processor_kwargs)
 
         model_kwargs: dict[str, Any] = {
             "low_cpu_mem_usage": True,
@@ -131,7 +162,7 @@ class HuggingFaceVLMAdapter:
             model_kwargs["trust_remote_code"] = True
         if self.attn_implementation:
             config = transformers.AutoConfig.from_pretrained(
-                self.model_name,
+                self._model_load_source(),
                 trust_remote_code=self.spec.trust_remote_code,
             )
             for attr_name in ("_attn_implementation", "_attn_implementation_internal"):
@@ -179,6 +210,13 @@ class HuggingFaceVLMAdapter:
         model_config = getattr(self.model, "config", None)
         self.load_metadata = {
             "model_name": self.model_name,
+            "model_key": self.model_entry.get("model_key"),
+            "checkpoint_type": self.model_entry.get("checkpoint_type"),
+            "adapter_type": self.model_entry.get("adapter_type"),
+            "base_model_name_or_path": self.base_model_name_or_path,
+            "checkpoint_path": self.checkpoint_path,
+            "adapter_path": self.adapter_path,
+            "processor_name_or_path": self.processor_name_or_path,
             "model_class": type(self.model).__name__,
             "processor_class": type(self.processor).__name__,
             "dtype": self.dtype_name,
@@ -192,20 +230,38 @@ class HuggingFaceVLMAdapter:
 
     def _from_pretrained_with_retries(self, model_class: Any, model_kwargs: dict[str, Any]) -> Any:
         kwargs = dict(model_kwargs)
+        source = self._model_load_source()
         try:
-            return model_class.from_pretrained(self.model_name, **kwargs)
+            model = model_class.from_pretrained(source, **kwargs)
+            return self._maybe_attach_adapter(model)
         except TypeError as first:
             retry_kwargs = dict(kwargs)
             if "torch_dtype" in retry_kwargs:
                 retry_kwargs["dtype"] = retry_kwargs.pop("torch_dtype")
             try:
-                return model_class.from_pretrained(self.model_name, **retry_kwargs)
+                model = model_class.from_pretrained(source, **retry_kwargs)
+                return self._maybe_attach_adapter(model)
             except TypeError:
                 reduced_kwargs = dict(retry_kwargs)
                 reduced_kwargs.pop("attn_implementation", None)
-                return model_class.from_pretrained(self.model_name, **reduced_kwargs)
+                model = model_class.from_pretrained(source, **reduced_kwargs)
+                return self._maybe_attach_adapter(model)
             except Exception:
                 raise first
+
+    def _model_load_source(self) -> str:
+        if self.adapter_path:
+            return self.base_model_name_or_path
+        return self.checkpoint_path or self.base_model_name_or_path or self.model_name
+
+    def _maybe_attach_adapter(self, model: Any) -> Any:
+        if not self.adapter_path:
+            return model
+        try:
+            from peft import PeftModel
+        except Exception as exc:
+            raise RuntimeError("peft is required to load adapter_path=%s: %s" % (self.adapter_path, exc)) from exc
+        return PeftModel.from_pretrained(model, self.adapter_path)
 
     def _resolve_dtype(self, torch: Any) -> Any:
         requested = (self.dtype_name or "bf16").lower()

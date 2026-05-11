@@ -1,78 +1,163 @@
 {
-  "duplicate_sample_id_count_across_split_manifests": 120,
+  "duplicate_sample_id_count_across_split_manifests": 0,
   "extra": {
-    "active_train_manifest": "data/manifests/full/sft_train_phi4_max3_no_eval_overlap.jsonl",
-    "active_training_summary": {
-      "eval_by_dataset": {
+    "phase_report": {
+      "contains_public_test_data": false,
+      "duplicate_sample_id_count": 0,
+      "duplicate_sample_id_examples": [],
+      "examples_by_task_type": {
+        "clarify_or_respond": [
+          {
+            "benchmark_split": "test",
+            "images": [
+              "data/raw/mirage/full/images/MMMT_Direct/dev/MMMT_Direct-dev-000014-01.png",
+              "data/raw/mirage/full/images/MMMT_Direct/dev/MMMT_Direct-dev-000014-02.png",
+              "data/raw/mirage/full/images/MMMT_Direct/dev/MMMT_Direct-dev-000014-03.png"
+            ],
+            "sample_id": "mirage-#840265",
+            "source_dataset": "mirage",
+            "target_preview": "{'acceptable_answers': ['Could you please describe the symptoms you are observing on the leaves, such as discoloration, spots, or wilting? Additionally, any information on your watering schedule, sunl"
+          },
+          {
+            "benchmark_split": "test",
+            "images": [
+              "data/raw/mirage/full/images/MMMT_Direct/dev/MMMT_Direct-dev-000348-01.png",
+              "data/raw/mirage/full/images/MMMT_Direct/dev/MMMT_Direct-dev-000348-02.png",
+              "data/raw/mirage/full/images/MMMT_Direct/dev/MMMT_Direct-dev-000348-03.png"
+            ],
+            "sample_id": "mirage-#821855",
+            "source_dataset": "mirage",
+            "target_preview": "{'acceptable_answers': ['Could you provide more information about your geographic location, the time of year when the holes started appearing, the type of grass or lawn you have, and any recent treatm"
+          },
+          {
+            "benchmark_split": "test",
+            "images": [
+              "data/raw/mirage/full/images/MMMT_Direct/dev/MMMT_Direct-dev-000264-01.png",
+              "data/raw/mirage/full/images/MMMT_Direct/dev/MMMT_Direct-dev-000264-02.png"
+            ],
+            "sample_id": "mirage-#839670",
+            "source_dataset": "mirage",
+            "target_preview": "{'acceptable_answers': [\"Could you provide more information about the watering schedule or recent weather conditions, soil conditions, and if you've noticed any pests or diseases on the tree? Addition"
+          }
+        ],
+        "classification": [
+          {
+            "benchmark_split": "val",
+            "images": [
+              "data/raw/ip102/full/ip102_v1.1/images/22963.jpg"
+            ],
+            "sample_id": "ip102-ip102-v1-1-images-22963-jpg",
+            "source_dataset": "ip102",
+            "target_preview": "{'acceptable_answers': [], 'answer_text': '28 english grain aphid', 'canonical_label': '28 english grain aphid', 'canonical_labels': [], 'decision': None, 'structured': {}}"
+          },
+          {
+            "benchmark_split": "val",
+            "images": [
+              "data/raw/ip102/full/ip102_v1.1/images/19429.jpg"
+            ],
+            "sample_id": "ip102-ip102-v1-1-images-19429-jpg",
+            "source_dataset": "ip102",
+            "target_preview": "{'acceptable_answers': [], 'answer_text': '25 aphids', 'canonical_label': '25 aphids', 'canonical_labels': [], 'decision': None, 'structured': {}}"
+          },
+          {
+            "benchmark_split": "val",
+            "images": [
+              "data/raw/ip102/full/ip102_v1.1/images/65192.jpg"
+            ],
+            "sample_id": "ip102-ip102-v1-1-images-65192-jpg",
+            "source_dataset": "ip102",
+            "target_preview": "{'acceptable_answers': [], 'answer_text': '92 Aphis citricola Vander Goot', 'canonical_label': '92 Aphis citricola Vander Goot', 'canonical_labels': [], 'decision': None, 'structured': {}}"
+          }
+        ],
+        "vqa": [
+          {
+            "benchmark_split": "test",
+            "images": [
+              "data/raw/plantvillage_vqa/full/images/train/image_016685.JPG"
+            ],
+            "sample_id": "plantvillage_vqa-image_016685.JPG-174949",
+            "source_dataset": "plantvillage_vqa",
+            "target_preview": "{'acceptable_answers': ['No'], 'answer_text': 'No', 'canonical_label': None, 'canonical_labels': [], 'decision': None, 'structured': {}}"
+          },
+          {
+            "benchmark_split": "test",
+            "images": [
+              "data/raw/plantvillage_vqa/full/images/train/image_020227.JPG"
+            ],
+            "sample_id": "plantvillage_vqa-image_020227.JPG-059114",
+            "source_dataset": "plantvillage_vqa",
+            "target_preview": "{'acceptable_answers': ['The cause is the bacterium Candidatus Liberibacter asiaticus, leading to Huanglongbing.'], 'answer_text': 'The cause is the bacterium Candidatus Liberibacter asiaticus, leadin"
+          },
+          {
+            "benchmark_split": "test",
+            "images": [
+              "data/raw/plantvillage_vqa/full/images/train/image_041298.JPG"
+            ],
+            "sample_id": "plantvillage_vqa-image_041298.JPG-121425",
+            "source_dataset": "plantvillage_vqa",
+            "target_preview": "{'acceptable_answers': ['The fungus Alternaria solani, which causes Early Blight, is responsible.'], 'answer_text': 'The fungus Alternaria solani, which causes Early Blight, is responsible.', 'canonic"
+          }
+        ]
+      },
+      "missing_image_examples": [],
+      "missing_image_file_count": 0,
+      "missing_image_sample_count": 0,
+      "multi_image_distribution": {
+        "1": 489,
+        "2": 9,
+        "3": 14
+      },
+      "phase": "sft_benchmark",
+      "prompt_leakage": {
+        "ground_truth_leakage_count": 0,
+        "ground_truth_leakage_examples": [],
+        "notes": "Prompt hits are heuristic. Yes/no questions may contain candidate labels without leaking the yes/no answer.",
+        "prompt_leakage_count": 0,
+        "prompt_leakage_examples": []
+      },
+      "public_test_examples": [],
+      "rows_by_crop_disease": {
+        "crop": {
+          "missing": 512
+        },
+        "disease": {
+          "Cherry leaf": 1,
+          "Corn rust leaf": 1,
+          "Peach leaf": 1,
+          "Potato leaf early blight": 2,
+          "Potato leaf late blight": 3,
+          "Raspberry leaf": 1,
+          "Squash Powdery mildew leaf": 3,
+          "Tomato Early blight leaf": 1,
+          "Tomato leaf bacterial spot": 2,
+          "Tomato leaf mosaic virus": 2,
+          "Tomato mold leaf": 1,
+          "grape leaf": 1,
+          "missing": 493
+        }
+      },
+      "rows_by_source_dataset": {
         "ip102": 215,
         "mirage": 28,
         "plantdoc": 19,
         "plantvillage_vqa": 250
       },
-      "eval_by_split": {
-        "dev": 28,
-        "holdout": 364,
-        "validation": 120
+      "rows_by_split": {
+        "test": 392,
+        "val": 120
       },
-      "eval_by_task_type": {
+      "rows_by_task_type": {
         "clarify_or_respond": 28,
         "classification": 234,
         "vqa": 250
       },
-      "eval_output_path": "/blue/hmedeiros/qinruoyao/agvlm/data/manifests/full/sft_eval_phi4_max3_stratified512.jsonl",
-      "eval_pool_rows": 28296,
-      "eval_rows": 512,
-      "eval_sample_size": 512,
-      "eval_splits": [
-        "validation",
-        "dev"
-      ],
-      "excluded": {
-        "eval_overlap": 21269,
-        "max_images": 2599,
-        "split": 9264
+      "train_eval_overlap": {
+        "exact_sample_id_count": 0,
+        "exact_sample_id_examples": [],
+        "group_key_count": 0,
+        "group_key_examples": []
       },
-      "holdout_manifest_path": "/blue/hmedeiros/qinruoyao/agvlm/data/manifests/full/local_holdout_eval.decode_aspect_valid_images.jsonl",
-      "max_images_per_sample": 3,
-      "min_eval_samples_per_stratum": 16,
-      "overlap": {
-        "exact_sample_id": 0,
-        "group_key": 0
-      },
-      "source_manifest_path": "/blue/hmedeiros/qinruoyao/agvlm/data/manifests/full/sft_manifest.decode_aspect_valid_images.jsonl",
-      "train_by_dataset": {
-        "agbase": 40738,
-        "agrillava": 1839,
-        "ip102": 40614,
-        "mirage": 24019,
-        "plantdoc": 2111,
-        "plantvillage": 43503,
-        "plantvillage_vqa": 139690
-      },
-      "train_by_task_type": {
-        "clarify_or_respond": 6482,
-        "classification": 86228,
-        "consultation": 60114,
-        "vqa": 139690
-      },
-      "train_output_path": "/blue/hmedeiros/qinruoyao/agvlm/data/manifests/full/sft_train_phi4_max3_no_eval_overlap.jsonl",
-      "train_rows": 292514,
-      "train_splits": [
-        "train"
-      ]
-    },
-    "policy": {
-      "mode": "reuse_existing_held_out_eval",
-      "notes": [
-        "The repository has an active no-overlap held-out eval manifest, not a source split named test.",
-        "Benchmark split 'test' is an alias for the full active 512-row held-out eval manifest.",
-        "Benchmark split 'val' contains rows from the official source split tag 'validation'.",
-        "No training manifest, dataset file, checkpoint, tokenizer, LoRA adapter, log, or output directory is modified."
-      ],
-      "seed": 42,
-      "source_eval_manifest": "data/manifests/full/sft_eval_phi4_max3_stratified512.jsonl",
-      "test_manifest": "test_manifest.jsonl",
-      "val_manifest": "val_manifest.jsonl"
+      "unique_image_groups": 508
     }
   },
   "missing_image_examples": [],
@@ -81,7 +166,7 @@
   "missing_text_prompt_count": 0,
   "per_split_source_dataset": {
     "test": {
-      "ip102": 215,
+      "ip102": 95,
       "mirage": 28,
       "plantdoc": 19,
       "plantvillage_vqa": 250
@@ -93,7 +178,7 @@
   "per_split_task_type": {
     "test": {
       "clarify_or_respond": 28,
-      "classification": 234,
+      "classification": 114,
       "vqa": 250
     },
     "val": {
@@ -101,62 +186,62 @@
     }
   },
   "samples_per_label_or_answer_top100": {
-    "1 rice leaf roller": 5,
-    "102 Cicadellidae": 22,
-    "11 rice water weevil": 7,
-    "13 grain spreader thrips": 2,
-    "15 grub": 2,
-    "16 mole cricket": 6,
-    "17 wireworm": 2,
-    "19 black cutworm": 4,
+    "1 rice leaf roller": 4,
+    "102 Cicadellidae": 15,
+    "11 rice water weevil": 4,
+    "13 grain spreader thrips": 1,
+    "15 grub": 1,
+    "16 mole cricket": 4,
+    "17 wireworm": 1,
+    "19 black cutworm": 3,
     "20 large cutworm": 1,
-    "21 yellow cutworm": 6,
-    "22 red spider": 2,
-    "23 corn borer": 12,
-    "24 army worm": 6,
-    "25 aphids": 15,
-    "26 Potosiabre vitarsis": 3,
-    "27 peach borer": 2,
-    "28 english grain aphid": 2,
-    "29 green bug": 4,
-    "30 bird cherry oataphid": 4,
-    "31 wheat blossom midge": 3,
-    "34 wheat phloeothrips": 2,
-    "35 wheat sawfly": 2,
-    "38 flea beetle": 7,
-    "39 cabbage army worm": 3,
-    "4 asiatic rice borer": 4,
-    "40 beet army worm": 7,
-    "46 flax budworm": 12,
-    "47 alfalfa plant bug": 2,
-    "49 Locustoidea": 3,
-    "5 yellow rice borer": 4,
-    "51 legume blister beetle": 2,
-    "52 blister beetle": 11,
-    "55 Thrips": 5,
-    "58 Apolygus lucorum": 2,
-    "59 Limacodidae": 6,
-    "60 Viteus vitifoliae": 2,
-    "61 Colomerus vitis": 6,
-    "65 Pseudococcus comstocki Kuwana": 3,
-    "67 Ampelophaga": 5,
-    "68 Lycorma delicatula": 33,
-    "69 Xylotrechus": 7,
-    "70 Cicadella viridis": 11,
-    "71 Miridae": 17,
-    "75 Panonchus citri McGregor": 2,
-    "77 Icerya purchasi Maskell": 10,
-    "78 Unaspis yanonensis": 5,
-    "8 brown plant hopper": 4,
-    "83 Aleurocanthus spiniferus": 3,
-    "84 Tetradacus c Bactrocera minax": 3,
-    "87 Prodenia litura": 4,
-    "9 white backed plant hopper": 8,
-    "92 Aphis citricola Vander Goot": 2,
-    "93 Scirtothrips dorsalis Hood": 4,
-    "94 Dasineura sp": 4,
-    "96 Salurnis marginella Guerr": 2,
-    "98 Chlumetia transversa": 3,
+    "21 yellow cutworm": 3,
+    "22 red spider": 1,
+    "23 corn borer": 8,
+    "24 army worm": 4,
+    "25 aphids": 9,
+    "26 Potosiabre vitarsis": 2,
+    "27 peach borer": 1,
+    "28 english grain aphid": 1,
+    "29 green bug": 2,
+    "30 bird cherry oataphid": 2,
+    "31 wheat blossom midge": 2,
+    "34 wheat phloeothrips": 1,
+    "35 wheat sawfly": 1,
+    "38 flea beetle": 4,
+    "39 cabbage army worm": 2,
+    "4 asiatic rice borer": 3,
+    "40 beet army worm": 4,
+    "46 flax budworm": 9,
+    "47 alfalfa plant bug": 1,
+    "49 Locustoidea": 2,
+    "5 yellow rice borer": 2,
+    "51 legume blister beetle": 1,
+    "52 blister beetle": 8,
+    "55 Thrips": 3,
+    "58 Apolygus lucorum": 1,
+    "59 Limacodidae": 4,
+    "60 Viteus vitifoliae": 1,
+    "61 Colomerus vitis": 3,
+    "65 Pseudococcus comstocki Kuwana": 2,
+    "67 Ampelophaga": 4,
+    "68 Lycorma delicatula": 19,
+    "69 Xylotrechus": 4,
+    "70 Cicadella viridis": 7,
+    "71 Miridae": 11,
+    "75 Panonchus citri McGregor": 1,
+    "77 Icerya purchasi Maskell": 6,
+    "78 Unaspis yanonensis": 4,
+    "8 brown plant hopper": 2,
+    "83 Aleurocanthus spiniferus": 2,
+    "84 Tetradacus c Bactrocera minax": 2,
+    "87 Prodenia litura": 3,
+    "9 white backed plant hopper": 5,
+    "92 Aphis citricola Vander Goot": 1,
+    "93 Scirtothrips dorsalis Hood": 2,
+    "94 Dasineura sp": 3,
+    "96 Salurnis marginella Guerr": 1,
+    "98 Chlumetia transversa": 2,
     "A healthy leaf would be uniformly green and free of the evidence of orange or brown pustular structures.": 4,
     "A healthy version of this plant would not exhibit the evidence of orange or brown pustular structures.": 2,
     "Apple": 2,
@@ -205,24 +290,24 @@
   "samples_per_original_split": {
     "dev": 28,
     "holdout": 364,
-    "validation": 240
+    "validation": 120
   },
   "samples_per_source_dataset": {
-    "ip102": 335,
+    "ip102": 215,
     "mirage": 28,
     "plantdoc": 19,
     "plantvillage_vqa": 250
   },
   "samples_per_split": {
-    "test": 512,
+    "test": 392,
     "val": 120
   },
   "samples_per_task_type": {
     "clarify_or_respond": 28,
-    "classification": 354,
+    "classification": 234,
     "vqa": 250
   },
   "skipped_samples": {},
-  "total_samples": 632,
+  "total_samples": 512,
   "unique_sample_count": 512
 }

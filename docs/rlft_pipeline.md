@@ -79,6 +79,56 @@ This checks prompt conversion, image path resolution, JSON payload columns, and 
 ## Run CPU-Safe Tests
 
 ```bash
+PYTHONPATH=src:benchmarks/vlm_baselines python3 -m pytest \
+  tests/test_benchmark_metrics.py \
+  tests/test_benchmark_prediction_parsing.py \
+  tests/test_benchmark_phase_splits.py \
+  tests/test_benchmark_checkpoint_config.py \
+  tests/test_benchmark_summary_table.py \
+  -q
+```
+
+## Prepare RL Benchmark Splits
+
+```bash
+PYTHONPATH=benchmarks/vlm_baselines python3 benchmarks/vlm_baselines/build_phase_splits.py \
+  --phase rl \
+  --write-report
+```
+
+The RL benchmark builder uses `data/manifests/full/rl_local_holdout_eval.jsonl` and filters any rows whose sample id or image group appears in `data/manifests/full/rl_manifest.jsonl`. Current prepared splits contain 369 val rows and 1,573 test rows after filtering.
+
+## Benchmark After RL
+
+After the completed RL checkpoint or adapter exists, update `benchmarks/vlm_baselines/agvlm_checkpoint_models.yaml` and run dry-runs before full inference:
+
+```bash
+PYTHONPATH=benchmarks/vlm_baselines python3 benchmarks/vlm_baselines/run_baselines.py \
+  --phase rl \
+  --split val \
+  --model-key agvlm_phi4_sft_completed \
+  --max-samples 2 \
+  --dry-run
+
+PYTHONPATH=benchmarks/vlm_baselines python3 benchmarks/vlm_baselines/run_baselines.py \
+  --phase rl \
+  --split val \
+  --model-key agvlm_phi4_rl_completed \
+  --max-samples 2 \
+  --dry-run
+```
+
+Prepared full benchmark commands:
+
+```bash
+bash benchmarks/vlm_baselines/scripts/run_rl_benchmark_all_baselines.sh
+bash benchmarks/vlm_baselines/scripts/run_rl_benchmark_sft_checkpoint.sh
+bash benchmarks/vlm_baselines/scripts/run_rl_benchmark_rl_checkpoint.sh
+```
+
+Do not run the full RL benchmark until the intended SFT and RL checkpoints are ready.
+
+```bash
 PYTHONPATH=src pytest tests -q
 ```
 

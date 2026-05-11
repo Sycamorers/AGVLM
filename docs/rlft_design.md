@@ -79,4 +79,24 @@ Metrics to report:
 - average composite reward
 - task-wise breakdown
 
+Use the phase-aware benchmark harness for the formal comparison:
+
+```bash
+PYTHONPATH=benchmarks/vlm_baselines python3 benchmarks/vlm_baselines/run_baselines.py \
+  --phase rl \
+  --split val \
+  --model-key agvlm_phi4_sft_completed \
+  --max-samples 2 \
+  --dry-run
+
+PYTHONPATH=benchmarks/vlm_baselines python3 benchmarks/vlm_baselines/run_baselines.py \
+  --phase rl \
+  --split val \
+  --model-key agvlm_phi4_rl_completed \
+  --max-samples 2 \
+  --dry-run
+```
+
+The full RL benchmark should compare external baselines, the completed SFT checkpoint, and the completed RL checkpoint on the same `rl_benchmark` split. Reward scores, if exported, are diagnostics only and must be reported separately from primary benchmark metrics.
+
 Existing local and MIRAGE evaluation scripts cover parts of the classification, VQA, and holdout reporting path. Clarify precision/recall, structured compliance, management coverage, hallucination proxy, and average composite reward should be added or explicitly computed from prediction artifacts after RLFT.

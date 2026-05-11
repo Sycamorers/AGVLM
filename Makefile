@@ -8,8 +8,12 @@ RL_PHI4_MODEL_CONFIG ?= configs/model/phi4_reasoning_vision_15b_turin_24g.yaml
 RL_PHI4_READINESS_CONFIG ?= configs/train/rl_grpo_phi4_reasoning_vision_15b_b200_4gpu_readiness.yaml
 RL_PHI4_SMOKE_CONFIG ?= configs/train/rl_grpo_phi4_reasoning_vision_15b_b200_4gpu_smoke_after_sft.yaml
 RL_PHI4_FULL_CONFIG ?= configs/train/rl_grpo_phi4_reasoning_vision_15b_b200_4gpu_full_after_sft.yaml
+BENCHMARK_MODEL ?= HuggingFaceTB/SmolVLM2-2.2B-Instruct
+BENCHMARK_MODEL_KEY ?= agvlm_phi4_sft_completed
+BENCHMARK_RL_MODEL_KEY ?= agvlm_phi4_rl_completed
+BENCHMARK_MAX_SAMPLES ?= 2
 
-.PHONY: help bootstrap verify verify-dist smoke prepare-slots download-data normalize-all data-partial data-full data-report build-sft-manifest build-rl-manifest build-eval-manifest rl-data-full rl-audit-full rl-reward-check-full rl-format-check-full rl-phi4-readiness rl-phi4-smoke-after-sft rl-phi4-full-after-sft test-rl benchmark-status export-training-artifacts export-benchmark-tables sft sft-dist rl rl-dist eval eval-local test
+.PHONY: help bootstrap verify verify-dist smoke prepare-slots download-data normalize-all data-partial data-full data-report build-sft-manifest build-rl-manifest build-eval-manifest rl-data-full rl-audit-full rl-reward-check-full rl-format-check-full rl-phi4-readiness rl-phi4-smoke-after-sft rl-phi4-full-after-sft test-rl benchmark-status benchmark-phase-splits benchmark-sft-splits benchmark-rl-splits benchmark-dry-run benchmark-sft-dry-run benchmark-rl-dry-run benchmark-sft-summary benchmark-rl-summary benchmark-all-summary benchmark-sft-agvlm-checkpoint-dry-run benchmark-rl-agvlm-sft-checkpoint-dry-run benchmark-rl-agvlm-rl-checkpoint-dry-run benchmark-rl-agvlm-checkpoint-dry-run export-training-artifacts export-benchmark-tables sft sft-dist rl rl-dist eval eval-local test
 
 help:
 	@echo "Targets:"
@@ -35,6 +39,11 @@ help:
 	@echo "  rl-phi4-full-after-sft   Print future full 4x B200 Slurm command after checkpoint validation"
 	@echo "  test-rl              Run RL-specific CPU-safe tests"
 	@echo "  benchmark-status     Report benchmark readiness and missing paths"
+	@echo "  benchmark-phase-splits Build SFT and RL benchmark split manifests"
+	@echo "  benchmark-dry-run    Validate one external baseline on SFT and RL val splits without model load"
+	@echo "  benchmark-sft-summary Refresh SFT/RL benchmark summary table from metrics files"
+	@echo "  benchmark-sft-agvlm-checkpoint-dry-run Validate completed SFT checkpoint config without model load"
+	@echo "  benchmark-rl-agvlm-rl-checkpoint-dry-run Validate completed RL checkpoint config without model load"
 	@echo "  export-training-artifacts  Export curves/tables from RUN_DIR"
 	@echo "  export-benchmark-tables    Export tables from BENCHMARK_RUNS"
 	@echo "  sft                  Run 1-process supervised fine-tuning"
@@ -150,9 +159,79 @@ build-eval-manifest:
 		--fraction $(DATA_FRACTION)
 
 benchmark-status:
-	PYTHONPATH=src $(PYTHON) scripts/benchmarks/benchmark_status.py \
-		--download-mode $(DATA_DOWNLOAD_MODE) \
-		--fraction $(DATA_FRACTION)
+	PYTHONPATH=src:benchmarks/vlm_baselines $(PYTHON) scripts/benchmarks/benchmark_status.py \
+		--phase both \
+		--write-report
+
+benchmark-phase-splits:
+	PYTHONPATH=benchmarks/vlm_baselines $(PYTHON) benchmarks/vlm_baselines/build_phase_splits.py \
+		--phase both \
+		--write-report
+
+benchmark-sft-splits:
+	PYTHONPATH=benchmarks/vlm_baselines $(PYTHON) benchmarks/vlm_baselines/build_phase_splits.py \
+		--phase sft \
+		--write-report
+
+benchmark-rl-splits:
+	PYTHONPATH=benchmarks/vlm_baselines $(PYTHON) benchmarks/vlm_baselines/build_phase_splits.py \
+		--phase rl \
+		--write-report
+
+benchmark-dry-run:
+	$(MAKE) benchmark-sft-dry-run
+	$(MAKE) benchmark-rl-dry-run
+
+benchmark-sft-dry-run:
+	PYTHONPATH=benchmarks/vlm_baselines $(PYTHON) benchmarks/vlm_baselines/run_baselines.py \
+		--phase sft \
+		--split val \
+		--model-name "$(BENCHMARK_MODEL)" \
+		--max-samples $(BENCHMARK_MAX_SAMPLES) \
+		--dry-run
+
+benchmark-rl-dry-run:
+	PYTHONPATH=benchmarks/vlm_baselines $(PYTHON) benchmarks/vlm_baselines/run_baselines.py \
+		--phase rl \
+		--split val \
+		--model-name "$(BENCHMARK_MODEL)" \
+		--max-samples $(BENCHMARK_MAX_SAMPLES) \
+		--dry-run
+
+benchmark-sft-summary:
+	PYTHONPATH=benchmarks/vlm_baselines $(PYTHON) benchmarks/vlm_baselines/evaluate_predictions.py \
+		--refresh-summary-only \
+		--output-dir benchmarks/vlm_baselines/results/metrics
+
+benchmark-rl-summary: benchmark-sft-summary
+
+benchmark-all-summary: benchmark-sft-summary
+
+benchmark-sft-agvlm-checkpoint-dry-run:
+	PYTHONPATH=benchmarks/vlm_baselines $(PYTHON) benchmarks/vlm_baselines/run_baselines.py \
+		--phase sft \
+		--split val \
+		--model-key "$(BENCHMARK_MODEL_KEY)" \
+		--max-samples $(BENCHMARK_MAX_SAMPLES) \
+		--dry-run
+
+benchmark-rl-agvlm-sft-checkpoint-dry-run:
+	PYTHONPATH=benchmarks/vlm_baselines $(PYTHON) benchmarks/vlm_baselines/run_baselines.py \
+		--phase rl \
+		--split val \
+		--model-key "$(BENCHMARK_MODEL_KEY)" \
+		--max-samples $(BENCHMARK_MAX_SAMPLES) \
+		--dry-run
+
+benchmark-rl-agvlm-rl-checkpoint-dry-run:
+	PYTHONPATH=benchmarks/vlm_baselines $(PYTHON) benchmarks/vlm_baselines/run_baselines.py \
+		--phase rl \
+		--split val \
+		--model-key "$(BENCHMARK_RL_MODEL_KEY)" \
+		--max-samples $(BENCHMARK_MAX_SAMPLES) \
+		--dry-run
+
+benchmark-rl-agvlm-checkpoint-dry-run: benchmark-rl-agvlm-rl-checkpoint-dry-run
 
 export-training-artifacts:
 	test -n "$(RUN_DIR)"

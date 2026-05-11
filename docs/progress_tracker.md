@@ -1,13 +1,28 @@
 # Progress Tracker
 
-Current active milestone: Phi-4 reasoning vision full-data SFT on the
-max-3-image manifest using 16 Turin L4 GPUs.
+Current active milestone: Phi-4 reasoning vision full-data SFT on the max-3-image manifest using 16 Turin L4 GPUs.
 
 | Area | Status | Notes |
 | --- | --- | --- |
-| Data split | ready | `configs/data/sft_train_eval_phi4_max3.yaml` rebuilds non-overlapping train/eval manifests. |
-| Model config | ready | `configs/model/phi4_reasoning_vision_15b_turin_24g.yaml` uses Phi-4 reasoning vision processing. |
-| Batch preflight | ready | Slurm wrapper tests `PHI4_BATCH_CANDIDATES` before full training. |
-| Full SFT | pending | Submit `scripts/hpc/run_sft_turin_16gpu_phi4_reasoning_vision_15b_full_max3.slurm`. |
-| Post-SFT eval | blocked | Waiting for a completed SFT checkpoint. |
-| GRPO | blocked | Waiting for SFT and post-SFT evaluation. |
+| SFT split | ready | `sft_train_phi4_max3_no_eval_overlap.jsonl` and `sft_eval_phi4_max3_stratified512.jsonl` exist. |
+| Active SFT run | active/pending external to this task | Do not interrupt server training. |
+| Benchmark split builder | ready | `build_phase_splits.py` writes phase-labeled SFT and RL val/test manifests. |
+| SFT benchmark harness | ready for dry-run | External baselines and completed SFT checkpoints are supported. Full benchmark not run. |
+| RL benchmark harness | ready for dry-run | External baselines, completed SFT, and completed RL checkpoints are supported. Full benchmark not run. |
+| Metrics | ready | Task-specific metrics for classification, short VQA, clarify, and consultation are implemented. |
+| Checkpoint config | placeholder | `agvlm_checkpoint_models.yaml` must be updated with real SFT/RL paths before project checkpoint runs. |
+| RL training | blocked | Must wait for completed SFT checkpoint. RL must not start from the raw base model. |
+| Reports | ready | Benchmark audit and split/status reports are under `reports/` and `benchmarks/vlm_baselines/splits/`. |
+
+## Current Split Counts
+
+- SFT benchmark: 120 val rows, 392 test rows, zero exact/group overlap with SFT train.
+- RL benchmark: 369 val rows, 1,573 test rows after filtering 2,154 RL local-holdout rows with train image-group overlap.
+
+## Immediate Next Actions
+
+1. Let SFT finish.
+2. Replace `agvlm_phi4_sft_completed` placeholder paths with the completed SFT checkpoint or adapter.
+3. Run the SFT checkpoint dry-run command from `docs/benchmark_plan.md`.
+4. Run intended SFT benchmark jobs.
+5. Start RL only from the completed SFT checkpoint after SFT benchmark review.
