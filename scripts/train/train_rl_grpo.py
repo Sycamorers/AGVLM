@@ -16,6 +16,7 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--model-config", default="configs/model/phi4_reasoning_vision_15b_turin_24g.yaml")
     parser.add_argument("--train-config", default="configs/train/rl_grpo_lora.yaml")
+    parser.add_argument("--config", default=None, help="Alias for --train-config.")
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--resume-from-checkpoint", default=None)
     return parser.parse_args()
@@ -25,7 +26,8 @@ def main() -> int:
     args = parse_args()
     repo_root = Path(__file__).resolve().parents[2]
     model_config = load_config(repo_root / args.model_config, ModelConfigSchema)
-    train_config = load_config(repo_root / args.train_config, RLTrainConfigSchema)
+    train_config_path = args.config or args.train_config
+    train_config = load_config(repo_root / train_config_path, RLTrainConfigSchema)
     if args.dry_run:
         train_config.dry_run = True
     if args.resume_from_checkpoint:

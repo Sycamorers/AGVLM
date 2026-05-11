@@ -1,5 +1,6 @@
 """Model inference helpers for evaluation."""
 
+from contextlib import nullcontext
 from pathlib import Path
 from typing import Any, Iterable, Iterator, List, Optional
 
@@ -7,6 +8,49 @@ from agri_vlm.data.conversation_format import sample_to_prompt_messages, target_
 from agri_vlm.modeling.model_factory import load_inference_model
 from agri_vlm.modeling.processor_factory import load_processor
 from agri_vlm.utils.image import open_image
+
+
+def _looks_like_phi4_reasoning_processor(processor: Any) -> bool:
+    name = type(processor).__name__.lower()
+    return "phi4" in name and "vision" in name
+
+
+def _render_text_only_chat(messages: List[Any]) -> List[dict[str, str]]:
+    rendered = []
+    for message in messages:
+        parts = []
+        content = message.get("content", "")
+        if isinstance(content, str):
+            parts.append(content)
+        else:
+            for block in content:
+                block_type = block.get("type")
+                if block_type == "image":
+                    parts.append("<image>")
+                elif block_type == "text":
+                    parts.append(block.get("text", ""))
+        rendered.append({"role": message.get("role", "user"), "content": "".join(parts)})
+    return rendered
+
+
+def _apply_generation_template(processor: Any, messages: List[Any]) -> str:
+    try:
+        return processor.apply_chat_template(
+            messages,
+            tokenize=False,
+            add_generation_prompt=True,
+        )
+    except AttributeError:
+        if not _looks_like_phi4_reasoning_processor(processor) or hasattr(processor, "chat_template"):
+            raise
+        tokenizer = getattr(processor, "tokenizer", None)
+        if tokenizer is None or not hasattr(tokenizer, "apply_chat_template"):
+            raise
+        return tokenizer.apply_chat_template(
+            _render_text_only_chat(messages),
+            tokenize=False,
+            add_generation_prompt=True,
+        )
 
 
 def _batched(items: List[Any], batch_size: int) -> Iterator[List[Any]]:
@@ -61,11 +105,7 @@ def generate_predictions_from_loaded_model(
         with torch.no_grad():
             for batch_rows in _batched(rows, batch_size=batch_size):
                 prompts = [
-                    processor.apply_chat_template(
-                        sample_to_prompt_messages(sample),
-                        tokenize=False,
-                        add_generation_prompt=True,
-                    )
+                    _apply_generation_template(processor, sample_to_prompt_messages(sample))
                     for sample in batch_rows
                 ]
                 image_batch = [[open_image(Path(path)) for path in sample.images] for sample in batch_rows]
@@ -79,7 +119,14 @@ def generate_predictions_from_loaded_model(
                 }
                 if synced_gpus:
                     generation_kwargs["synced_gpus"] = True
-                output_ids = generation_model.generate(**batch, **generation_kwargs)
+                device_type = getattr(generation_device, "type", None)
+                autocast_context = (
+                    torch.autocast(device_type="cuda", dtype=torch.bfloat16)
+                    if device_type == "cuda"
+                    else nullcontext()
+                )
+                with autocast_context:
+                    output_ids = generation_model.generate(**batch, **generation_kwargs)
                 prompt_length = int(batch["input_ids"].shape[1])
                 for row_index in range(len(batch_rows)):
                     decoded = processor.batch_decode(
@@ -107,7 +154,16 @@ def generate_predictions(
 ) -> List[str]:
     """Run local generation for a list of normalized samples."""
     processor = load_processor(model_config, checkpoint_path=checkpoint_path)
-    model = load_inference_model(model_config=model_config, checkpoint_path=checkpoint_path)
+    if checkpoint_path and getattr(processor, "image_processor", None) is None:
+        processor = load_processor(model_config)
+    if getattr(model_config, "load_in_4bit", False):
+        from agri_vlm.training.rl_trainer import _load_with_quantized_cast_guard
+
+        model = _load_with_quantized_cast_guard(
+            lambda: load_inference_model(model_config=model_config, checkpoint_path=checkpoint_path)
+        )
+    else:
+        model = load_inference_model(model_config=model_config, checkpoint_path=checkpoint_path)
     return generate_predictions_from_loaded_model(
         samples,
         model=model,

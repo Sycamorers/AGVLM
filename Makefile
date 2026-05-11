@@ -4,10 +4,11 @@ MASTER_PORT ?= 29500
 DATA_DOWNLOAD_MODE ?= partial
 DATA_FRACTION ?= 0.1
 RL_MANIFEST ?= data/manifests/full/rl_manifest.jsonl
+RL_EVAL_MANIFEST ?= data/manifests/full/rl_local_holdout_eval.jsonl
 RL_PHI4_MODEL_CONFIG ?= configs/model/phi4_reasoning_vision_15b_turin_24g.yaml
-RL_PHI4_READINESS_CONFIG ?= configs/train/rl_grpo_phi4_reasoning_vision_15b_b200_4gpu_readiness.yaml
-RL_PHI4_SMOKE_CONFIG ?= configs/train/rl_grpo_phi4_reasoning_vision_15b_b200_4gpu_smoke_after_sft.yaml
-RL_PHI4_FULL_CONFIG ?= configs/train/rl_grpo_phi4_reasoning_vision_15b_b200_4gpu_full_after_sft.yaml
+RL_PHI4_READINESS_CONFIG ?= configs/train/rl_grpo_phi4_readiness.yaml
+RL_PHI4_SMOKE_CONFIG ?= configs/train/rl_grpo_phi4_smoke.yaml
+RL_PHI4_FULL_CONFIG ?= configs/train/rl_grpo_phi4_full.yaml
 BENCHMARK_MODEL ?= HuggingFaceTB/SmolVLM2-2.2B-Instruct
 BENCHMARK_MODEL_KEY ?= agvlm_phi4_sft_completed
 BENCHMARK_RL_MODEL_KEY ?= agvlm_phi4_rl_completed
@@ -110,6 +111,10 @@ build-rl-manifest:
 		--fraction $(DATA_FRACTION)
 
 rl-data-full:
+	PYTHONPATH=src $(PYTHON) scripts/data/prepare_rl_datasets.py \
+		--subset full \
+		--skip-unavailable \
+		--write-report
 	PYTHONPATH=src $(PYTHON) scripts/data/build_rl_manifest.py \
 		--config configs/data/rl_build.yaml \
 		--download-mode full \
@@ -118,6 +123,7 @@ rl-data-full:
 rl-audit-full:
 	PYTHONPATH=src $(PYTHON) scripts/data/audit_rl_manifest.py \
 		--manifest-path $(RL_MANIFEST) \
+		--eval-manifest-path $(RL_EVAL_MANIFEST) \
 		--output-json outputs/rl/audit/full_rl_manifest_audit.json \
 		--output-md outputs/rl/audit/full_rl_manifest_audit.md \
 		--fail-on-critical
@@ -146,11 +152,11 @@ rl-phi4-readiness:
 
 rl-phi4-smoke-after-sft:
 	PYTHONPATH=src $(PYTHON) -c 'from pathlib import Path; from agri_vlm.schemas.config_schema import ModelConfigSchema, RLTrainConfigSchema, load_config; from agri_vlm.training.rl_trainer import validate_rl_sft_checkpoint_path; model=load_config(Path("$(RL_PHI4_MODEL_CONFIG)"), ModelConfigSchema); train=load_config(Path("$(RL_PHI4_SMOKE_CONFIG)"), RLTrainConfigSchema); validate_rl_sft_checkpoint_path(model, train); manifest=Path(train.manifest_path); assert manifest.exists(), "RL manifest missing: %s" % manifest'
-	@echo "sbatch --export=ALL,TRAIN_CONFIG=$(RL_PHI4_SMOKE_CONFIG) scripts/hpc/run_rl_grpo_b200_4gpu_phi4_reasoning_vision_15b.slurm"
+	@echo "sbatch scripts/hpc/run_rl_grpo_phi4_smoke.slurm"
 
 rl-phi4-full-after-sft:
 	PYTHONPATH=src $(PYTHON) -c 'from pathlib import Path; from agri_vlm.schemas.config_schema import ModelConfigSchema, RLTrainConfigSchema, load_config; from agri_vlm.training.rl_trainer import validate_rl_sft_checkpoint_path; model=load_config(Path("$(RL_PHI4_MODEL_CONFIG)"), ModelConfigSchema); train=load_config(Path("$(RL_PHI4_FULL_CONFIG)"), RLTrainConfigSchema); validate_rl_sft_checkpoint_path(model, train); manifest=Path(train.manifest_path); assert manifest.exists(), "RL manifest missing: %s" % manifest'
-	@echo "sbatch --export=ALL,TRAIN_CONFIG=$(RL_PHI4_FULL_CONFIG) scripts/hpc/run_rl_grpo_b200_4gpu_phi4_reasoning_vision_15b.slurm"
+	@echo "sbatch scripts/hpc/run_rl_grpo_phi4_full.slurm"
 
 build-eval-manifest:
 	PYTHONPATH=src $(PYTHON) scripts/data/build_eval_manifest.py \

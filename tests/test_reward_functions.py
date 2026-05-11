@@ -2,12 +2,16 @@ from agri_vlm.rewards.classification import normalized_label_reward
 from agri_vlm.rewards.clarify_decision import clarify_vs_respond_reward, infer_decision
 from agri_vlm.rewards.composite import compute_composite_reward, make_trl_reward_function
 from agri_vlm.rewards.exact_match import exact_match_reward
+from agri_vlm.rewards.hallucination_penalty import hallucination_penalty
+from agri_vlm.rewards.parsing import extract_answer_field, extract_decision_field, extract_structured_sections
+from agri_vlm.rewards.structure import structured_format_reward
+from agri_vlm.rewards.uncertainty import uncertainty_calibration_reward
 from agri_vlm.schemas.reward_schema import RewardInput
 
 
 def test_exact_match_reward() -> None:
     reward_input = RewardInput(
-        prediction="leaf spot",
+        prediction="Answer: leaf spot\nEvidence: circular lesions",
         task_type="vqa",
         target_text="leaf spot",
         acceptable_answers=["leaf spot"],
@@ -17,7 +21,7 @@ def test_exact_match_reward() -> None:
 
 def test_normalized_label_reward() -> None:
     reward_input = RewardInput(
-        prediction="Tomato___Early_Blight",
+        prediction="Answer: Tomato___Early_Blight\nEvidence: spots",
         task_type="classification",
         target_label="tomato early blight",
     )
@@ -65,6 +69,42 @@ def test_infer_decision_empty_is_not_clarify() -> None:
     assert infer_decision("") == "none"
 
 
+def test_field_parsers_use_line_start_fields() -> None:
+    text = "Diagnosis: leaf spot\nEvidence: circular lesions\nManagement: remove affected leaves"
+    assert extract_answer_field("Answer: leaf spot\nEvidence: spots") == "leaf spot"
+    assert extract_decision_field("Decision: clarify\nClarifying question: Which crop?") == "clarify"
+    assert extract_structured_sections(text)["diagnosis"] == "leaf spot"
+
+
+def test_structured_format_requires_true_headers() -> None:
+    reward_input = RewardInput(
+        prediction="Diagnosis: leaf spot\nEvidence: lesions\nUncertainty: moderate\nManagement: prune\nFollow-up: monitor",
+        task_type="consultation",
+        required_sections=["Diagnosis", "Evidence", "Uncertainty", "Management", "Follow-up"],
+    )
+    assert structured_format_reward(reward_input) == 1.0
+    weak_input = reward_input.model_copy(update={"prediction": "Diagnosis and Evidence and Management are discussed."})
+    assert structured_format_reward(weak_input) == 0.0
+
+
+def test_uncertainty_does_not_count_high_confidence_or_confirm() -> None:
+    reward_input = RewardInput(
+        prediction="High confidence. Confirm this diagnosis.",
+        task_type="consultation",
+        uncertainty_required=True,
+    )
+    assert uncertainty_calibration_reward(reward_input) == 0.0
+
+
+def test_overconfident_unsafe_answer_is_penalized() -> None:
+    reward_input = RewardInput(
+        prediction="This is definitely the disease. Guaranteed cure. No follow-up needed.",
+        task_type="consultation",
+        uncertainty_required=True,
+    )
+    assert hallucination_penalty(reward_input) < 0.0
+
+
 def test_composite_reward_combines_modules() -> None:
     reward_input = RewardInput(
         prediction="leaf spot",
@@ -90,7 +130,7 @@ def test_make_trl_reward_function_routes_extra_columns() -> None:
     )
     rewards = reward_fn(
         prompts=["unused"],
-        completions=["leaf spot"],
+        completions=["Answer: leaf spot"],
         task_type=["classification"],
         target_json=['{"answer_text": "leaf spot", "canonical_label": "leaf spot"}'],
         verifier_json=['{"mode": "label", "accepted_labels": ["leaf spot"]}'],

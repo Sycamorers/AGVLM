@@ -3,6 +3,7 @@
 import json
 from typing import Optional
 
+from agri_vlm.rewards.parsing import extract_decision_field
 from agri_vlm.schemas.reward_schema import RewardInput
 from agri_vlm.utils.text import contains_any, normalize_text, normalize_whitespace
 
@@ -49,6 +50,9 @@ def infer_decision(prediction: str) -> str:
     text = normalize_whitespace(prediction)
     if not text:
         return "none"
+    explicit_decision = extract_decision_field(text)
+    if explicit_decision:
+        return explicit_decision
     json_decision = _extract_json_decision(text)
     if json_decision:
         return json_decision

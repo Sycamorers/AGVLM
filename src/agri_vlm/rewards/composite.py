@@ -47,6 +47,7 @@ def build_reward_input(
         management_keywords=verifier.get("management_keywords") or [],
         forbidden_claims=verifier.get("forbidden_claims") or [],
         acceptable_answers=(target.get("acceptable_answers") or []) + (verifier.get("accepted_answers") or []),
+        accepted_labels=verifier.get("accepted_labels") or [],
         synonym_groups=verifier.get("synonyms") or {},
         uncertainty_required=bool(verifier.get("uncertainty_required")),
         weights=reward_meta.get("weights") or {},

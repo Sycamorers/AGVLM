@@ -119,6 +119,8 @@ class RLTrainConfigSchema(TrainConfigSchema):
     model_config = ConfigDict(extra="forbid")
 
     sft_checkpoint_path: str
+    optim: Optional[str] = None
+    optim_args: Optional[str] = None
     beta: float = 0.0
     num_generations: int = 4
     max_prompt_length: int = 2048

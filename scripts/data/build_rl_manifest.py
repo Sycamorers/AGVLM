@@ -20,6 +20,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--fraction", type=float, default=None)
     parser.add_argument("--subset-tag", default=None)
     parser.add_argument("--data-root", default=None)
+    parser.add_argument("--skip-unavailable", action="store_true")
     return parser.parse_args()
 
 
@@ -53,6 +54,30 @@ def main() -> int:
         download_mode=runtime["download_mode"],
         sample_fraction=runtime["sample_fraction"],
     )
+    holdout_output_path = None
+    if payload.get("holdout_output_path"):
+        holdout_output_path = resolve_manifest_path(
+            template=payload["holdout_output_path"],
+            repo_root=repo_root,
+            subset_tag=runtime["subset_tag"],
+            data_root=runtime["data_root"],
+            download_mode=runtime["download_mode"],
+            sample_fraction=runtime["sample_fraction"],
+        )
+    summary_output_path = None
+    if payload.get("summary_output_path"):
+        summary_output_path = resolve_manifest_path(
+            template=payload["summary_output_path"],
+            repo_root=repo_root,
+            subset_tag=runtime["subset_tag"],
+            data_root=runtime["data_root"],
+            download_mode=runtime["download_mode"],
+            sample_fraction=runtime["sample_fraction"],
+        )
+    missing = [dataset_name for dataset_name in payload["datasets"] if dataset_name not in source_paths]
+    if missing and not args.skip_unavailable:
+        print("missing_rl_sources=%s" % ",".join(missing))
+        return 2
     rows = build_rl_manifest(
         source_paths=list(source_paths.values()),
         output_path=output_path,
@@ -61,9 +86,17 @@ def main() -> int:
         allowed_verifier_modes=payload["allowed_verifier_modes"],
         max_answer_words=payload["max_answer_words"],
         max_images_per_sample=payload.get("max_images_per_sample"),
+        holdout_output_path=holdout_output_path,
+        holdout_ratio=float(payload.get("local_holdout_ratio", 0.0)),
+        max_holdout_samples=int(payload.get("max_local_holdout_samples", 0)),
+        min_holdout_per_stratum=int(payload.get("min_local_holdout_per_stratum", 1)),
+        summary_output_path=summary_output_path,
     )
-    missing = [dataset_name for dataset_name in payload["datasets"] if dataset_name not in source_paths]
     print("built_rl_manifest=%s rows=%s" % (output_path, len(rows)))
+    if holdout_output_path:
+        print("built_rl_holdout_manifest=%s" % holdout_output_path)
+    if summary_output_path:
+        print("built_rl_manifest_summary=%s" % summary_output_path)
     if payload.get("max_images_per_sample") is not None:
         print("rl_max_images_per_sample=%s" % payload["max_images_per_sample"])
     if missing:

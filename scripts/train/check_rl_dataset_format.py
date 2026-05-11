@@ -13,6 +13,7 @@ from agri_vlm.data.manifest_io import read_manifest
 from agri_vlm.modeling.processor_factory import load_processor
 from agri_vlm.rewards.composite import make_trl_reward_function
 from agri_vlm.schemas.config_schema import ModelConfigSchema, load_config
+from agri_vlm.utils.image import open_image
 from agri_vlm.utils.io import ensure_dir, write_json
 
 
@@ -117,6 +118,7 @@ def run_format_check(
                 add_issue("json_serialization_error", sample.sample_id, json_key)
 
     reward_function_ok = False
+    transformed_sample_check: Dict[str, Any] = {"ok": False, "images_key": "images", "image_count": 0}
     if records:
         reward_fn = make_trl_reward_function(
             reward_modules=["exact_match", "normalized_label", "clarify_vs_respond"],
@@ -134,6 +136,17 @@ def run_format_check(
             reward_function_ok = True
         except Exception as exc:
             add_issue("reward_function_column_error", records[0]["sample_id"], str(exc))
+        try:
+            loaded_images = [open_image(repo_root / image_path) for image_path in records[0]["image_paths"]]
+            transformed_sample_check = {
+                "ok": bool(loaded_images),
+                "images_key": "images",
+                "image_count": len(loaded_images),
+                "modes": [image.mode for image in loaded_images],
+            }
+        except Exception as exc:
+            transformed_sample_check = {"ok": False, "images_key": "images", "image_count": 0, "error": str(exc)}
+            add_issue("transformed_sample_image_error", records[0]["sample_id"], str(exc))
 
     processor_check: Dict[str, Any] = {"requested": bool(check_processor), "ok": None}
     if check_processor and records:
@@ -155,6 +168,7 @@ def run_format_check(
         "checked_rows": len(rows),
         "dataset_columns": DATASET_COLUMNS,
         "reward_function_columns_ok": reward_function_ok,
+        "transformed_sample_check": transformed_sample_check,
         "prompt_content_summary": {
             "min_messages": min((item["messages"] for item in prompt_stats), default=0),
             "min_text_blocks": min((item["text_blocks"] for item in prompt_stats), default=0),
@@ -187,6 +201,9 @@ def write_markdown_report(report: Dict[str, Any], output_path: Path) -> None:
         lines.append("- `%s`: `%s`" % (key, value))
     lines.extend(["", "## Processor Check", ""])
     for key, value in report["processor_check"].items():
+        lines.append("- `%s`: `%s`" % (key, value))
+    lines.extend(["", "## Transformed Sample Check", ""])
+    for key, value in report["transformed_sample_check"].items():
         lines.append("- `%s`: `%s`" % (key, value))
     lines.extend(["", "## Issues", ""])
     if not report["issues"]:

@@ -7,10 +7,11 @@ import argparse
 from collections import Counter, defaultdict
 import json
 from pathlib import Path
+import re
 from typing import Any, Dict, Iterable, List, Tuple
 
 from agri_vlm.utils.io import ensure_dir, read_jsonl, write_json
-from agri_vlm.utils.text import normalize_label, word_count
+from agri_vlm.utils.text import normalize_label, normalize_text, word_count
 
 
 SUPPORTED_VERIFIER_MODES = {"label", "exact_match", "synonym", "structured", "clarify"}
@@ -20,8 +21,17 @@ CRITICAL_ISSUES = {
     "missing_image_paths",
     "image_paths_not_exist",
     "unsupported_verifier_mode",
-    "clarify_without_expected_decision",
     "no_applicable_reward_module",
+    "target_leakage_in_prompt",
+    "answer_leakage_in_user_message",
+    "metadata_ground_truth_in_prompt",
+    "test_split_in_rl_manifest",
+    "empty_accepted_answers_for_exact_reward",
+    "empty_accepted_labels_for_label_reward",
+    "consultation_without_required_sections",
+    "clarify_without_expected_decision",
+    "malformed_task_target_or_verifier",
+    "train_eval_overlap",
 }
 FIELD_COVERAGE_NAMES = [
     "target.decision",
@@ -41,6 +51,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--manifest-path", required=True)
     parser.add_argument("--output-json", required=True)
     parser.add_argument("--output-md", required=True)
+    parser.add_argument("--eval-manifest-path", default=None)
     parser.add_argument("--max-examples-per-issue", type=int, default=20)
     parser.add_argument("--fail-on-critical", action="store_true")
     return parser.parse_args()
@@ -87,6 +98,75 @@ def _target_text(row: Dict[str, Any]) -> str:
     if target.get("structured"):
         return json.dumps(target["structured"], ensure_ascii=False, sort_keys=True)
     return ""
+
+
+def _user_prompt_text(row: Dict[str, Any]) -> str:
+    parts: List[str] = []
+    for message in row.get("messages") or []:
+        if message.get("role") != "user":
+            continue
+        for content in message.get("content") or []:
+            if content.get("type") == "text":
+                parts.append(str(content.get("text") or ""))
+    return "\n".join(parts)
+
+
+def _task_allows_proposed_label(row: Dict[str, Any]) -> bool:
+    text = normalize_text(_user_prompt_text(row))
+    return any(
+        marker in text
+        for marker in [
+            "is this diagnosis",
+            "is this label",
+            "verify",
+            "confirm whether",
+            "proposed label",
+            "proposed diagnosis",
+        ]
+    )
+
+
+def _leak_term_present(term: str, prompt: str) -> bool:
+    normalized_term = normalize_text(term)
+    if not normalized_term:
+        return False
+    if normalized_term in {"yes", "no", "true", "false", "respond", "clarify"}:
+        return False
+    if len(normalized_term) <= 2:
+        return False
+    normalized_prompt = normalize_text(prompt)
+    if " " not in normalized_term:
+        return re.search(r"\b%s\b" % re.escape(normalized_term), normalized_prompt) is not None
+    return normalized_term in normalized_prompt
+
+
+def _accepted_answer_values(row: Dict[str, Any]) -> List[str]:
+    target = _dict_value(row, "target")
+    verifier = _dict_value(row, "verifier")
+    values: List[str] = []
+    for key in ("answer_text", "canonical_label"):
+        if target.get(key):
+            values.append(str(target[key]))
+    values.extend(str(item) for item in target.get("acceptable_answers") or [])
+    values.extend(str(item) for item in target.get("canonical_labels") or [])
+    values.extend(str(item) for item in verifier.get("accepted_answers") or [])
+    values.extend(str(item) for item in verifier.get("accepted_labels") or [])
+    return values
+
+
+def _overlap_key(row: Dict[str, Any]) -> str:
+    metadata = row.get("metadata") or {}
+    images = row.get("images") or []
+    image_identity = str(metadata.get("source_image_id") or (images[0] if images else ""))
+    return "%s::%s::%s" % (
+        normalize_text(image_identity),
+        normalize_text(_user_prompt_text(row)),
+        normalize_label(_target_text(row)),
+    )
+
+
+def _source_is_lab_leaf_dataset(row: Dict[str, Any]) -> bool:
+    return str(row.get("source_dataset") or "") in {"plantvillage", "plantvillage_vqa"}
 
 
 def _list_value(payload: Dict[str, Any], key: str) -> List[Any]:
@@ -140,8 +220,8 @@ class IssueCollector:
             }
         )
 
-    def report(self) -> Dict[str, Dict[str, Any]]:
-        names = sorted(set(self.counts) | set(CRITICAL_ISSUES))
+    def report(self, include_names: Iterable[str] = ()) -> Dict[str, Dict[str, Any]]:
+        names = sorted(set(self.counts) | set(include_names))
         return {
             name: {"count": int(self.counts.get(name, 0)), "examples": self.examples.get(name, [])}
             for name in names
@@ -209,11 +289,14 @@ def audit_manifest(
     manifest_path: Path,
     *,
     repo_root: Path,
+    eval_manifest_path: Path = None,
     max_examples_per_issue: int = 20,
 ) -> Dict[str, Any]:
     rows = list(read_jsonl(manifest_path))
+    eval_rows = list(read_jsonl(eval_manifest_path)) if eval_manifest_path and eval_manifest_path.exists() else []
     total = len(rows)
     issues = IssueCollector(max_examples=max_examples_per_issue)
+    warnings = IssueCollector(max_examples=max_examples_per_issue)
     if total == 0:
         issues.add("no_samples", {}, 0, "manifest has no rows")
 
@@ -226,6 +309,12 @@ def audit_manifest(
     field_counts: Counter[str] = Counter()
     module_counts: Counter[str] = Counter()
     seen_ids: Dict[str, int] = {}
+    crop_values = set()
+    disease_values = set()
+    lab_leaf_rows = 0
+
+    eval_overlap_keys = {_overlap_key(row) for row in eval_rows}
+    eval_sample_ids = {str(row.get("sample_id") or "") for row in eval_rows}
 
     for line_number, row in enumerate(rows, start=1):
         sample_id = str(row.get("sample_id") or "")
@@ -235,6 +324,10 @@ def audit_manifest(
         target = _dict_value(row, "target")
         verifier = _dict_value(row, "verifier")
         reward_meta = _dict_value(row, "reward_meta")
+        crop_values.add(str((row.get("metadata") or {}).get("crop") or ""))
+        disease_values.add(str((row.get("metadata") or {}).get("disease") or ""))
+        if _source_is_lab_leaf_dataset(row):
+            lab_leaf_rows += 1
         mode = str(verifier.get("mode") or "")
         by_verifier_mode[mode] += 1
         images = row.get("images") or []
@@ -265,25 +358,53 @@ def audit_manifest(
             issues.add("test_split_in_rl_manifest", row, line_number, "test split must be excluded")
         if mode not in SUPPORTED_VERIFIER_MODES:
             issues.add("unsupported_verifier_mode", row, line_number, "mode=%s" % mode)
+        if mode == "exact_match" and not (target.get("answer_text") or target.get("acceptable_answers") or verifier.get("accepted_answers")):
+            issues.add("empty_accepted_answers_for_exact_reward", row, line_number, "exact reward has no accepted answers")
+        if mode == "label" and not (target.get("canonical_label") or target.get("canonical_labels") or verifier.get("accepted_labels")):
+            issues.add("empty_accepted_labels_for_label_reward", row, line_number, "label reward has no accepted labels")
         if mode == "clarify" and not verifier.get("expected_decision"):
             issues.add("clarify_without_expected_decision", row, line_number, "missing verifier.expected_decision")
         if row.get("task_type") == "clarify_or_respond" and not (
             target.get("decision") or verifier.get("expected_decision")
         ):
-            issues.add("clarify_task_without_decision", row, line_number, "missing target/verifier decision")
+            issues.add("malformed_task_target_or_verifier", row, line_number, "clarify task missing target/verifier decision")
         if row.get("task_type") == "consultation" and not target.get("structured"):
-            issues.add("consultation_without_structured_target", row, line_number, "missing target.structured")
+            warnings.add("consultation_without_structured_target", row, line_number, "missing target.structured")
         if row.get("task_type") == "consultation" and not verifier.get("required_sections"):
             issues.add("consultation_without_required_sections", row, line_number, "missing required_sections")
         if _is_management_related(row) and not verifier.get("management_keywords"):
-            issues.add("management_without_keywords", row, line_number, "management-related row has no keywords")
+            warnings.add("management_without_keywords", row, line_number, "management-related row has no keywords")
         if _is_uncertainty_related(row) and not verifier.get("uncertainty_required"):
-            issues.add("uncertainty_without_flag", row, line_number, "uncertainty-related row has no flag")
-        if answer_lengths[-1] > 80:
-            issues.add("extremely_long_target_answers", row, line_number, "answer_words=%s" % answer_lengths[-1])
+            warnings.add("uncertainty_without_flag", row, line_number, "uncertainty-related row has no flag")
+        if answer_lengths[-1] > 80 and mode == "exact_match":
+            warnings.add("too_long_answers_for_exact_reward", row, line_number, "answer_words=%s" % answer_lengths[-1])
+        if not verifier.get("forbidden_claims"):
+            warnings.add("missing_forbidden_claims", row, line_number, "no deterministic forbidden_claims configured")
         mismatch = _target_verifier_mismatch(row)
         if mismatch:
-            issues.add("target_verifier_mismatch", row, line_number, mismatch)
+            issues.add("malformed_task_target_or_verifier", row, line_number, mismatch)
+
+        prompt_text = _user_prompt_text(row)
+        for value in _accepted_answer_values(row):
+            if _leak_term_present(value, prompt_text):
+                issue_name = "target_leakage_in_prompt" if normalize_label(value) in {
+                    normalize_label(str(item)) for item in [target.get("canonical_label")] + list(verifier.get("accepted_labels") or [])
+                    if item
+                } else "answer_leakage_in_user_message"
+                if issue_name == "target_leakage_in_prompt" and _task_allows_proposed_label(row):
+                    continue
+                issues.add(issue_name, row, line_number, "prompt contains target text: %s" % value)
+                break
+
+        metadata = row.get("metadata") or {}
+        for key in ["disease", "pest", "normalized_label", "original_label"]:
+            value = metadata.get(key)
+            if value and _leak_term_present(str(value), prompt_text) and not _task_allows_proposed_label(row):
+                issues.add("metadata_ground_truth_in_prompt", row, line_number, "prompt contains metadata.%s" % key)
+                break
+
+        if eval_rows and (sample_id in eval_sample_ids or _overlap_key(row) in eval_overlap_keys):
+            issues.add("train_eval_overlap", row, line_number, "row overlaps eval manifest")
 
         modules = applicable_reward_modules(row)
         if not modules:
@@ -320,11 +441,28 @@ def audit_manifest(
         "management_coverage",
         "hallucination_penalty",
     ]
-    issue_report = issues.report()
+    issue_report = issues.report(CRITICAL_ISSUES)
     critical_count = sum(issue_report[name]["count"] for name in CRITICAL_ISSUES)
+    if total:
+        largest_task_share = max(by_task_type.values()) / float(total) if by_task_type else 0.0
+        largest_source_share = max(by_dataset.values()) / float(total) if by_dataset else 0.0
+        if largest_task_share > 0.85:
+            warnings.add("extreme_task_imbalance", rows[0], 1, "largest task share %.2f" % largest_task_share)
+        if largest_source_share > 0.75:
+            warnings.add("extreme_source_imbalance", rows[0], 1, "largest source share %.2f" % largest_source_share)
+        if len({item for item in crop_values if item}) < 3:
+            warnings.add("low_crop_diversity", rows[0], 1, "unique nonempty crop count=%s" % len({item for item in crop_values if item}))
+        if len({item for item in disease_values if item}) < 5:
+            warnings.add("low_disease_diversity", rows[0], 1, "unique nonempty disease count=%s" % len({item for item in disease_values if item}))
+        lab_leaf_share = lab_leaf_rows / float(total)
+        if lab_leaf_share > 0.70:
+            warnings.add("lab_leaf_dataset_dominance", rows[0], 1, "plantvillage/plantvillage_vqa share %.2f" % lab_leaf_share)
+    warning_report = warnings.report()
     return {
         "manifest_path": str(manifest_path),
+        "eval_manifest_path": str(eval_manifest_path) if eval_manifest_path else None,
         "total_samples": total,
+        "eval_samples": len(eval_rows),
         "counts": {
             "by_source_dataset": dict(sorted(by_dataset.items())),
             "by_task_type": dict(sorted(by_task_type.items())),
@@ -338,6 +476,7 @@ def audit_manifest(
             name: _coverage(module_counts.get(name, 0), total) for name in module_names
         },
         "issues": issue_report,
+        "warnings": warning_report,
         "critical_issue_count": int(critical_count),
         "critical_issue_names": sorted(name for name in CRITICAL_ISSUES if issue_report[name]["count"] > 0),
     }
@@ -355,7 +494,9 @@ def write_markdown_report(report: Dict[str, Any], output_path: Path) -> None:
         "# RL Manifest Audit",
         "",
         "- Manifest: `%s`" % report["manifest_path"],
+        "- Eval manifest: `%s`" % (report.get("eval_manifest_path") or ""),
         "- Total samples: `%s`" % report["total_samples"],
+        "- Eval samples: `%s`" % report.get("eval_samples", 0),
         "- Critical issue count: `%s`" % report["critical_issue_count"],
         "",
         "## Counts",
@@ -394,6 +535,24 @@ def write_markdown_report(report: Dict[str, Any], output_path: Path) -> None:
                 )
         lines.append("")
 
+    lines.extend(["## Warnings", ""])
+    if not report.get("warnings"):
+        lines.append("No warnings found.")
+    for name, payload in report.get("warnings", {}).items():
+        lines.append("### %s" % name)
+        lines.append("")
+        lines.append("- Count: `%s`" % payload["count"])
+        if payload["examples"]:
+            lines.append("")
+            lines.append("| Line | Sample ID | Reason |")
+            lines.append("| ---: | --- | --- |")
+            for example in payload["examples"]:
+                lines.append(
+                    "| %s | %s | %s |"
+                    % (example.get("line"), example.get("sample_id"), str(example.get("reason")).replace("|", "\\|"))
+                )
+        lines.append("")
+
     ensure_dir(output_path.parent)
     output_path.write_text("\n".join(lines).rstrip() + "\n", encoding="utf-8")
 
@@ -404,6 +563,7 @@ def main() -> int:
     report = audit_manifest(
         Path(args.manifest_path),
         repo_root=repo_root,
+        eval_manifest_path=Path(args.eval_manifest_path) if args.eval_manifest_path else None,
         max_examples_per_issue=args.max_examples_per_issue,
     )
     write_json(Path(args.output_json), report)

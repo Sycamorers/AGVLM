@@ -8,6 +8,7 @@ import pytest
 
 from agri_vlm.schemas.config_schema import ModelConfigSchema, RLTrainConfigSchema, load_config
 from agri_vlm.training.rl_trainer import run_rl_grpo, validate_rl_sft_checkpoint_path
+from agri_vlm.utils.image import save_solid_image
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -66,7 +67,7 @@ def _write_jsonl(path: Path, rows: list[dict]) -> None:
 
 def test_rl_manifest_audit_reports_counts(tmp_path: Path) -> None:
     image_path = tmp_path / "leaf.png"
-    image_path.write_bytes(b"not-a-real-image")
+    save_solid_image(image_path, [40, 120, 40])
     manifest_path = tmp_path / "rl.jsonl"
     _write_jsonl(manifest_path, [_row("sample-1", image_path)])
     output_json = tmp_path / "audit.json"
@@ -133,7 +134,7 @@ def test_rl_manifest_audit_fails_on_critical_issues(tmp_path: Path) -> None:
 
 def test_reward_sanity_check_scores_target_above_empty(tmp_path: Path) -> None:
     image_path = tmp_path / "leaf.png"
-    image_path.write_bytes(b"not-a-real-image")
+    save_solid_image(image_path, [40, 120, 40])
     manifest_path = tmp_path / "rl.jsonl"
     _write_jsonl(manifest_path, [_row("sample-1", image_path)])
     output_json = tmp_path / "reward.json"
@@ -168,7 +169,7 @@ def test_reward_sanity_check_scores_target_above_empty(tmp_path: Path) -> None:
 
 def test_rl_dataset_format_check_uses_expected_columns(tmp_path: Path) -> None:
     image_path = tmp_path / "leaf.png"
-    image_path.write_bytes(b"not-a-real-image")
+    save_solid_image(image_path, [40, 120, 40])
     manifest_path = tmp_path / "rl.jsonl"
     _write_jsonl(manifest_path, [_row("sample-1", image_path)])
     output_json = tmp_path / "format.json"
@@ -199,6 +200,7 @@ def test_rl_dataset_format_check_uses_expected_columns(tmp_path: Path) -> None:
     assert result.returncode == 0, result.stderr + result.stdout
     report = json.loads(output_json.read_text(encoding="utf-8"))
     assert report["reward_function_columns_ok"] is True
+    assert report["transformed_sample_check"]["ok"] is True
     assert report["dataset_columns"] == [
         "prompt",
         "image_paths",
@@ -214,6 +216,9 @@ def test_rl_dataset_format_check_uses_expected_columns(tmp_path: Path) -> None:
 
 def test_phi4_rl_configs_load() -> None:
     for config_path in [
+        "configs/train/rl_grpo_phi4_readiness.yaml",
+        "configs/train/rl_grpo_phi4_smoke.yaml",
+        "configs/train/rl_grpo_phi4_full.yaml",
         "configs/train/rl_grpo_phi4_reasoning_vision_15b_b200_4gpu_readiness.yaml",
         "configs/train/rl_grpo_phi4_reasoning_vision_15b_b200_4gpu_smoke_after_sft.yaml",
         "configs/train/rl_grpo_phi4_reasoning_vision_15b_b200_4gpu_full_after_sft.yaml",
@@ -226,7 +231,7 @@ def test_phi4_rl_configs_load() -> None:
 
 def test_rl_dry_run_allows_placeholder_sft_path(tmp_path: Path) -> None:
     image_path = tmp_path / "leaf.png"
-    image_path.write_bytes(b"not-a-real-image")
+    save_solid_image(image_path, [40, 120, 40])
     manifest_path = tmp_path / "rl.jsonl"
     _write_jsonl(manifest_path, [_row("sample-1", image_path)])
     model_config = load_config(
@@ -301,5 +306,5 @@ def test_slurm_wrapper_static_checks() -> None:
     assert "--nproc_per_node=4" in slurm_text
     assert "configs/model/phi4_reasoning_vision_15b_turin_24g.yaml" in slurm_text
     assert "TRAIN_CONFIG" in slurm_text
-    assert "rl_grpo_phi4_reasoning_vision_15b_b200_4gpu_smoke_after_sft.yaml" in slurm_text
-    assert "rl_grpo_phi4_reasoning_vision_15b_b200_4gpu_full_after_sft.yaml" not in slurm_text
+    assert "rl_grpo_phi4_smoke.yaml" in slurm_text
+    assert "rl_grpo_phi4_full.yaml" not in slurm_text

@@ -1,0 +1,107 @@
+{
+  "by_source_dataset": {
+    "agbase": {
+      "accepted_answer_accuracy": 1.0,
+      "average_completion_length": 7.5,
+      "average_composite_reward": 1.0,
+      "clarify_decision_accuracy": 0.0,
+      "classification_label_accuracy": 0.0,
+      "hallucination_forbidden_claim_rate": 0.0,
+      "management_keyword_coverage": 0.0,
+      "num_examples": 2.0,
+      "structured_section_compliance": 0.0,
+      "synonym_soft_score": 0.0
+    },
+    "ip102": {
+      "accepted_answer_accuracy": 1.0,
+      "average_completion_length": 4.0,
+      "average_composite_reward": 3.0,
+      "clarify_decision_accuracy": 0.0,
+      "classification_label_accuracy": 1.0,
+      "hallucination_forbidden_claim_rate": 0.0,
+      "management_keyword_coverage": 0.0,
+      "num_examples": 1.0,
+      "structured_section_compliance": 0.0,
+      "synonym_soft_score": 1.0
+    },
+    "plantvillage": {
+      "accepted_answer_accuracy": 1.0,
+      "average_completion_length": 3.5,
+      "average_composite_reward": 3.0,
+      "clarify_decision_accuracy": 0.0,
+      "classification_label_accuracy": 1.0,
+      "hallucination_forbidden_claim_rate": 0.0,
+      "management_keyword_coverage": 0.0,
+      "num_examples": 2.0,
+      "structured_section_compliance": 0.0,
+      "synonym_soft_score": 1.0
+    },
+    "plantvillage_vqa": {
+      "accepted_answer_accuracy": 1.0,
+      "average_completion_length": 8.0,
+      "average_composite_reward": 1.0,
+      "clarify_decision_accuracy": 0.0,
+      "classification_label_accuracy": 0.0,
+      "hallucination_forbidden_claim_rate": 0.0,
+      "management_keyword_coverage": 0.0,
+      "num_examples": 5.0,
+      "structured_section_compliance": 0.0,
+      "synonym_soft_score": 0.0
+    }
+  },
+  "by_task_type": {
+    "classification": {
+      "accepted_answer_accuracy": 1.0,
+      "average_completion_length": 3.6666666666666665,
+      "average_composite_reward": 3.0,
+      "clarify_decision_accuracy": 0.0,
+      "classification_label_accuracy": 1.0,
+      "hallucination_forbidden_claim_rate": 0.0,
+      "management_keyword_coverage": 0.0,
+      "num_examples": 3.0,
+      "structured_section_compliance": 0.0,
+      "synonym_soft_score": 1.0
+    },
+    "consultation": {
+      "accepted_answer_accuracy": 1.0,
+      "average_completion_length": 7.5,
+      "average_composite_reward": 1.0,
+      "clarify_decision_accuracy": 0.0,
+      "classification_label_accuracy": 0.0,
+      "hallucination_forbidden_claim_rate": 0.0,
+      "management_keyword_coverage": 0.0,
+      "num_examples": 2.0,
+      "structured_section_compliance": 0.0,
+      "synonym_soft_score": 0.0
+    },
+    "vqa": {
+      "accepted_answer_accuracy": 1.0,
+      "average_completion_length": 8.0,
+      "average_composite_reward": 1.0,
+      "clarify_decision_accuracy": 0.0,
+      "classification_label_accuracy": 0.0,
+      "hallucination_forbidden_claim_rate": 0.0,
+      "management_keyword_coverage": 0.0,
+      "num_examples": 5.0,
+      "structured_section_compliance": 0.0,
+      "synonym_soft_score": 0.0
+    }
+  },
+  "checkpoint_path": null,
+  "manifest_path": "data/manifests/full/rl_local_holdout_eval.jsonl",
+  "overall": {
+    "overall": {
+      "accepted_answer_accuracy": 1.0,
+      "average_completion_length": 6.6,
+      "average_composite_reward": 1.6,
+      "clarify_decision_accuracy": 0.0,
+      "classification_label_accuracy": 0.3,
+      "hallucination_forbidden_claim_rate": 0.0,
+      "management_keyword_coverage": 0.0,
+      "num_examples": 10.0,
+      "structured_section_compliance": 0.0,
+      "synonym_soft_score": 0.3
+    }
+  },
+  "prediction_mode": "oracle"
+}

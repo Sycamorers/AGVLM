@@ -1,0 +1,47 @@
+{
+  "data_root": "/blue/hmedeiros/qinruoyao/agvlm/data",
+  "datasets": {
+    "agbase": {
+      "interim_path": "/blue/hmedeiros/qinruoyao/agvlm/data/interim/full/agbase.jsonl",
+      "raw_dir": "/blue/hmedeiros/qinruoyao/agvlm/data/raw/agbase/full",
+      "rows": 44849,
+      "status": "normalized"
+    },
+    "ip102": {
+      "interim_path": "/blue/hmedeiros/qinruoyao/agvlm/data/interim/full/ip102.jsonl",
+      "raw_dir": "/blue/hmedeiros/qinruoyao/agvlm/data/raw/ip102/full",
+      "rows": 75222,
+      "status": "normalized"
+    },
+    "mirage": {
+      "interim_path": "/blue/hmedeiros/qinruoyao/agvlm/data/interim/full/mirage.jsonl",
+      "raw_dir": "/blue/hmedeiros/qinruoyao/agvlm/data/raw/mirage/full",
+      "rows": 40889,
+      "status": "normalized"
+    },
+    "plantdoc": {
+      "interim_path": "/blue/hmedeiros/qinruoyao/agvlm/data/interim/full/plantdoc.jsonl",
+      "raw_dir": "/blue/hmedeiros/qinruoyao/agvlm/data/raw/plantdoc/full",
+      "rows": 2578,
+      "status": "normalized"
+    },
+    "plantvillage": {
+      "interim_path": "/blue/hmedeiros/qinruoyao/agvlm/data/interim/full/plantvillage.jsonl",
+      "raw_dir": "/blue/hmedeiros/qinruoyao/agvlm/data/raw/plantvillage/full",
+      "rows": 54381,
+      "status": "normalized"
+    },
+    "plantvillage_vqa": {
+      "interim_path": "/blue/hmedeiros/qinruoyao/agvlm/data/interim/full/plantvillage_vqa.jsonl",
+      "raw_dir": "/blue/hmedeiros/qinruoyao/agvlm/data/raw/plantvillage_vqa/full",
+      "rows": 193609,
+      "status": "normalized"
+    }
+  },
+  "download_mode": "full",
+  "image_verification": {},
+  "sample_fraction": 1.0,
+  "subset": "full",
+  "subset_tag": "full",
+  "unavailable_datasets": []
+}

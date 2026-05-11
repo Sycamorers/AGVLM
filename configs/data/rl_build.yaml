@@ -6,6 +6,8 @@ datasets:
   - agbase
   - mirage
 output_path: "{data_root}/manifests/{subset_tag}/rl_manifest.jsonl"
+holdout_output_path: "{data_root}/manifests/{subset_tag}/rl_local_holdout_eval.jsonl"
+summary_output_path: "{data_root}/manifests/{subset_tag}/rl_manifest_summary.json"
 allowed_task_types:
   - classification
   - vqa
@@ -23,3 +25,6 @@ max_answer_words: 80
 # V1 GRPO training is scoped to one ground-level RGB image per sample.
 # Multi-image MIRAGE tracks remain in evaluation manifests.
 max_images_per_sample: 1
+local_holdout_ratio: 0.02
+max_local_holdout_samples: 4096
+min_local_holdout_per_stratum: 16

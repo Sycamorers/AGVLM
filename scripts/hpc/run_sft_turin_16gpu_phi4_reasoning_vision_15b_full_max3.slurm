@@ -167,9 +167,8 @@ launch=(python -m torch.distributed.run \
   --nnodes "$SLURM_NNODES" \
   --node_rank "$SLURM_NODEID" \
   --nproc_per_node 2 \
-  --rdzv_backend c10d \
-  --rdzv_endpoint "$MASTER_ADDR:$MASTER_PORT" \
-  --rdzv_id "$SLURM_JOB_ID" \
+  --master_addr "$MASTER_ADDR" \
+  --master_port "$MASTER_PORT" \
   --max_restarts 0 \
   scripts/train/train_sft.py \
   --model-config "$MODEL_CONFIG" \

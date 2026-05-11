@@ -4,13 +4,14 @@
 from __future__ import annotations
 
 import argparse
-from collections import defaultdict
+from collections import Counter, defaultdict
 import json
 from pathlib import Path
 import random
 from typing import Any, Dict, Iterable, List, Tuple
 
 from agri_vlm.rewards.composite import make_trl_reward_function
+from agri_vlm.rewards.parsing import extract_structured_sections
 from agri_vlm.schemas.config_schema import RLTrainConfigSchema, load_config
 from agri_vlm.utils.io import ensure_dir, read_jsonl, write_json
 
@@ -94,15 +95,15 @@ def _load_reward_settings(
 def _target_answer(row: Dict[str, Any]) -> str:
     target = row.get("target") or {}
     if target.get("answer_text"):
-        return str(target["answer_text"])
+        return "Answer: %s" % str(target["answer_text"])
     if target.get("canonical_label"):
-        return str(target["canonical_label"])
+        return "Answer: %s" % str(target["canonical_label"])
     if target.get("canonical_labels"):
-        return str(target["canonical_labels"][0])
+        return "Answer: %s" % str(target["canonical_labels"][0])
     if target.get("acceptable_answers"):
-        return str(target["acceptable_answers"][0])
+        return "Answer: %s" % str(target["acceptable_answers"][0])
     if target.get("decision"):
-        return json.dumps({"decision": target["decision"]}, sort_keys=True)
+        return "Decision: %s\nClarifying question: Which crop and field conditions should I consider?" % target["decision"]
     if target.get("structured"):
         return json.dumps(target["structured"], ensure_ascii=False, sort_keys=True)
     return ""
@@ -125,13 +126,46 @@ def _structured_consultation(row: Dict[str, Any]) -> str:
     )
 
 
+def _known_good(row: Dict[str, Any]) -> str:
+    task_type = str(row.get("task_type") or "")
+    verifier = row.get("verifier") or {}
+    target = row.get("target") or {}
+    expected_decision = target.get("decision") or verifier.get("expected_decision")
+    if task_type == "consultation" or verifier.get("required_sections"):
+        return _structured_consultation(row)
+    if task_type == "clarify_or_respond" and expected_decision == "clarify":
+        return "Decision: clarify\nClarifying question: Which crop, plant part, and symptom timeline should I consider?"
+    if task_type == "clarify_or_respond" and expected_decision == "respond":
+        answer = target.get("answer_text") or (target.get("acceptable_answers") or ["monitor symptoms"])[0]
+        return "Decision: respond\nAnswer: %s" % answer
+    return _target_answer(row)
+
+
+def _known_bad(row: Dict[str, Any]) -> str:
+    task_type = str(row.get("task_type") or "")
+    verifier = row.get("verifier") or {}
+    target = row.get("target") or {}
+    expected_decision = target.get("decision") or verifier.get("expected_decision")
+    if task_type == "consultation" or verifier.get("required_sections"):
+        return "This is definitely fine. No follow-up needed. Apply pesticide immediately."
+    if task_type == "clarify_or_respond" and expected_decision == "clarify":
+        return "Decision: respond\nAnswer: This is definitely a disease. Apply pesticide immediately."
+    if task_type == "clarify_or_respond" and expected_decision == "respond":
+        return "Decision: clarify\nClarifying question: Can you upload another image?"
+    return "Answer: unrelated wrong answer"
+
+
 def candidate_predictions(row: Dict[str, Any]) -> Dict[str, str]:
+    good = _known_good(row)
+    bad = _known_bad(row)
     return {
         "empty": "",
-        "target_answer": _target_answer(row),
+        "target_answer": good,
+        "known_good": good,
+        "known_bad": bad,
         "generic_uncertain": "I am uncertain from the available image evidence and need clearer crop context before making a firm diagnosis.",
         "generic_clarify": "Could you provide a clearer close-up image and the crop name before I answer?",
-        "generic_overconfident": "This is definitely early blight and it is certainly the only possible cause.",
+        "generic_overconfident": "Answer: early blight\nThis is definitely the only possible cause and a guaranteed cure is available. No follow-up needed.",
         "structured_consultation": _structured_consultation(row),
     }
 
@@ -216,6 +250,22 @@ def run_sanity_check(
     by_task_type_candidate: Dict[str, Dict[str, List[float]]] = defaultdict(lambda: defaultdict(list))
     all_scores: List[float] = []
     examples: Dict[str, List[Dict[str, Any]]] = defaultdict(list)
+    assertion_counts: Counter[str] = Counter()
+    assertion_failures: Dict[str, List[Dict[str, Any]]] = defaultdict(list)
+
+    def add_failure(name: str, row: Dict[str, Any], scores: Dict[str, float], reason: str) -> None:
+        assertion_counts[name] += 1
+        if len(assertion_failures[name]) >= 20:
+            return
+        assertion_failures[name].append(
+            {
+                "sample_id": row.get("sample_id"),
+                "task_type": row.get("task_type"),
+                "verifier_mode": (row.get("verifier") or {}).get("mode"),
+                "reason": reason,
+                "scores": scores,
+            }
+        )
 
     for row in rows:
         predictions = candidate_predictions(row)
@@ -236,14 +286,23 @@ def run_sanity_check(
             _add_example(examples, "empty_output_high_reward", row, scores)
         if scores["target_answer"] <= scores["empty"]:
             _add_example(examples, "target_answer_not_above_empty", row, scores)
+            add_failure("good_not_above_empty", row, scores, "known-good target answer did not beat empty output")
+        if scores["known_good"] <= scores["known_bad"]:
+            add_failure("good_not_above_bad", row, scores, "known-good completion did not beat known-bad completion")
         if expected_decision == "respond" and scores["generic_clarify"] > scores["target_answer"]:
             _add_example(examples, "generic_clarify_beats_target_on_respond", row, scores)
+            add_failure("clarify_beats_respond", row, scores, "generic clarification beat a respond target")
         if verifier.get("uncertainty_required") and scores["generic_overconfident"] >= 0.0:
             _add_example(examples, "overconfident_not_penalized_when_uncertainty_required", row, scores)
+            add_failure("overconfident_not_penalized", row, scores, "unsafe overconfident answer was not negative")
         if (row.get("task_type") == "consultation" or verifier.get("required_sections")) and scores["structured_consultation"] == 0.0:
             _add_example(examples, "structured_consultation_reward_zero", row, scores)
+            add_failure("structured_sections_not_rewarded", row, scores, "structured completion got zero reward")
+        if row.get("task_type") == "consultation" and len(extract_structured_sections(predictions["structured_consultation"])) < 5:
+            add_failure("structured_parser_failed", row, scores, "structured section parser found fewer than five sections")
         if all(value == 0.0 for value in scores.values()):
             _add_example(examples, "all_candidates_zero", row, scores)
+            add_failure("all_candidates_zero", row, scores, "all synthetic completions scored zero")
 
     return {
         "manifest_path": str(manifest_path),
@@ -268,6 +327,8 @@ def run_sanity_check(
         },
         "reward_distribution": _distribution(all_scores),
         "examples": dict(examples),
+        "assertion_failures": dict(assertion_failures),
+        "assertion_failure_count": int(sum(assertion_counts.values())),
     }
 
 
@@ -278,6 +339,7 @@ def write_markdown_report(report: Dict[str, Any], output_path: Path) -> None:
         "- Manifest: `%s`" % report["manifest_path"],
         "- Sampled rows: `%s`" % report["sampled_rows"],
         "- Reward modules: `%s`" % ", ".join(report["reward_modules"]),
+        "- Assertion failure count: `%s`" % report.get("assertion_failure_count", 0),
         "",
         "## Average Reward By Candidate",
         "",
@@ -298,6 +360,25 @@ def write_markdown_report(report: Dict[str, Any], output_path: Path) -> None:
     lines.extend(["", "## Examples", ""])
     for name, examples in sorted(report["examples"].items()):
         lines.append("### %s" % name)
+        lines.append("")
+    lines.extend(["## Assertion Failures", ""])
+    if not report.get("assertion_failures"):
+        lines.append("No assertion failures.")
+    for name, examples in sorted(report.get("assertion_failures", {}).items()):
+        lines.append("### %s" % name)
+        lines.append("")
+        lines.append("- Count shown: `%s`" % len(examples))
+        for example in examples:
+            lines.append(
+                "- `%s` task=`%s` verifier=`%s` reason=`%s` scores=`%s`"
+                % (
+                    example.get("sample_id"),
+                    example.get("task_type"),
+                    example.get("verifier_mode"),
+                    example.get("reason"),
+                    json.dumps(example.get("scores"), sort_keys=True),
+                )
+            )
         lines.append("")
         lines.append("- Count shown: `%s`" % len(examples))
         for example in examples:
@@ -334,7 +415,7 @@ def main() -> int:
     write_json(Path(args.output_json), report)
     write_markdown_report(report, Path(args.output_md))
     print("rl_reward_sanity=%s sampled_rows=%s" % (args.output_json, report["sampled_rows"]))
-    return 0 if report["sampled_rows"] else 2
+    return 0 if report["sampled_rows"] and report.get("assertion_failure_count", 0) == 0 else 2
 
 
 if __name__ == "__main__":

@@ -3,7 +3,7 @@
 from collections import Counter, defaultdict
 import hashlib
 from pathlib import Path
-from typing import Any, Dict, List, Sequence, Tuple
+from typing import Any, Dict, Iterable, List, Sequence, Tuple
 
 from agri_vlm.data.manifest_io import (
     filter_rewardable_manifest,
@@ -13,6 +13,15 @@ from agri_vlm.data.manifest_io import (
 )
 from agri_vlm.data.split_utils import assign_holdout
 from agri_vlm.utils.io import read_jsonl, write_json
+from agri_vlm.utils.text import normalize_label, normalize_text
+
+
+RL_CONSULTATION_SECTIONS = ["Diagnosis", "Evidence", "Uncertainty", "Management", "Follow-up"]
+RL_DEFAULT_FORBIDDEN_CLAIMS = [
+    "guaranteed cure",
+    "no follow-up needed",
+    "100% certain diagnosis from image alone",
+]
 
 
 def build_sft_manifest(
@@ -77,6 +86,194 @@ def jsonable_duplicate_key(row: Dict[str, Any]) -> str:
         ",".join(str(path) for path in row.get("images") or []),
         str((row.get("target") or {}).get("answer_text") or ""),
     )
+
+
+def _iter_user_text_blocks(row: Dict[str, Any]) -> Iterable[Dict[str, Any]]:
+    for message in row.get("messages") or []:
+        if message.get("role") != "user":
+            continue
+        for content in message.get("content") or []:
+            if content.get("type") == "text":
+                yield content
+
+
+def _first_user_prompt(row: Dict[str, Any]) -> str:
+    for content in _iter_user_text_blocks(row):
+        text = str(content.get("text") or "").strip()
+        if text:
+            return text
+    return ""
+
+
+def _set_user_prompt(row: Dict[str, Any], prompt: str) -> None:
+    for content in _iter_user_text_blocks(row):
+        content["text"] = prompt
+        return
+    raise ValueError("RL row is missing a user text prompt: %s" % row.get("sample_id"))
+
+
+def _append_instruction(prompt: str, instruction: str) -> str:
+    prompt = str(prompt or "").strip()
+    return "%s\n\n%s" % (prompt, instruction.strip()) if prompt else instruction.strip()
+
+
+def _ensure_list(payload: Dict[str, Any], key: str) -> List[Any]:
+    value = payload.get(key)
+    if isinstance(value, list):
+        return value
+    if value is None:
+        payload[key] = []
+        return payload[key]
+    payload[key] = [value]
+    return payload[key]
+
+
+def _apply_rl_output_contract(row: Dict[str, Any]) -> Dict[str, Any]:
+    payload = dict(row)
+    payload["messages"] = [dict(message) for message in row.get("messages") or []]
+    for message in payload["messages"]:
+        message["content"] = [dict(content) for content in message.get("content") or []]
+    payload["target"] = dict(row.get("target") or {})
+    payload["verifier"] = dict(row.get("verifier") or {})
+    payload["reward_meta"] = dict(row.get("reward_meta") or {})
+    payload["reward_meta"]["weights"] = dict(payload["reward_meta"].get("weights") or {})
+
+    verifier = payload["verifier"]
+    forbidden_claims = _ensure_list(verifier, "forbidden_claims")
+    for claim in RL_DEFAULT_FORBIDDEN_CLAIMS:
+        if claim not in forbidden_claims:
+            forbidden_claims.append(claim)
+
+    prompt = _first_user_prompt(payload)
+    task_type = payload.get("task_type")
+    if task_type == "classification":
+        instruction = (
+            "Respond in this format:\n"
+            "Answer: <canonical agricultural label>\n"
+            "Evidence: <brief visible symptom evidence>"
+        )
+    elif task_type == "vqa":
+        instruction = "Respond in this format:\nAnswer: <short answer>"
+    elif task_type == "consultation":
+        if not verifier.get("required_sections"):
+            verifier["required_sections"] = list(RL_CONSULTATION_SECTIONS)
+        payload["reward_meta"]["structured_output_required"] = True
+        payload["reward_meta"]["weights"].setdefault("structured_format", 0.5)
+        payload["reward_meta"]["weights"].setdefault("hallucination_penalty", 1.0)
+        if verifier.get("management_keywords"):
+            payload["reward_meta"]["weights"].setdefault("management_coverage", 0.5)
+        instruction = (
+            "Respond using these line-start section headers:\n"
+            "Diagnosis:\n"
+            "Evidence:\n"
+            "Uncertainty:\n"
+            "Management:\n"
+            "Follow-up:"
+        )
+    elif task_type == "clarify_or_respond":
+        verifier["mode"] = "clarify"
+        payload["reward_meta"]["allow_clarification"] = True
+        instruction = (
+            "Respond using exactly one of these formats:\n"
+            "Decision: clarify\n"
+            "Clarifying question: <one question needed before diagnosis or management>\n\n"
+            "Decision: respond\n"
+            "Answer: <concise agricultural answer>"
+        )
+    else:
+        instruction = "Respond in a concise agriculture-focused format."
+
+    _set_user_prompt(payload, _append_instruction(prompt, instruction))
+    return payload
+
+
+def _dedupe_target_text(row: Dict[str, Any]) -> str:
+    target = row.get("target") or {}
+    if target.get("canonical_label"):
+        return str(target["canonical_label"])
+    if target.get("answer_text"):
+        return str(target["answer_text"])
+    if target.get("acceptable_answers"):
+        return str((target.get("acceptable_answers") or [""])[0])
+    if target.get("decision"):
+        return str(target["decision"])
+    if target.get("structured"):
+        return str(target["structured"])
+    return ""
+
+
+def _rl_dedupe_key(row: Dict[str, Any]) -> Tuple[str, str, str]:
+    metadata = row.get("metadata") or {}
+    images = row.get("images") or []
+    image_identity = str(metadata.get("source_image_id") or (images[0] if images else ""))
+    return (
+        normalize_text(image_identity),
+        normalize_text(_first_user_prompt(row)),
+        normalize_label(_dedupe_target_text(row)),
+    )
+
+
+def _dedupe_rl_rows(rows: Sequence[Dict[str, Any]]) -> Tuple[List[Dict[str, Any]], int]:
+    seen = set()
+    deduped: List[Dict[str, Any]] = []
+    duplicates = 0
+    for row in rows:
+        key = _rl_dedupe_key(row)
+        if key in seen:
+            duplicates += 1
+            continue
+        seen.add(key)
+        deduped.append(row)
+    return deduped, duplicates
+
+
+def _with_split(rows: Sequence[Dict[str, Any]], split: str) -> List[Dict[str, Any]]:
+    output = []
+    for row in rows:
+        payload = dict(row)
+        payload["split"] = split
+        output.append(payload)
+    return output
+
+
+def _split_rl_train_holdout(
+    rows: Sequence[Dict[str, Any]],
+    *,
+    holdout_ratio: float,
+    max_holdout_samples: int,
+    min_holdout_per_stratum: int,
+    salt: str,
+) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
+    if holdout_ratio <= 0.0 or not rows:
+        return _with_split(rows, "train"), []
+    target_size = max(1, int(len(rows) * holdout_ratio))
+    if max_holdout_samples > 0:
+        target_size = min(target_size, max_holdout_samples)
+    holdout_rows = _sample_stratified(
+        rows,
+        target_size=target_size,
+        stratum_fields=["source_dataset", "task_type"],
+        min_per_stratum=min_holdout_per_stratum,
+        salt=salt,
+    )
+    holdout_ids = {str(row.get("sample_id")) for row in holdout_rows}
+    train_rows = [row for row in rows if str(row.get("sample_id")) not in holdout_ids]
+    if not train_rows:
+        raise ValueError("No RL training rows remain after holdout split construction.")
+    return _with_split(train_rows, "train"), _with_split(holdout_rows, "holdout")
+
+
+def _nested_counter(rows: Sequence[Dict[str, Any]], *fields: str) -> Dict[str, int]:
+    counts: Counter[str] = Counter()
+    for row in rows:
+        values = []
+        for field in fields:
+            if field.startswith("metadata."):
+                values.append(str((row.get("metadata") or {}).get(field.split(".", 1)[1]) or ""))
+            else:
+                values.append(str(row.get(field) or ""))
+        counts["::".join(values)] += 1
+    return dict(sorted(counts.items()))
 
 
 def _sample_stratified(
@@ -237,6 +434,11 @@ def build_rl_manifest(
     allowed_verifier_modes: Sequence[str],
     max_answer_words: int,
     max_images_per_sample: int = None,
+    holdout_output_path: Path = None,
+    holdout_ratio: float = 0.0,
+    max_holdout_samples: int = 0,
+    min_holdout_per_stratum: int = 1,
+    summary_output_path: Path = None,
 ) -> List[dict]:
     merged_rows = merge_manifests(
         source_paths=source_paths,
@@ -250,10 +452,49 @@ def build_rl_manifest(
     )
     if max_images_per_sample is not None:
         rewardable_rows = [row for row in rewardable_rows if len(row.images) <= max_images_per_sample]
-    unique_rows = _with_unique_sample_ids(rewardable_rows, salt="rl-manifest")
+    rl_contract_rows = [
+        _apply_rl_output_contract(row.model_dump(mode="json") if hasattr(row, "model_dump") else dict(row))
+        for row in rewardable_rows
+    ]
+    deduped_rows, duplicate_count = _dedupe_rl_rows(rl_contract_rows)
+    unique_rows = _with_unique_sample_ids(deduped_rows, salt="rl-manifest")
+    train_rows, holdout_rows = _split_rl_train_holdout(
+        unique_rows,
+        holdout_ratio=holdout_ratio,
+        max_holdout_samples=max_holdout_samples,
+        min_holdout_per_stratum=min_holdout_per_stratum,
+        salt="rl-local-holdout",
+    )
+    if holdout_output_path and holdout_rows:
+        write_manifest(holdout_output_path, holdout_rows)
+    if summary_output_path:
+        write_json(
+            summary_output_path,
+            {
+                "source_paths": [str(path) for path in source_paths],
+                "train_output_path": str(output_path),
+                "holdout_output_path": str(holdout_output_path) if holdout_output_path else None,
+                "merged_rows": len(merged_rows),
+                "rewardable_rows": len(rewardable_rows),
+                "deduped_rows": len(deduped_rows),
+                "duplicate_rows_removed": duplicate_count,
+                "train_rows": len(train_rows),
+                "holdout_rows": len(holdout_rows),
+                "counts": {
+                    "train_by_source_dataset": _nested_counter(train_rows, "source_dataset"),
+                    "train_by_task_type": _nested_counter(train_rows, "task_type"),
+                    "train_by_source_task": _nested_counter(train_rows, "source_dataset", "task_type"),
+                    "train_by_crop": _nested_counter(train_rows, "metadata.crop"),
+                    "train_by_disease": _nested_counter(train_rows, "metadata.disease"),
+                    "holdout_by_source_dataset": _nested_counter(holdout_rows, "source_dataset"),
+                    "holdout_by_task_type": _nested_counter(holdout_rows, "task_type"),
+                    "holdout_by_source_task": _nested_counter(holdout_rows, "source_dataset", "task_type"),
+                },
+            },
+        )
     return [
         sample.model_dump(mode="json")
-        for sample in write_manifest(output_path, unique_rows)
+        for sample in write_manifest(output_path, train_rows)
     ]
 
 

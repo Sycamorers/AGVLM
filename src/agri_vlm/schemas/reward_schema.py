@@ -30,6 +30,7 @@ class RewardInput(BaseModel):
     management_keywords: List[str] = Field(default_factory=list)
     forbidden_claims: List[str] = Field(default_factory=list)
     acceptable_answers: List[str] = Field(default_factory=list)
+    accepted_labels: List[str] = Field(default_factory=list)
     synonym_groups: Dict[str, List[str]] = Field(default_factory=dict)
     uncertainty_required: bool = False
     weights: Dict[str, float] = Field(default_factory=dict)

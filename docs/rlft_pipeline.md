@@ -158,36 +158,33 @@ The readiness config intentionally contains a placeholder SFT checkpoint and `dr
 ## After SFT Completes
 
 1. Identify the completed SFT checkpoint or adapter path.
-2. Replace `<FINAL_SFT_CHECKPOINT_OR_ADAPTER>` in the smoke config:
-   `configs/train/rl_grpo_phi4_reasoning_vision_15b_b200_4gpu_smoke_after_sft.yaml`.
-3. Confirm the path exists and is not `microsoft/Phi-4-reasoning-vision-15B`.
+2. Confirm `sft_checkpoint_path` in `configs/train/rl_grpo_phi4_smoke.yaml`
+   points to the completed SFT checkpoint or adapter.
+3. Confirm the path contains model or adapter artifacts and is not
+   `microsoft/Phi-4-reasoning-vision-15B`.
 4. Submit the smoke job:
 
 ```bash
-sbatch \
-  --export=ALL,TRAIN_CONFIG=configs/train/rl_grpo_phi4_reasoning_vision_15b_b200_4gpu_smoke_after_sft.yaml \
-  scripts/hpc/run_rl_grpo_b200_4gpu_phi4_reasoning_vision_15b.slurm
+sbatch scripts/hpc/run_rl_grpo_phi4_smoke.slurm
 ```
 
 The Slurm wrapper fails fast if the manifest or SFT checkpoint is invalid.
 
 ## After Smoke Passes
 
-Replace the placeholder in the full config:
-`configs/train/rl_grpo_phi4_reasoning_vision_15b_b200_4gpu_full_after_sft.yaml`.
+Confirm the same completed SFT checkpoint in
+`configs/train/rl_grpo_phi4_full.yaml`.
 
 Then submit:
 
 ```bash
-sbatch \
-  --export=ALL,TRAIN_CONFIG=configs/train/rl_grpo_phi4_reasoning_vision_15b_b200_4gpu_full_after_sft.yaml \
-  scripts/hpc/run_rl_grpo_b200_4gpu_phi4_reasoning_vision_15b.slurm
+sbatch scripts/hpc/run_rl_grpo_phi4_full.slurm
 ```
 
 ## Outputs
 
 - audit reports: `outputs/rl/audit/`
-- readiness dry-run: `outputs/rl/readiness/grpo-phi4-reasoning-vision-15b-b200-4gpu/`
+- readiness dry-run: `outputs/rl/readiness/grpo-phi4-reasoning-vision-15b/`
 - smoke outputs: `outputs/rl/smoke/` and `/orange/hmedeiros/qinruoyao/agvlm/outputs/rl/smoke/`
 - full outputs: `outputs/rl/full/` and `/orange/hmedeiros/qinruoyao/agvlm/outputs/rl/full/`
 - TensorBoard logs: under the configured run output directory
@@ -200,3 +197,39 @@ sbatch \
 - Audit image failures: rebuild or restage the dataset so manifest image paths resolve.
 - Reward sanity anomalies: inspect examples where target answers do not beat empty output or all candidates get zero reward.
 - Processor check failures: rerun without `--check-processor` for CPU-only format validation, then validate processor access separately on the training environment.
+# Stage-2 GRPO Readiness Notes
+
+RLFT in this repository is rule-based GRPO post-training initialized from a
+completed SFT checkpoint or adapter. Non-dry-run RL must not start from
+`microsoft/Phi-4-reasoning-vision-15B` directly.
+
+The RL manifest builder rewrites only RL prompts with task-specific output
+contracts:
+
+- Classification and short VQA use `Answer:`.
+- Consultation uses line-start `Diagnosis:`, `Evidence:`, `Uncertainty:`,
+  `Management:`, and `Follow-up:` sections.
+- Clarify-or-respond uses an explicit `Decision:` field.
+
+The full RL data path is:
+
+```bash
+make rl-data-full
+make rl-audit-full
+make rl-reward-check-full
+make rl-format-check-full
+make rl-phi4-readiness
+```
+
+After the SFT job has saved a completed checkpoint or adapter at the path in
+`configs/train/rl_grpo_phi4_smoke.yaml`, run:
+
+```bash
+sbatch scripts/hpc/run_rl_grpo_phi4_smoke.slurm
+```
+
+Only after that smoke run passes should the full script be submitted:
+
+```bash
+sbatch scripts/hpc/run_rl_grpo_phi4_full.slurm
+```

@@ -33,7 +33,7 @@ export NCCL_DEBUG="${NCCL_DEBUG:-INFO}"
 export PYTORCH_CUDA_ALLOC_CONF="${PYTORCH_CUDA_ALLOC_CONF:-expandable_segments:True}"
 
 MODEL_CONFIG="${MODEL_CONFIG:-configs/model/phi4_reasoning_vision_15b_turin_24g.yaml}"
-TRAIN_CONFIG="${TRAIN_CONFIG:-configs/train/rl_grpo_phi4_reasoning_vision_15b_b200_4gpu_smoke_after_sft.yaml}"
+TRAIN_CONFIG="${TRAIN_CONFIG:-configs/train/rl_grpo_phi4_smoke.yaml}"
 MASTER_PORT="${MASTER_PORT:-29541}"
 export MODEL_CONFIG TRAIN_CONFIG MASTER_PORT
 
@@ -85,9 +85,20 @@ if [[ "$SFT_CHECKPOINT_PATH" == "$BASE_MODEL_NAME" ]] || [[ "$SFT_CHECKPOINT_PAT
   fail_fast "RLFT must start from a completed SFT checkpoint, not the raw/base model: $SFT_CHECKPOINT_PATH"
 fi
 [[ -e "$SFT_CHECKPOINT_PATH" ]] || fail_fast "SFT checkpoint path does not exist: $SFT_CHECKPOINT_PATH"
+PYTHONPATH=src python - "$MODEL_CONFIG" "$TRAIN_CONFIG" <<'PY'
+import sys
+from pathlib import Path
+from agri_vlm.schemas.config_schema import ModelConfigSchema, RLTrainConfigSchema, load_config
+from agri_vlm.training.rl_trainer import validate_rl_sft_checkpoint_path
+
+model = load_config(Path(sys.argv[1]), ModelConfigSchema)
+train = load_config(Path(sys.argv[2]), RLTrainConfigSchema)
+validate_rl_sft_checkpoint_path(model_config=model, train_config=train)
+PY
 
 echo "date=$(date -Is)"
 echo "hostname=$(hostname -f)"
+echo "git_commit=$(git rev-parse HEAD)"
 echo "CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES:-}"
 if command -v nvidia-smi >/dev/null 2>&1; then
   nvidia-smi --query-gpu=name,memory.total,driver_version --format=csv,noheader
