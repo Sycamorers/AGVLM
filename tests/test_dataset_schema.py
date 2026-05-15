@@ -34,6 +34,24 @@ def test_dataset_schema_accepts_valid_sample() -> None:
     assert sample.target.canonical_label == "tomato early blight"
 
 
+def test_dataset_schema_accepts_optional_preference_annotation() -> None:
+    payload = valid_sample()
+    payload["preference"] = {
+        "preference_score": 0.8,
+        "preference_rationale": "Expert preferred the calibrated answer.",
+        "chosen_response": "Answer: tomato early blight",
+        "rejected_response": "Answer: potato late blight",
+        "expert_quality_score": 0.9,
+        "agronomic_correctness_score": 0.9,
+        "management_usefulness_score": 0.7,
+        "uncertainty_calibration_score": 0.8,
+        "safety_score": 1.0,
+    }
+    sample = UnifiedSample.model_validate(payload)
+    assert sample.preference is not None
+    assert sample.preference.chosen_response == "Answer: tomato early blight"
+
+
 def test_dataset_schema_rejects_missing_images() -> None:
     payload = valid_sample()
     payload["images"] = []

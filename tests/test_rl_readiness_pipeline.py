@@ -222,6 +222,7 @@ def test_phi4_rl_configs_load() -> None:
         "configs/train/rl_grpo_phi4_reasoning_vision_15b_b200_4gpu_readiness.yaml",
         "configs/train/rl_grpo_phi4_reasoning_vision_15b_b200_4gpu_smoke_after_sft.yaml",
         "configs/train/rl_grpo_phi4_reasoning_vision_15b_b200_4gpu_full_after_sft.yaml",
+        "configs/train/rl_grpo_phi4_turin8_tiny_smoke.yaml",
     ]:
         config = load_config(REPO_ROOT / config_path, RLTrainConfigSchema)
         assert config.manifest_path == "data/manifests/full/rl_manifest.jsonl"
@@ -308,3 +309,17 @@ def test_slurm_wrapper_static_checks() -> None:
     assert "TRAIN_CONFIG" in slurm_text
     assert "rl_grpo_phi4_smoke.yaml" in slurm_text
     assert "rl_grpo_phi4_full.yaml" not in slurm_text
+
+
+def test_turin8_tiny_smoke_slurm_static_checks() -> None:
+    slurm_text = (
+        REPO_ROOT / "scripts/hpc/run_rl_grpo_phi4_turin8_tiny_smoke.slurm"
+    ).read_text(encoding="utf-8")
+    assert "#SBATCH --partition=hpg-turin" in slurm_text
+    assert "#SBATCH --gpus-per-node=8" in slurm_text
+    assert "#SBATCH --mem=96G" in slurm_text
+    assert "--nproc_per_node=8" in slurm_text
+    assert "scripts/validate_rl_manifest.py" in slurm_text
+    assert "scripts/score_rl_manifest.py" in slurm_text
+    assert "AGRI_VLM_REWARD_DIAGNOSTICS_JSONL" in slurm_text
+    assert "rl_grpo_phi4_turin8_tiny_smoke.yaml" in slurm_text

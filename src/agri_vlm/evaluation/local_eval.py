@@ -1,5 +1,6 @@
 """Local holdout evaluation."""
 
+import json
 from typing import Any, Dict, List
 
 from agri_vlm.data.manifest_io import read_manifest
@@ -42,6 +43,7 @@ def score_local_predictions(rows: List[Any], predictions: List[str]) -> Dict[str
             target_json=row.target.model_dump_json(),
             verifier_json=row.verifier.model_dump_json(),
             reward_meta_json=row.reward_meta.model_dump_json(),
+            metadata_json=json.dumps(row.metadata, ensure_ascii=False),
         )
         reward_totals.append(
             compute_composite_reward(

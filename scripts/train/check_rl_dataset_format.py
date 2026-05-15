@@ -132,6 +132,7 @@ def run_format_check(
                 target_json=[records[0]["target_json"]],
                 verifier_json=[records[0]["verifier_json"]],
                 reward_meta_json=[records[0]["reward_meta_json"]],
+                metadata_json=[records[0]["metadata_json"]],
             )
             reward_function_ok = True
         except Exception as exc:

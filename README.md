@@ -51,11 +51,19 @@ write full-training artifacts under `outputs/smoke/`.
 
 ## RLFT Readiness
 
-The current RLFT target is rule-based GRPO post-training for
+As of May 15, 2026, SFT is still the active main training stage. The current
+RLFT target is rule-based / verifier-based GRPO post-training for
 `microsoft/Phi-4-reasoning-vision-15B` initialized from a completed Phi-4 SFT
-checkpoint or adapter. Formal RLFT is pending SFT completion; the RLFT code/data
-pipeline is prepared, but non-dry-run GRPO must not start from the raw base
-model.
+checkpoint or adapter. There is no pretrained learned reward model yet. The
+RLFT code/data pipeline is being prepared and validated; full GRPO training has
+not been launched as part of this stage, and non-dry-run GRPO must not start
+from the raw base model.
+
+The default GRPO reward remains a composite of deterministic modules: exact
+match, normalized labels, synonym matching, structured format, uncertainty
+calibration, clarify-vs-respond, management coverage, and hallucination
+penalties. A future-compatible expert preference data path now exists, but it is
+optional and does not change default rule-based GRPO behavior.
 
 Build and validate the full reward-verifiable RL manifest:
 
@@ -65,6 +73,32 @@ make rl-audit-full
 make rl-reward-check-full
 make rl-format-check-full
 make rl-phi4-readiness
+```
+
+CPU-only validation commands:
+
+```bash
+pytest tests/test_reward_functions.py tests/test_rl_manifest_validation_and_scoring.py tests/test_rl_readiness_pipeline.py
+
+PYTHONPATH=src python3 scripts/validate_rl_manifest.py \
+  --manifest data/manifests/full/rl_manifest.jsonl \
+  --output-json reports/rl_manifest_validation.json
+
+PYTHONPATH=src python3 scripts/score_rl_manifest.py \
+  --manifest data/manifests/full/rl_manifest.jsonl \
+  --output reports/rl_reward_report.jsonl \
+  --summary-output reports/rl_reward_summary.json \
+  --max-samples 200
+```
+
+Future expert preference rows can be exported for reward-model work without
+training a reward model:
+
+```bash
+PYTHONPATH=src python3 scripts/data/prepare_pairwise_preference_data.py \
+  --manifest data/manifests/full/rl_manifest.jsonl \
+  --output data/interim/rl_pairwise_preferences.jsonl \
+  --allow-empty
 ```
 
 The readiness dry-run uses:
@@ -85,8 +119,20 @@ sbatch \
   scripts/hpc/run_rl_grpo_b200_4gpu_phi4_reasoning_vision_15b.slurm
 ```
 
-See `docs/rlft_design.md` and `docs/rlft_pipeline.md` for the reward design,
-gates, commands, and post-RL evaluation plan.
+For a smaller optional hpg-turin validation job, use the tiny smoke script. It
+requests 8 GPUs, 96 GB total RAM, 45 minutes, 8 manifest samples, and 2 GRPO
+steps, and it runs manifest validation plus reward-only scoring before model
+loading:
+
+```bash
+sbatch \
+  --export=ALL,SFT_CHECKPOINT_PATH=/path/to/completed/sft/checkpoint_or_adapter \
+  scripts/hpc/run_rl_grpo_phi4_turin8_tiny_smoke.slurm
+```
+
+See `docs/rlft_design.md`, `docs/reward_design.md`, and
+`docs/preference_reward_data.md` for reward design, preference-data format,
+validation gates, commands, limitations, and the post-RL evaluation plan.
 
 ## Data
 

@@ -211,6 +211,8 @@ def _row_reward(
         target_json=[json.dumps(row.get("target") or {}, ensure_ascii=False)],
         verifier_json=[json.dumps(row.get("verifier") or {}, ensure_ascii=False)],
         reward_meta_json=[json.dumps(row.get("reward_meta") or {}, ensure_ascii=False)],
+        metadata_json=[json.dumps(row.get("metadata") or {}, ensure_ascii=False)],
+        preference_json=[json.dumps(row.get("preference") or {}, ensure_ascii=False)],
     )
     return float(rewards[0])
 

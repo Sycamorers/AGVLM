@@ -100,6 +100,8 @@ def _selected_environment() -> Dict[str, str]:
         "HUGGINGFACE_HUB_CACHE",
         "TMPDIR",
         "PYTORCH_CUDA_ALLOC_CONF",
+        "AGRI_VLM_REWARD_LOG_EVERY",
+        "AGRI_VLM_REWARD_DIAGNOSTICS_JSONL",
     ]
     return {key: os.environ[key] for key in keys if os.environ.get(key)}
 

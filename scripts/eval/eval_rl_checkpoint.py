@@ -58,6 +58,7 @@ def _reward_input(row: Any, prediction: str) -> Any:
         target_json=row.target.model_dump_json(),
         verifier_json=row.verifier.model_dump_json(),
         reward_meta_json=row.reward_meta.model_dump_json(),
+        metadata_json=json.dumps(row.metadata, ensure_ascii=False),
     )
 
 

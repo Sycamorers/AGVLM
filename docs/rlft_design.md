@@ -4,7 +4,7 @@
 
 RLFT in this repository means rule-based GRPO post-training for reward-verifiable agricultural VLM behavior. V1 remains scoped to ground-level RGB agricultural consultation, classification, VQA, management, uncertainty, and clarify-vs-respond behavior.
 
-This is not full RLHF. The current implementation does not train or load a learned reward model, and it does not implement PPO. Rewards are deterministic or semi-deterministic functions over the model completion plus manifest verifier fields.
+This is not full RLHF. The current implementation does not train or load a learned reward model, and it does not implement PPO. Rewards are deterministic or semi-deterministic functions over the model completion plus manifest verifier fields. A preference-data schema and pairwise export scaffold are present for later learned reward work, but they are optional and inactive by default.
 
 ## Why GRPO
 
@@ -17,13 +17,14 @@ GRPO is used only after SFT. Non-dry-run GRPO requires `sft_checkpoint_path` to 
 - `exact_match`: rewards exact normalized matches against target answers or accepted answers.
 - `normalized_label`: rewards canonical agricultural label matches after label normalization.
 - `synonym_match`: rewards acceptable synonym groups when exact labels differ.
-- `structured_format`: rewards required consultation section headers such as Diagnosis, Evidence, Uncertainty, Management, and Follow-up.
-- `uncertainty_calibration`: rewards uncertainty language when the verifier marks evidence as insufficient.
+- `structured_format`: rewards required consultation sections such as Diagnosis, Evidence, Uncertainty, Management, and Follow-up only when each section has meaningful non-empty content. Heading-only or repeated empty sections are penalized.
+- `uncertainty_calibration`: rewards uncertainty language when the verifier marks evidence as insufficient and the uncertainty statement is grounded in image ambiguity, missing evidence, or a need for more information.
 - `clarify_vs_respond`: rewards the correct high-level decision. JSON `{"decision": "clarify"}` or `{"decision": "respond"}` is honored when present; plain clarification questions are detected only when they are not substantive answers.
-- `management_coverage`: rewards coverage of expected management keywords or steps.
-- `hallucination_penalty`: penalizes configured forbidden claims and overconfident language when uncertainty is required.
+- `management_coverage`: rewards unique expected management keywords or steps only when they appear in meaningful answer context. Repetition, keyword lists, and very long repetitive completions are capped or penalized.
+- `hallucination_penalty`: penalizes configured forbidden claims, target-label contradictions, unsupported definitive answers when clarification is expected, overconfidence, unsupported chemical/dosage/safety advice, fabricated visual evidence, unsafe recommendations, and crop/disease mismatches when metadata is available.
+- `preference_proxy`: optional scaffold for pairwise preference rows. It is not used by default and is not a learned reward model.
 
-The composite reward function is exposed through `make_trl_reward_function()` and accepts `prompts`, `completions`, `task_type`, `target_json`, `verifier_json`, and `reward_meta_json`, matching TRL `reward_funcs` conventions.
+The composite reward function is exposed through `make_trl_reward_function()` and accepts `prompts`, `completions`, `task_type`, `target_json`, `verifier_json`, `reward_meta_json`, and optional `metadata_json` / `preference_json`, matching TRL `reward_funcs` conventions while preserving backward compatibility with older manifests.
 
 ## RL Manifest Versus SFT Manifest
 
@@ -38,27 +39,68 @@ The SFT manifest can include broader supervised examples. The RL manifest is a r
 - `target`
 - `verifier`
 - `reward_meta`
+- optional `preference`
 
 For V1 GRPO, the default RL build config keeps a conservative single-image subset with `max_images_per_sample: 1`. SFT can still use max-3-image Phi-4 data through the active SFT split config.
 
-The RL audit script validates image paths, prompt content, target/verifier completeness, split exclusion, verifier support, reward module applicability, and single-image scope before expensive training.
+The RL audit and validation scripts check image paths, prompt content, target/verifier completeness, split consistency, verifier support, reward module applicability, accepted labels/answers, management keywords, forbidden claims, expected decisions, invalid labels, and duplicate samples before expensive training.
+
+## Reward Diagnostics
+
+Reward-only diagnostics can be produced without training:
+
+```bash
+PYTHONPATH=src python3 scripts/score_rl_manifest.py \
+  --manifest data/manifests/full/rl_manifest.jsonl \
+  --output reports/rl_reward_report.jsonl \
+  --summary-output reports/rl_reward_summary.json \
+  --max-samples 200
+```
+
+The report includes per-module rewards, total reward, component nonzero counts,
+hallucination penalty counts, uncertainty reward counts, zero/negative reward
+counts, and a small reward histogram. GRPO runs can also write reward diagnostic
+JSONL rows by setting `AGRI_VLM_REWARD_DIAGNOSTICS_JSONL`; the tiny Turin smoke
+script sets this automatically.
 
 ## Current Training Gate
 
-The SFT stage is still running. This task prepares code, configs, audit tools, reward sanity checks, Slurm wiring, and CPU-safe tests only. Formal RLFT must wait until a completed Phi-4 SFT checkpoint or adapter path exists under the SFT output area.
+The SFT stage is still running. This task prepares code, configs, manifest validation, reward-only scoring, reward diagnostics, preference-data scaffolds, Slurm smoke wiring, and CPU-safe tests only. Formal RLFT must wait until a completed Phi-4 SFT checkpoint or adapter path exists under the SFT output area.
 
 Future RLFT targets 4 NVIDIA B200 GPUs on one node with bf16 and `torchrun --nproc_per_node=4`. The default Slurm wrapper points to the smoke-after-SFT config, not the full formal config.
 
+An optional smaller hpg-turin smoke script is available:
+
+```bash
+sbatch \
+  --export=ALL,SFT_CHECKPOINT_PATH=/path/to/completed/sft/checkpoint_or_adapter \
+  scripts/hpc/run_rl_grpo_phi4_turin8_tiny_smoke.slurm
+```
+
+It requests `hpg-turin`, 8 GPUs, 96 GB total RAM, and 45 minutes. It uses
+`configs/train/rl_grpo_phi4_turin8_tiny_smoke.yaml`, 8 manifest samples, and 2
+GRPO steps. It is only a model-load/reward/schema smoke test, not a formal RL
+run.
+
 ## Known Limitations
 
-- Rewards are heuristic and can be gamed.
-- Management coverage is keyword based.
-- Hallucination detection is limited to configured forbidden claims and overconfidence markers.
+- Rewards are heuristic and can still be gamed.
+- Management coverage is still keyword based, even though repetition and list stuffing are now capped or penalized.
+- Hallucination detection is still rule-based and depends on manifest metadata for visual evidence, crop, disease, allowed claims, and unsafe recommendations.
 - Clarify detection is deterministic and imperfect.
 - Default RL is single-image while active SFT uses max-3-image samples.
 - No learned reward model is trained.
-- No human preference pair data is used.
+- Human preference pair data can be represented and exported, but it is not used by default and no reward model is trained.
 - Post-RL evaluation still needs a complete before/after benchmark run.
+
+## Next Steps Before Real GRPO
+
+- Finish and freeze the SFT checkpoint or adapter path.
+- Run full manifest validation and reward-only scoring on the selected RL train and holdout manifests.
+- Review reward diagnostics for zero/negative reward spikes, overactive penalties, and missing component coverage.
+- Run only the tiny GRPO smoke script first; inspect logs for model loading, reward diagnostics, schema failures, and non-finite rewards.
+- Collect expert preference rows before adding any learned reward model.
+- Only after those gates pass, prepare a formal GRPO run with explicit checkpoint, memory, and evaluation settings.
 
 ## Post-RL Evaluation Plan
 

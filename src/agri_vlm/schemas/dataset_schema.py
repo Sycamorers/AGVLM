@@ -81,7 +81,14 @@ class Verifier(BaseModel):
     expected_decision: Optional[Literal["clarify", "respond"]] = None
     management_keywords: List[str] = Field(default_factory=list)
     forbidden_claims: List[str] = Field(default_factory=list)
+    known_facts: List[str] = Field(default_factory=list)
+    allowed_claims: List[str] = Field(default_factory=list)
+    visual_evidence: List[str] = Field(default_factory=list)
+    unsafe_recommendations: List[str] = Field(default_factory=list)
+    crop: Optional[str] = None
+    disease: Optional[str] = None
     uncertainty_required: bool = False
+    expected_uncertainty: Optional[bool] = None
 
 
 class RewardMeta(BaseModel):
@@ -93,6 +100,22 @@ class RewardMeta(BaseModel):
     task_difficulty: Optional[str] = None
     allow_clarification: bool = False
     structured_output_required: bool = False
+
+
+class PreferenceAnnotation(BaseModel):
+    """Optional expert preference annotation for future learned reward work."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    preference_score: Optional[float] = None
+    preference_rationale: Optional[str] = None
+    chosen_response: Optional[str] = None
+    rejected_response: Optional[str] = None
+    expert_quality_score: Optional[float] = None
+    agronomic_correctness_score: Optional[float] = None
+    management_usefulness_score: Optional[float] = None
+    uncertainty_calibration_score: Optional[float] = None
+    safety_score: Optional[float] = None
 
 
 class UnifiedSample(BaseModel):
@@ -110,6 +133,7 @@ class UnifiedSample(BaseModel):
     metadata: Dict[str, Any] = Field(default_factory=dict)
     verifier: Verifier = Field(default_factory=Verifier)
     reward_meta: RewardMeta = Field(default_factory=RewardMeta)
+    preference: Optional[PreferenceAnnotation] = None
 
     @field_validator("sample_id", "source_dataset")
     @classmethod
