@@ -1,0 +1,41 @@
+{
+  "eval_loss": {},
+  "final_train_summary": {},
+  "first_epoch": 0.00035555555555555557,
+  "first_step": 1,
+  "grad_norm": {
+    "count": 44,
+    "first": 18.006088256835938,
+    "last": 15.633440017700195,
+    "max": 20.602455139160156,
+    "mean": 17.792364185506646,
+    "median": 18.060588836669922,
+    "min": 15.104504585266113
+  },
+  "last_epoch": 0.015644444444444443,
+  "last_step": 44,
+  "learning_rate": {
+    "count": 44,
+    "first": 0.0,
+    "last": 1.5176470588235294e-06,
+    "max": 1.5176470588235294e-06,
+    "mean": 7.588235294117647e-07,
+    "median": 7.588235294117648e-07,
+    "min": 0.0
+  },
+  "loss": {
+    "count": 44,
+    "first": 14.3479,
+    "first_100_mean": 13.944481818181819,
+    "first_to_last_100_delta": 0.0,
+    "last": 11.9456,
+    "last_100_mean": 13.944481818181819,
+    "max": 14.9317,
+    "mean": 13.944481818181819,
+    "median": 14.336649999999999,
+    "min": 11.7125
+  },
+  "metrics_jsonl": "outputs/sft/phi4-reasoning-vision-15b-balanced-v2-instructional-full-turin16-batch1/metrics.jsonl",
+  "rows": 44,
+  "title": "SFT Round 2 Balanced V2 Current Early Progress"
+}

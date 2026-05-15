@@ -1,0 +1,28 @@
+input_manifest_path: data/manifests/full/sft_train_phi4_max3_no_eval_overlap.jsonl
+output_manifest_path: data/manifests/full/sft_train_phi4_max3_balanced_v2_instructional.jsonl
+summary_output_path: data/manifests/full/sft_train_phi4_max3_balanced_v2_instructional_summary.json
+seed: 41
+shuffle: true
+task_targets:
+  vqa: 63000
+  classification: 54000
+  consultation: 36000
+  clarify_or_respond: 27000
+stratify_fields_by_task:
+  vqa:
+    - source_dataset
+  classification:
+    - source_dataset
+    - target.canonical_label
+  consultation:
+    - source_dataset
+    - metadata.crop
+    - metadata.disease
+  clarify_or_respond:
+    - source_dataset
+    - target.decision
+min_per_stratum_by_task:
+  vqa: 1
+  classification: 1
+  consultation: 1
+  clarify_or_respond: 1

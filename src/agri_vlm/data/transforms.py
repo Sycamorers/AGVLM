@@ -1,6 +1,7 @@
 """Normalization helpers for agricultural labels and prompts."""
 
 import os
+import re
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -46,7 +47,8 @@ def parse_plant_label(label: str) -> Tuple[Optional[str], Optional[str]]:
 
 
 def parse_ip102_label(label: str) -> str:
-    return normalize_whitespace(label.replace("_", " ").replace("-", " "))
+    normalized = normalize_whitespace(label.replace("_", " ").replace("-", " "))
+    return re.sub(r"^\d+\s+", "", normalized).strip()
 
 
 def default_system_prompt() -> str:

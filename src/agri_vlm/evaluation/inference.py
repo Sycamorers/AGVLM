@@ -83,6 +83,8 @@ def generate_predictions_from_loaded_model(
     batch_size: int = 1,
     device: Optional[Any] = None,
     synced_gpus: bool = False,
+    min_new_tokens: Optional[int] = None,
+    do_sample: Optional[bool] = None,
 ) -> List[str]:
     """Run generation for a list of normalized samples with an already loaded model."""
     rows = list(samples)
@@ -117,6 +119,10 @@ def generate_predictions_from_loaded_model(
                     "max_new_tokens": max_new_tokens,
                     "use_cache": True,
                 }
+                if min_new_tokens is not None:
+                    generation_kwargs["min_new_tokens"] = min_new_tokens
+                if do_sample is not None:
+                    generation_kwargs["do_sample"] = do_sample
                 if synced_gpus:
                     generation_kwargs["synced_gpus"] = True
                 device_type = getattr(generation_device, "type", None)
@@ -151,6 +157,8 @@ def generate_predictions(
     max_new_tokens: int,
     batch_size: int = 1,
     checkpoint_path: Optional[str] = None,
+    min_new_tokens: Optional[int] = None,
+    do_sample: Optional[bool] = None,
 ) -> List[str]:
     """Run local generation for a list of normalized samples."""
     processor = load_processor(model_config, checkpoint_path=checkpoint_path)
@@ -170,6 +178,8 @@ def generate_predictions(
         processor=processor,
         max_new_tokens=max_new_tokens,
         batch_size=batch_size,
+        min_new_tokens=min_new_tokens,
+        do_sample=do_sample,
     )
 
 

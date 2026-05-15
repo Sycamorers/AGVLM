@@ -1,0 +1,6 @@
+input_manifest_path: data/manifests/full/sft_train_phi4_max3_balanced_v2_instructional.jsonl
+output_manifest_path: data/manifests/full/sft_train_phi4_max3_balanced_v2_instructional_labelrepaired.jsonl
+summary_output_path: data/manifests/full/sft_train_phi4_max3_balanced_v2_instructional_labelrepaired_summary.json
+source_datasets:
+  - ip102
+strip_leading_numeric_prefix: true

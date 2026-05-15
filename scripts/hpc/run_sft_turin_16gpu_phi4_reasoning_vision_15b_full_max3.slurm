@@ -106,29 +106,20 @@ payload = yaml.safe_load(source.read_text())
 payload["per_device_train_batch_size"] = batch_size
 payload["per_device_eval_batch_size"] = batch_size
 suffix = "batch%s" % batch_size
+def append_suffix(value):
+    text = str(value)
+    if text.endswith("-%s" % suffix):
+        return text
+    return "%s-%s" % (text, suffix)
 if run_kind == "preflight":
-    payload["output_dir"] = (
-        "outputs/preflight/sft-phi4-reasoning-vision-15b-max3-turin-16gpu-%s"
-        % suffix
-    )
-    payload["checkpoint_output_dir"] = (
-        "/orange/hmedeiros/qinruoyao/agvlm/outputs/preflight/"
-        "sft-phi4-reasoning-vision-15b-max3-turin-16gpu-%s"
-        % suffix
-    )
+    payload["output_dir"] = append_suffix(payload["output_dir"])
+    payload["checkpoint_output_dir"] = append_suffix(payload["checkpoint_output_dir"])
     payload["save_strategy"] = "no"
     payload["save_final_model"] = False
     payload["eval_manifest_path"] = None
 else:
-    payload["output_dir"] = (
-        "outputs/sft/phi4-reasoning-vision-15b-full-max3-turin-16gpu-%s"
-        % suffix
-    )
-    payload["checkpoint_output_dir"] = (
-        "/orange/hmedeiros/qinruoyao/agvlm/outputs/sft/"
-        "phi4-reasoning-vision-15b-full-max3-turin-16gpu-%s"
-        % suffix
-    )
+    payload["output_dir"] = append_suffix(payload["output_dir"])
+    payload["checkpoint_output_dir"] = append_suffix(payload["checkpoint_output_dir"])
     payload["save_final_model"] = True
 if run_kind == "full" and (
     str(payload["output_dir"]).startswith("outputs/smoke")

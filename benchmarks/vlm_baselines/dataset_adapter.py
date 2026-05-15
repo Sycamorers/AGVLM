@@ -172,6 +172,15 @@ def user_prompt(row: dict[str, Any]) -> str:
 
 def semantic_prompt(row: dict[str, Any]) -> str:
     base = user_prompt(row)
+    normalized_base = normalize_text(base)
+    output_contract_markers = [
+        "respond in this format",
+        "respond using exactly",
+        "respond using these line start",
+        "respond using these line-start",
+    ]
+    if any(marker in normalized_base for marker in output_contract_markers):
+        return base
     instruction = output_instruction(row)
     if base:
         return "%s\n\n%s" % (base, instruction)

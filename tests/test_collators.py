@@ -197,3 +197,82 @@ def test_phi4_reasoning_vision_collator_uses_image_tokens(monkeypatch) -> None:
     assert rendered_messages[0][-1]["content"] == "<image>Identify the crop issue."
     assert rendered_messages[1][-1]["content"] == "apple scab"
     assert batch["labels"].tolist() == [[-100, -100, -100, 20, 21, -100]]
+
+
+def test_instructional_sft_format_adds_prompt_contract_and_answer_target() -> None:
+    from agri_vlm.data.conversation_format import sample_to_prompt_messages, sample_to_training_messages
+    from agri_vlm.schemas.dataset_schema import UnifiedSample
+
+    sample = UnifiedSample.model_validate(_sample())
+
+    prompt_messages = sample_to_prompt_messages(sample, prompt_format="instructional")
+    training_messages = sample_to_training_messages(
+        sample,
+        prompt_format="instructional",
+        target_format="instructional",
+    )
+
+    prompt_text = prompt_messages[-1]["content"][-1]["text"]
+    assert "Respond in this format:" in prompt_text
+    assert "Answer: <canonical agricultural label>" in prompt_text
+    assert training_messages[-1]["content"][0]["text"] == "Answer: apple scab"
+
+
+def test_instructional_sft_format_renders_clarify_decision_target() -> None:
+    from agri_vlm.data.conversation_format import sample_to_training_messages
+    from agri_vlm.schemas.dataset_schema import UnifiedSample
+
+    payload = _sample()
+    payload["task_type"] = "clarify_or_respond"
+    payload["target"] = {
+        "decision": "clarify",
+        "answer_text": "Could you share a close-up of the underside of the leaf?",
+    }
+    payload["verifier"] = {"mode": "clarify", "expected_decision": "clarify"}
+    sample = UnifiedSample.model_validate(payload)
+
+    training_messages = sample_to_training_messages(
+        sample,
+        prompt_format="instructional",
+        target_format="instructional",
+    )
+
+    prompt_text = training_messages[-2]["content"][-1]["text"]
+    assert "Decision: clarify" in prompt_text
+    assert training_messages[-1]["content"][0]["text"] == (
+        "Decision: clarify\n"
+        "Clarifying question: Could you share a close-up of the underside of the leaf?"
+    )
+
+
+def test_instructional_sft_format_renders_structured_consultation_target() -> None:
+    from agri_vlm.data.conversation_format import sample_to_training_messages
+    from agri_vlm.schemas.dataset_schema import UnifiedSample
+
+    payload = _sample()
+    payload["task_type"] = "consultation"
+    payload["target"] = {
+        "answer_text": "Species: tomato\nDiagnosis: early blight\nSymptoms: concentric leaf lesions\nManagement: remove infected leaves",
+        "canonical_label": "early blight",
+        "structured": {
+            "diagnosis": "early blight",
+            "management_steps": ["remove infected leaves"],
+        },
+    }
+    payload["verifier"] = {
+        "mode": "structured",
+        "required_sections": ["Diagnosis", "Evidence", "Uncertainty", "Management", "Follow-up"],
+    }
+    sample = UnifiedSample.model_validate(payload)
+
+    training_messages = sample_to_training_messages(
+        sample,
+        prompt_format="instructional",
+        target_format="instructional",
+    )
+
+    prompt_text = training_messages[-2]["content"][-1]["text"]
+    target_text = training_messages[-1]["content"][0]["text"]
+    assert "Respond using these line-start section headers exactly once:" in prompt_text
+    assert target_text.startswith("Diagnosis: early blight\nEvidence: concentric leaf lesions")
+    assert "\nManagement: remove infected leaves\n" in target_text

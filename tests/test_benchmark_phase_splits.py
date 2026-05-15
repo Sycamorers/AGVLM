@@ -6,6 +6,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "benchmarks" / "vlm_baselines"))
 
 from build_phase_splits import RL_PHASE, SFT_PHASE, _phase_report, build_phase_splits  # noqa: E402
+from dataset_adapter import semantic_prompt  # noqa: E402
 
 
 def _row(sample_id: str, image: str, *, split: str = "holdout") -> dict:
@@ -54,3 +55,16 @@ def test_real_phase_split_manifests_are_phase_tagged(tmp_path):
     sft_lines += (tmp_path / "sft_val_manifest.jsonl").read_text(encoding="utf-8").splitlines()
     sample_line = sft_lines[0]
     assert '"phase": "sft_benchmark"' in sample_line
+
+
+def test_semantic_prompt_does_not_duplicate_existing_output_contract():
+    row = _row("a", "missing/a.jpg")
+    row["messages"][0]["content"][0]["text"] = (
+        "Identify the issue.\n\n"
+        "Respond in this format:\n"
+        "Answer: <canonical agricultural label>"
+    )
+
+    prompt = semantic_prompt(row)
+
+    assert prompt.count("Respond in this format:") == 1

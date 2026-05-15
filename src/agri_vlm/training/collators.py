@@ -6,6 +6,8 @@ from pathlib import Path
 from typing import Any, Dict, List
 
 from agri_vlm.data.conversation_format import (
+    MANIFEST_PROMPT_FORMAT,
+    PLAIN_FORMAT,
     sample_to_prompt_messages,
     sample_to_training_messages,
     target_to_text,
@@ -23,8 +25,16 @@ def _env_flag(name: str) -> bool:
 class VisionLanguageChatCollator:
     """Tokenize multimodal chat samples for causal LM training."""
 
-    def __init__(self, processor: Any) -> None:
+    def __init__(
+        self,
+        processor: Any,
+        *,
+        prompt_format: str = MANIFEST_PROMPT_FORMAT,
+        target_format: str = PLAIN_FORMAT,
+    ) -> None:
         self.processor = processor
+        self.prompt_format = prompt_format
+        self.target_format = target_format
         self.log_batches = _env_flag("AGRI_VLM_LOG_COLLATOR_BATCHES")
 
     def __call__(self, features: List[Dict[str, Any]]) -> Dict[str, Any]:
@@ -42,11 +52,15 @@ class VisionLanguageChatCollator:
         image_batches = []
         for sample in samples:
             prompt = self.processor.apply_chat_template(
-                sample_to_prompt_messages(sample),
+                sample_to_prompt_messages(sample, prompt_format=self.prompt_format),
                 tokenize=False,
                 add_generation_prompt=True,
             )
-            messages = sample_to_training_messages(sample)
+            messages = sample_to_training_messages(
+                sample,
+                prompt_format=self.prompt_format,
+                target_format=self.target_format,
+            )
             rendered = self.processor.apply_chat_template(
                 messages,
                 tokenize=False,
@@ -138,37 +152,47 @@ def _mask_prompt_and_padding_tokens(
     batch["labels"] = labels
 
 
-def _render_phi4_multimodal_messages(sample: UnifiedSample, *, include_target: bool) -> List[Dict[str, str]]:
+def _render_phi4_multimodal_messages(
+    sample: UnifiedSample,
+    *,
+    include_target: bool,
+    prompt_format: str = MANIFEST_PROMPT_FORMAT,
+    target_format: str = PLAIN_FORMAT,
+) -> List[Dict[str, str]]:
     messages: List[Dict[str, str]] = []
     image_index = 1
-    for message in sample.messages:
+    for message in sample_to_prompt_messages(sample, prompt_format=prompt_format):
         parts = []
-        for content in message.content:
-            if content.type == "image":
+        for content in message.get("content") or []:
+            if content.get("type") == "image":
                 parts.append("<|image_%s|>" % image_index)
                 image_index += 1
-            elif content.text:
-                parts.append(content.text)
-        messages.append({"role": message.role, "content": "".join(parts)})
+            elif content.get("text"):
+                parts.append(content["text"])
+        messages.append({"role": message.get("role", "user"), "content": "".join(parts)})
     if include_target:
-        messages.append({"role": "assistant", "content": target_to_text(sample)})
+        messages.append({"role": "assistant", "content": target_to_text(sample, target_format=target_format)})
     return messages
 
 
 def _render_phi4_reasoning_vision_messages(
-    sample: UnifiedSample, *, include_target: bool
+    sample: UnifiedSample,
+    *,
+    include_target: bool,
+    prompt_format: str = MANIFEST_PROMPT_FORMAT,
+    target_format: str = PLAIN_FORMAT,
 ) -> List[Dict[str, str]]:
     messages: List[Dict[str, str]] = []
-    for message in sample.messages:
+    for message in sample_to_prompt_messages(sample, prompt_format=prompt_format):
         parts = []
-        for content in message.content:
-            if content.type == "image":
+        for content in message.get("content") or []:
+            if content.get("type") == "image":
                 parts.append("<image>")
-            elif content.text:
-                parts.append(content.text)
-        messages.append({"role": message.role, "content": "".join(parts)})
+            elif content.get("text"):
+                parts.append(content["text"])
+        messages.append({"role": message.get("role", "user"), "content": "".join(parts)})
     if include_target:
-        messages.append({"role": "assistant", "content": target_to_text(sample)})
+        messages.append({"role": "assistant", "content": target_to_text(sample, target_format=target_format)})
     return messages
 
 
@@ -176,7 +200,12 @@ class Phi4MultimodalVisionCollator(VisionLanguageChatCollator):
     """Tokenize Phi-4 multimodal vision batches for causal LM training."""
 
     def _render_messages(self, sample: UnifiedSample, *, include_target: bool) -> List[Dict[str, str]]:
-        return _render_phi4_multimodal_messages(sample, include_target=include_target)
+        return _render_phi4_multimodal_messages(
+            sample,
+            include_target=include_target,
+            prompt_format=self.prompt_format,
+            target_format=self.target_format,
+        )
 
     def __call__(self, features: List[Dict[str, Any]]) -> Dict[str, Any]:
         samples = [UnifiedSample.model_validate(feature) for feature in features]
@@ -233,17 +262,36 @@ class Phi4ReasoningVisionCollator(Phi4MultimodalVisionCollator):
     """Tokenize Phi-4 reasoning vision batches for causal LM training."""
 
     def _render_messages(self, sample: UnifiedSample, *, include_target: bool) -> List[Dict[str, str]]:
-        return _render_phi4_reasoning_vision_messages(sample, include_target=include_target)
+        return _render_phi4_reasoning_vision_messages(
+            sample,
+            include_target=include_target,
+            prompt_format=self.prompt_format,
+            target_format=self.target_format,
+        )
 
 
-def build_sft_data_collator(model_config: Any, processor: Any) -> Any:
+def build_sft_data_collator(model_config: Any, processor: Any, train_config: Any = None) -> Any:
     model_name = "%s %s" % (
         getattr(model_config, "name", ""),
         getattr(model_config, "model_name_or_path", ""),
     )
     lower_name = model_name.lower()
+    prompt_format = getattr(train_config, "sft_prompt_format", MANIFEST_PROMPT_FORMAT)
+    target_format = getattr(train_config, "sft_target_format", PLAIN_FORMAT)
     if "phi-4-reasoning-vision" in lower_name or "phi4_reasoning_vision" in lower_name:
-        return Phi4ReasoningVisionCollator(processor=processor)
+        return Phi4ReasoningVisionCollator(
+            processor=processor,
+            prompt_format=prompt_format,
+            target_format=target_format,
+        )
     if "phi-4-multimodal" in lower_name or "phi4_multimodal" in lower_name:
-        return Phi4MultimodalVisionCollator(processor=processor)
-    return VisionLanguageChatCollator(processor=processor)
+        return Phi4MultimodalVisionCollator(
+            processor=processor,
+            prompt_format=prompt_format,
+            target_format=target_format,
+        )
+    return VisionLanguageChatCollator(
+        processor=processor,
+        prompt_format=prompt_format,
+        target_format=target_format,
+    )

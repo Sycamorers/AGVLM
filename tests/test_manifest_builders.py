@@ -1,6 +1,8 @@
+from collections import Counter
 from pathlib import Path
 
 from agri_vlm.data.builders import (
+    build_balanced_sft_v2_manifest,
     build_eval_manifests,
     build_rl_manifest,
     build_sft_manifest,
@@ -177,3 +179,44 @@ def test_build_sft_train_eval_manifests_removes_eval_overlap(tmp_path: Path) -> 
     assert eval_ids == {"train-holdout", "val"}
     assert summary["overlap"] == {"exact_sample_id": 0, "group_key": 0}
     assert summary_output.exists()
+
+
+def test_build_balanced_sft_v2_manifest_caps_and_repeats(tmp_path: Path) -> None:
+    source_path = tmp_path / "source.jsonl"
+    output_path = tmp_path / "balanced.jsonl"
+    summary_path = tmp_path / "summary.json"
+    rows = []
+    for index in range(6):
+        row = sample_row("class-%s" % index, "plantdoc", "classification", "train")
+        row["target"]["canonical_label"] = "label-%s" % (index % 2)
+        rows.append(row)
+    for index in range(4):
+        rows.append(sample_row("vqa-%s" % index, "plantvillage_vqa", "vqa", "train"))
+    for index in range(2):
+        row = sample_row("clarify-%s" % index, "mirage", "clarify_or_respond", "train")
+        row["target"] = {"answer_text": "Which crop is affected?", "decision": "clarify"}
+        row["verifier"]["mode"] = "clarify"
+        rows.append(row)
+    write_manifest(source_path, rows)
+
+    summary = build_balanced_sft_v2_manifest(
+        input_manifest_path=source_path,
+        output_manifest_path=output_path,
+        summary_output_path=summary_path,
+        task_targets={"classification": 4, "vqa": 3, "clarify_or_respond": 5},
+        stratify_fields_by_task={
+            "classification": ["source_dataset", "target.canonical_label"],
+            "vqa": ["source_dataset"],
+            "clarify_or_respond": ["source_dataset", "target.decision"],
+        },
+        seed=11,
+        shuffle=True,
+    )
+
+    output_rows = read_manifest(output_path)
+    counts = Counter(row.task_type for row in output_rows)
+    assert counts == {"classification": 4, "vqa": 3, "clarify_or_respond": 5}
+    assert summary["task_plan"]["clarify_or_respond"]["unique_selected_rows"] == 2
+    assert summary["task_plan"]["clarify_or_respond"]["repeated_rows_added"] == 3
+    assert len({row.sample_id for row in output_rows if row.task_type == "clarify_or_respond"}) == 2
+    assert summary_path.exists()

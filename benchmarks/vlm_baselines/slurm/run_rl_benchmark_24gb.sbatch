@@ -25,10 +25,22 @@ export PYTHONPATH="$PWD/benchmarks/vlm_baselines${PYTHONPATH:+:$PYTHONPATH}"
 export HF_HOME="${HF_HOME:-$PWD/.cache/huggingface}"
 export HUGGINGFACE_HUB_CACHE="${HUGGINGFACE_HUB_CACHE:-$HF_HOME/hub}"
 export TRANSFORMERS_CACHE="${TRANSFORMERS_CACHE:-$HF_HOME/transformers}"
-export TMPDIR="${TMPDIR:-$PWD/benchmarks/vlm_baselines/tmp/${SLURM_JOB_ID:-local}}"
+export TMPDIR="${AGRI_VLM_TMPDIR:-$PWD/benchmarks/vlm_baselines/tmp/${SLURM_JOB_ID:-local}}"
+export TRITON_CACHE_DIR="${TRITON_CACHE_DIR:-$TMPDIR/triton}"
+export XDG_CACHE_HOME="${XDG_CACHE_HOME:-$TMPDIR/xdg-cache}"
+export TORCHINDUCTOR_CACHE_DIR="${TORCHINDUCTOR_CACHE_DIR:-$TMPDIR/torchinductor}"
 export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 
-mkdir -p "$HF_HOME" "$HUGGINGFACE_HUB_CACHE" "$TRANSFORMERS_CACHE" "$TMPDIR" benchmarks/vlm_baselines/logs/slurm benchmarks/vlm_baselines/results
+mkdir -p \
+  "$HF_HOME" \
+  "$HUGGINGFACE_HUB_CACHE" \
+  "$TRANSFORMERS_CACHE" \
+  "$TMPDIR" \
+  "$TRITON_CACHE_DIR" \
+  "$XDG_CACHE_HOME" \
+  "$TORCHINDUCTOR_CACHE_DIR" \
+  benchmarks/vlm_baselines/logs/slurm \
+  benchmarks/vlm_baselines/results
 
 PYTHON_BIN="${PYTHON_BIN:-python}"
 MODEL_NAME="${MODEL_NAME:-HuggingFaceTB/SmolVLM2-2.2B-Instruct}"
@@ -36,6 +48,7 @@ MODEL_KEY="${MODEL_KEY:-}"
 SPLIT="${SPLIT:-test}"
 MAX_SAMPLES="${MAX_SAMPLES:-0}"
 MAX_NEW_TOKENS="${MAX_NEW_TOKENS:-0}"
+MANIFEST_PATH="${MANIFEST_PATH:-}"
 DTYPE="${DTYPE:-bf16}"
 QUANTIZATION="${QUANTIZATION:-none}"
 DEVICE="${DEVICE:-cuda:0}"
@@ -43,7 +56,7 @@ OUTPUT_DIR="${OUTPUT_DIR:-benchmarks/vlm_baselines/results}"
 DRY_RUN="${DRY_RUN:-0}"
 
 echo "git_commit=$(git rev-parse HEAD)"
-echo "phase=rl split=${SPLIT} model_name=${MODEL_NAME} model_key=${MODEL_KEY} output_dir=${OUTPUT_DIR} max_samples=${MAX_SAMPLES}"
+echo "phase=rl split=${SPLIT} model_name=${MODEL_NAME} model_key=${MODEL_KEY} manifest_path=${MANIFEST_PATH} output_dir=${OUTPUT_DIR} max_samples=${MAX_SAMPLES}"
 nvidia-smi || true
 
 "${PYTHON_BIN}" benchmarks/vlm_baselines/build_phase_splits.py --phase rl --write-report
@@ -68,6 +81,9 @@ else
 fi
 if [[ "$MAX_SAMPLES" != "0" ]]; then
   args+=(--max-samples "$MAX_SAMPLES")
+fi
+if [[ -n "$MANIFEST_PATH" ]]; then
+  args+=(--manifest-path "$MANIFEST_PATH")
 fi
 if [[ "$DRY_RUN" == "1" ]]; then
   args+=(--dry-run)

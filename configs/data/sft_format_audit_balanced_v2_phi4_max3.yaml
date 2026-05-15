@@ -1,0 +1,7 @@
+manifest_path: data/manifests/full/sft_train_phi4_max3_balanced_v2_instructional_labelrepaired.jsonl
+markdown_output_path: reports/sft_retrain_prep/sft_format_audit_balanced_v2_instructional_labelrepaired.md
+json_output_path: reports/sft_retrain_prep/sft_format_audit_balanced_v2_instructional_labelrepaired.json
+prompt_format: instructional
+target_format: instructional
+samples_per_task: 20
+seed: 41

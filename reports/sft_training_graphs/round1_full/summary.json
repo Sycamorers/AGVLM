@@ -1,0 +1,57 @@
+{
+  "eval_loss": {
+    "count": 4,
+    "first": 3.29551362991333,
+    "last": 2.6308438777923584,
+    "max": 3.29551362991333,
+    "mean": 2.8980201482772827,
+    "median": 2.832861542701721,
+    "min": 2.6308438777923584
+  },
+  "final_train_summary": {
+    "epoch": 1.0,
+    "global_step": 4571,
+    "total_flos": 693226633134080.0,
+    "train_loss": 1.3351669137834121,
+    "train_runtime": 194699.9586,
+    "train_samples_per_second": 1.502,
+    "train_steps_per_second": 0.023
+  },
+  "first_epoch": 0.0002187944426211574,
+  "first_step": 1,
+  "grad_norm": {
+    "count": 4622,
+    "first": 19.341676712036133,
+    "last": 13.142071723937988,
+    "max": 23.980342864990234,
+    "mean": 11.057010663685372,
+    "median": 11.02016544342041,
+    "min": 3.7535018920898438
+  },
+  "last_epoch": 1.0,
+  "last_step": 4571,
+  "learning_rate": {
+    "count": 4622,
+    "first": 0.0,
+    "last": 1.1279043537108054e-09,
+    "max": 5e-06,
+    "mean": 2.4966334910186898e-06,
+    "median": 2.47180239115723e-06,
+    "min": 0.0
+  },
+  "loss": {
+    "count": 4622,
+    "first": 14.6309,
+    "first_100_mean": 10.503674,
+    "first_to_last_100_delta": -7.453721,
+    "last": 2.97,
+    "last_100_mean": 3.049953,
+    "max": 14.8638,
+    "mean": 3.50622412375595,
+    "median": 3.27545,
+    "min": 2.2408
+  },
+  "metrics_jsonl": "outputs/sft/phi4-reasoning-vision-15b-full-max3-turin-16gpu-batch1/metrics.jsonl",
+  "rows": 4627,
+  "title": "SFT Round 1 Full Max3 Turin16 Batch1"
+}

@@ -641,7 +641,11 @@ def run_sft(model_config: Any, train_config: Any) -> Dict[str, Any]:
             args=training_args,
             train_dataset=ManifestListDataset(train_rows),
             eval_dataset=ManifestListDataset(eval_rows) if eval_rows else None,
-            data_collator=build_sft_data_collator(model_config=model_config, processor=processor),
+            data_collator=build_sft_data_collator(
+                model_config=model_config,
+                processor=processor,
+                train_config=train_config,
+            ),
             callbacks=[
                 JsonlMetricsCallback(
                     run_artifacts.metrics_jsonl_path,

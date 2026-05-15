@@ -55,6 +55,26 @@ def _stratum_key(row: Dict[str, Any], fields: Sequence[str]) -> Tuple[str, ...]:
     return tuple(str(row.get(field, "")) for field in fields)
 
 
+def _nested_value(row: Dict[str, Any], field_path: str) -> str:
+    value: Any = row
+    for part in field_path.split("."):
+        if not isinstance(value, dict):
+            value = None
+            break
+        value = value.get(part)
+    if value is None:
+        return ""
+    if isinstance(value, list):
+        return "|".join(str(item) for item in value)
+    if isinstance(value, dict):
+        return "|".join("%s=%s" % (key, value[key]) for key in sorted(value))
+    return str(value)
+
+
+def _nested_stratum_key(row: Dict[str, Any], fields: Sequence[str]) -> Tuple[str, ...]:
+    return tuple(_nested_value(row, field) for field in fields)
+
+
 def _counter_dict(rows: Sequence[Dict[str, Any]], field: str) -> Dict[str, int]:
     return dict(Counter(str(row.get(field, "")) for row in rows))
 
@@ -202,10 +222,25 @@ def _dedupe_target_text(row: Dict[str, Any]) -> str:
     return ""
 
 
+def _stable_manifest_row_key(row: Dict[str, Any], salt: str) -> str:
+    return _stable_hex(
+        "%s::%s::%s"
+        % (
+            row.get("sample_id"),
+            ",".join(str(path) for path in row.get("images") or []),
+            _dedupe_target_text(row),
+        ),
+        salt,
+    )
+
+
 def _rl_dedupe_key(row: Dict[str, Any]) -> Tuple[str, str, str]:
     metadata = row.get("metadata") or {}
     images = row.get("images") or []
-    image_identity = str(metadata.get("source_image_id") or (images[0] if images else ""))
+    image_identity = "%s::%s" % (
+        str(metadata.get("source_image_id") or ""),
+        ",".join(str(image) for image in images),
+    )
     return (
         normalize_text(image_identity),
         normalize_text(_first_user_prompt(row)),
@@ -266,14 +301,169 @@ def _split_rl_train_holdout(
 def _nested_counter(rows: Sequence[Dict[str, Any]], *fields: str) -> Dict[str, int]:
     counts: Counter[str] = Counter()
     for row in rows:
-        values = []
-        for field in fields:
-            if field.startswith("metadata."):
-                values.append(str((row.get("metadata") or {}).get(field.split(".", 1)[1]) or ""))
-            else:
-                values.append(str(row.get(field) or ""))
-        counts["::".join(values)] += 1
+        counts["::".join(_nested_value(row, field) for field in fields)] += 1
     return dict(sorted(counts.items()))
+
+
+def _sample_nested_stratified(
+    rows: Sequence[Dict[str, Any]],
+    *,
+    target_size: int,
+    stratum_fields: Sequence[str],
+    min_per_stratum: int,
+    salt: str,
+) -> List[Dict[str, Any]]:
+    if target_size <= 0:
+        return []
+    if len(rows) <= target_size:
+        return sorted(rows, key=lambda row: _stable_manifest_row_key(row, salt))
+
+    strata: Dict[Tuple[str, ...], List[Dict[str, Any]]] = defaultdict(list)
+    for row in rows:
+        strata[_nested_stratum_key(row, stratum_fields)].append(row)
+    for key, stratum_rows in strata.items():
+        strata[key] = sorted(
+            stratum_rows,
+            key=lambda row: _stable_manifest_row_key(row, "%s::%s" % (salt, key)),
+        )
+
+    allocations = {key: 0 for key in strata}
+    remaining = target_size
+    if min_per_stratum > 0:
+        for key in sorted(strata):
+            if remaining <= 0:
+                break
+            take = min(min_per_stratum, len(strata[key]), remaining)
+            allocations[key] = take
+            remaining -= take
+
+    if remaining > 0:
+        capacities = {key: len(rows_for_key) - allocations[key] for key, rows_for_key in strata.items()}
+        total_capacity = sum(max(value, 0) for value in capacities.values())
+        fractional = []
+        for key in sorted(strata):
+            capacity = capacities[key]
+            if capacity <= 0 or total_capacity <= 0:
+                continue
+            raw_take = remaining * capacity / total_capacity
+            take = min(capacity, int(raw_take))
+            allocations[key] += take
+            fractional.append((raw_take - take, capacity - take, key))
+        remaining = target_size - sum(allocations.values())
+        for _fraction, capacity, key in sorted(fractional, reverse=True):
+            if remaining <= 0:
+                break
+            if capacity <= 0:
+                continue
+            allocations[key] += 1
+            remaining -= 1
+
+    sampled: List[Dict[str, Any]] = []
+    for key in sorted(strata):
+        sampled.extend(strata[key][: allocations[key]])
+    return sorted(sampled, key=lambda row: _stable_manifest_row_key(row, salt))
+
+
+def _repeat_rows_to_size(rows: Sequence[Dict[str, Any]], *, target_size: int, salt: str) -> List[Dict[str, Any]]:
+    if target_size <= 0:
+        return []
+    ordered = sorted(rows, key=lambda row: _stable_manifest_row_key(row, salt))
+    if not ordered:
+        raise ValueError("Cannot repeat an empty row set.")
+    if len(ordered) >= target_size:
+        return list(ordered[:target_size])
+    repeated = list(ordered)
+    cursor = 0
+    while len(repeated) < target_size:
+        repeated.append(ordered[cursor % len(ordered)])
+        cursor += 1
+    return repeated
+
+
+def build_balanced_sft_v2_manifest(
+    *,
+    input_manifest_path: Path,
+    output_manifest_path: Path,
+    task_targets: Dict[str, int],
+    stratify_fields_by_task: Dict[str, Sequence[str]],
+    seed: int,
+    shuffle: bool = True,
+    min_per_stratum_by_task: Dict[str, int] = None,
+    summary_output_path: Path = None,
+) -> Dict[str, Any]:
+    """Build a capped/oversampled SFT manifest with explicit per-task targets."""
+    rows = list(read_jsonl(input_manifest_path))
+    if not rows:
+        raise ValueError("Input manifest is empty: %s" % input_manifest_path)
+
+    task_targets = {str(task): int(target) for task, target in task_targets.items()}
+    if any(target < 1 for target in task_targets.values()):
+        raise ValueError("All task_targets values must be positive.")
+    min_per_stratum_by_task = {
+        str(task): int(value) for task, value in (min_per_stratum_by_task or {}).items()
+    }
+
+    input_tasks = Counter(str(row.get("task_type")) for row in rows)
+    missing_targets = sorted(set(input_tasks) - set(task_targets))
+    unused_targets = sorted(set(task_targets) - set(input_tasks))
+    if missing_targets or unused_targets:
+        raise ValueError(
+            "task_targets must exactly cover input task types. missing=%s unused=%s"
+            % (missing_targets, unused_targets)
+        )
+
+    output_rows: List[Dict[str, Any]] = []
+    task_plan: Dict[str, Any] = {}
+    for task_type in sorted(task_targets):
+        task_rows = [row for row in rows if str(row.get("task_type")) == task_type]
+        target_count = task_targets[task_type]
+        stratum_fields = list(stratify_fields_by_task.get(task_type) or ["source_dataset"])
+        min_per_stratum = min_per_stratum_by_task.get(task_type, 1)
+        sampled = _sample_nested_stratified(
+            task_rows,
+            target_size=min(target_count, len(task_rows)),
+            stratum_fields=stratum_fields,
+            min_per_stratum=min_per_stratum,
+            salt="%s::%s::sample" % (seed, task_type),
+        )
+        balanced = _repeat_rows_to_size(
+            sampled,
+            target_size=target_count,
+            salt="%s::%s::repeat" % (seed, task_type),
+        )
+        output_rows.extend(balanced)
+        task_plan[task_type] = {
+            "input_rows": len(task_rows),
+            "target_rows": target_count,
+            "unique_selected_rows": len(sampled),
+            "repeated_rows_added": max(0, len(balanced) - len(sampled)),
+            "stratify_fields": stratum_fields,
+            "min_per_stratum": min_per_stratum,
+        }
+
+    if shuffle:
+        output_rows = sorted(output_rows, key=lambda row: _stable_manifest_row_key(row, "%s::shuffle" % seed))
+
+    validated = write_manifest(output_manifest_path, output_rows)
+    validated_rows = [sample.model_dump(mode="json") for sample in validated]
+    summary = {
+        "input_manifest_path": str(input_manifest_path),
+        "output_manifest_path": str(output_manifest_path),
+        "input_rows": len(rows),
+        "output_rows": len(validated_rows),
+        "seed": seed,
+        "shuffle": shuffle,
+        "task_targets": dict(sorted(task_targets.items())),
+        "task_plan": task_plan,
+        "input_by_task_type": dict(sorted(input_tasks.items())),
+        "output_by_task_type": _counter_dict(validated_rows, "task_type"),
+        "input_by_source_task": _nested_counter(rows, "source_dataset", "task_type"),
+        "output_by_source_task": _nested_counter(validated_rows, "source_dataset", "task_type"),
+        "output_by_verifier_mode": _nested_counter(validated_rows, "verifier.mode"),
+    }
+    if summary_output_path:
+        write_json(summary_output_path, summary)
+    return summary
 
 
 def _sample_stratified(

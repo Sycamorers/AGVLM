@@ -1,0 +1,68 @@
+manifest_path: data/manifests/full/sft_train_phi4_max3_balanced_v2_instructional_labelrepaired.jsonl
+eval_manifest_path: data/manifests/full/sft_eval_phi4_max3_stratified512.jsonl
+output_dir: outputs/sft/phi4-reasoning-vision-15b-balanced-v2-instructional-full-turin16
+checkpoint_output_dir: /orange/hmedeiros/qinruoyao/agvlm/outputs/sft/phi4-reasoning-vision-15b-balanced-v2-instructional-full-turin16
+seed: 41
+per_device_train_batch_size: 1
+per_device_eval_batch_size: 1
+gradient_accumulation_steps: 4
+num_train_epochs: 1
+max_steps: -1
+learning_rate: 3.0e-6
+weight_decay: 0.01
+warmup_ratio: 0.03
+max_grad_norm: 1.0
+logging_steps: 1
+save_steps: 250
+save_strategy: "steps"
+eval_steps: 1000
+eval_generation_metrics: false
+eval_generation_max_examples: 0
+eval_generation_batch_size: 1
+eval_generation_max_new_tokens: 96
+eval_generation_save_predictions: false
+save_total_limit: 8
+prediction_loss_only: true
+bf16: true
+fp16: false
+gradient_checkpointing: true
+gradient_checkpointing_use_reentrant: true
+loss_chunk_size: 64
+use_peft: true
+report_to:
+  - tensorboard
+run_name: sft-phi4-reasoning-vision-15b-balanced-v2-instructional-full-turin16
+save_final_model: true
+dry_run: false
+smoke_max_samples: 0
+deepspeed: configs/deepspeed/zero3_lora_turin_24g.json
+sft_checkpoint_path: null
+max_images_per_sample: 3
+fail_on_train_eval_overlap: true
+resume_from_checkpoint: auto
+dataloader_num_workers: 0
+dataloader_pin_memory: true
+dataloader_persistent_workers: false
+dataloader_drop_last: true
+ddp_find_unused_parameters: false
+ddp_timeout: 3600
+log_on_each_node: false
+save_on_each_node: false
+full_determinism: false
+tf32: true
+sft_prompt_format: instructional
+sft_target_format: instructional
+freeze:
+  freeze_vision_encoder: false
+  freeze_projector: false
+  trainable_text_modules: []
+lora:
+  r: 256
+  alpha: 512
+  dropout: 0.0
+  bias: none
+  target_modules:
+    - qkv_proj
+    - o_proj
+    - gate_up_proj
+    - down_proj

@@ -83,6 +83,8 @@ def run_local_eval_bundle(model_config: Any, eval_config: Any) -> Dict[str, Any]
             eval_config.max_new_tokens,
             batch_size=eval_config.batch_size,
             checkpoint_path=eval_config.checkpoint_path,
+            min_new_tokens=eval_config.min_new_tokens,
+            do_sample=eval_config.do_sample,
         )
     else:
         predictions = [row.messages[-1].content[-1].text for row in rows]

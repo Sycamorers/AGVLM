@@ -1,7 +1,7 @@
 """Configuration schemas."""
 
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Literal, Optional
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
@@ -87,6 +87,8 @@ class TrainConfigSchema(BaseModel):
     gradient_checkpointing: bool = True
     gradient_checkpointing_use_reentrant: Optional[bool] = None
     loss_chunk_size: int = Field(default=0, ge=0)
+    sft_prompt_format: Literal["manifest", "instructional"] = "manifest"
+    sft_target_format: Literal["plain", "instructional"] = "plain"
     use_peft: bool = True
     report_to: List[str] = Field(default_factory=lambda: ["tensorboard"])
     run_name: Optional[str] = None
@@ -140,6 +142,8 @@ class EvalConfigSchema(BaseModel):
     output_path: str
     batch_size: int = 1
     max_new_tokens: int = 128
+    min_new_tokens: Optional[int] = Field(default=None, ge=0)
+    do_sample: Optional[bool] = None
     prediction_mode: str = "oracle"
     checkpoint_path: Optional[str] = None
     predictions_path: Optional[str] = None
