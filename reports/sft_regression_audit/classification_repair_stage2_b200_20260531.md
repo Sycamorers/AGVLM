@@ -65,4 +65,6 @@ Full training started:
 1. Monitor job `33598617` through checkpoint `100` and final step `800`.
 2. Validate the final adapter has non-empty LoRA tensors and an `adapter_validation.json`.
 3. Benchmark model key `agvlm_phi4_sft_classification_repair_instructional_stage2_b200_candidate`.
-4. Promote only if classification invalid predictions drop substantially from `114/114`, classification macro F1 rises above `0.0`, and task macro/clarify metrics do not regress against the active SFT gate.
+4. Run the overall benchmark matrix for the external baseline models and AGVLM checkpoint entries in `benchmarks/vlm_baselines/`.
+5. Generate the static visual dashboard with `benchmarks/vlm_baselines/build_results_dashboard.py`, including per-task raw prediction examples for every benchmarked model.
+6. Promote only if classification invalid predictions drop substantially from `114/114`, classification macro F1 rises above `0.0`, and task macro/clarify metrics do not regress against the active SFT gate.
