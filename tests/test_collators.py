@@ -215,7 +215,12 @@ def test_instructional_sft_format_adds_prompt_contract_and_answer_target() -> No
     prompt_text = prompt_messages[-1]["content"][-1]["text"]
     assert "Respond in this format:" in prompt_text
     assert "Answer: <canonical agricultural label>" in prompt_text
-    assert training_messages[-1]["content"][0]["text"] == "Answer: apple scab"
+    assert "Evidence: <brief visible symptom evidence>" in prompt_text
+    assert "Do not leave Answer blank" in prompt_text
+    assert training_messages[-1]["content"][0]["text"] == (
+        "Answer: apple scab\n"
+        "Evidence: Visible agricultural symptoms or pest features support this label."
+    )
 
 
 def test_instructional_sft_format_renders_clarify_decision_target() -> None:

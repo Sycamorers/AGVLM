@@ -1,12 +1,29 @@
 models:
+  agvlm_phi4_base:
+    model_name: microsoft/Phi-4-reasoning-vision-15B
+    adapter_type: hf_base
+    checkpoint_type: base
+    base_model_name_or_path: microsoft/Phi-4-reasoning-vision-15B
+    processor_name_or_path: microsoft/Phi-4-reasoning-vision-15B
+    checkpoint_path: ""
+    adapter_path: ""
+    initialized_from_sft_checkpoint: ""
+    trust_remote_code: true
+    max_images: 3
+    image_policy: all_images
+    dtype: bf16
+    quantization: 4bit
+    model_family: phi4_reasoning_vision
+    notes: Raw Phi-4 reasoning vision base model for AGVLM SFT promotion comparisons.
+
   agvlm_phi4_sft_completed:
     model_name: agvlm_phi4_sft_completed
     adapter_type: agvlm_sft
     checkpoint_type: sft
     base_model_name_or_path: microsoft/Phi-4-reasoning-vision-15B
     processor_name_or_path: microsoft/Phi-4-reasoning-vision-15B
-    checkpoint_path: CHANGE_ME_COMPLETED_SFT_CHECKPOINT_OR_MERGED_MODEL
-    adapter_path: CHANGE_ME_COMPLETED_SFT_ADAPTER_IF_LORA
+    checkpoint_path: ""
+    adapter_path: /orange/hmedeiros/qinruoyao/agvlm/outputs/sft/phi4-reasoning-vision-15b-full-max3-turin-16gpu-batch1
     initialized_from_sft_checkpoint: ""
     trust_remote_code: true
     max_images: 3
@@ -14,7 +31,58 @@ models:
     dtype: bf16
     quantization: none
     model_family: phi4_reasoning_vision
-    notes: Replace checkpoint_path or adapter_path after SFT completes. Placeholder entries are validation warnings in status checks and fatal when selected for a run.
+    notes: Active previous Phi-4 SFT. The 2026-05-18 balanced-v2 SFT was rejected by promotion gate and must not replace this entry.
+
+  agvlm_phi4_sft_balanced_v2_instructional_completed:
+    model_name: agvlm_phi4_sft_balanced_v2_instructional_completed
+    adapter_type: agvlm_sft
+    checkpoint_type: sft
+    base_model_name_or_path: microsoft/Phi-4-reasoning-vision-15B
+    processor_name_or_path: microsoft/Phi-4-reasoning-vision-15B
+    checkpoint_path: ""
+    adapter_path: /orange/hmedeiros/qinruoyao/agvlm/outputs/sft/phi4-reasoning-vision-15b-balanced-v2-instructional-full-turin16-batch1
+    initialized_from_sft_checkpoint: /orange/hmedeiros/qinruoyao/agvlm/outputs/sft/phi4-reasoning-vision-15b-full-max3-turin-16gpu-batch1
+    trust_remote_code: true
+    max_images: 3
+    image_policy: all_images
+    dtype: bf16
+    quantization: 4bit
+    model_family: phi4_reasoning_vision
+    notes: Completed 2026-05-18 balanced-v2 instructional SFT candidate. Benchmark before promotion or RL.
+
+  agvlm_phi4_sft_classification_repair_instructional_pilot_completed:
+    model_name: agvlm_phi4_sft_classification_repair_instructional_pilot_completed
+    adapter_type: agvlm_sft
+    checkpoint_type: sft
+    base_model_name_or_path: microsoft/Phi-4-reasoning-vision-15B
+    processor_name_or_path: microsoft/Phi-4-reasoning-vision-15B
+    checkpoint_path: ""
+    adapter_path: /orange/hmedeiros/qinruoyao/agvlm/outputs/sft/phi4-reasoning-vision-15b-classification-repair-instructional-pilot-turin16-batch1
+    initialized_from_sft_checkpoint: /orange/hmedeiros/qinruoyao/agvlm/outputs/sft/phi4-reasoning-vision-15b-full-max3-turin-16gpu-batch1
+    trust_remote_code: true
+    max_images: 3
+    image_policy: all_images
+    dtype: bf16
+    quantization: 4bit
+    model_family: phi4_reasoning_vision
+    notes: Completed 2026-05-20 classification-repair instructional pilot candidate. Benchmark and promotion-gate before replacing the active SFT or using for RL.
+
+  agvlm_phi4_sft_classification_repair_instructional_stage2_b200_candidate:
+    model_name: agvlm_phi4_sft_classification_repair_instructional_stage2_b200_candidate
+    adapter_type: agvlm_sft
+    checkpoint_type: sft
+    base_model_name_or_path: microsoft/Phi-4-reasoning-vision-15B
+    processor_name_or_path: microsoft/Phi-4-reasoning-vision-15B
+    checkpoint_path: ""
+    adapter_path: /orange/hmedeiros/qinruoyao/agvlm/outputs/sft/phi4-reasoning-vision-15b-classification-repair-instructional-stage2-b200-4gpu
+    initialized_from_sft_checkpoint: /orange/hmedeiros/qinruoyao/agvlm/outputs/sft/phi4-reasoning-vision-15b-classification-repair-instructional-pilot-turin16-batch1
+    trust_remote_code: true
+    max_images: 3
+    image_policy: all_images
+    dtype: bf16
+    quantization: 4bit
+    model_family: phi4_reasoning_vision
+    notes: In-progress 2026-05-31 B200 stage2 classification-repair candidate. Benchmark and promotion-gate after adapter validation before replacing the active SFT or using for RL.
 
   agvlm_phi4_rl_completed:
     model_name: agvlm_phi4_rl_completed

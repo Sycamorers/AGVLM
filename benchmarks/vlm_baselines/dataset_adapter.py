@@ -131,7 +131,12 @@ def output_instruction(row: dict[str, Any]) -> str:
             "Respond in this format:\nDecision: <clarify or respond>\nAnswer: <short answer or clarifying question>"
         )
     if mode == "label" or target.get("canonical_label"):
-        return "Respond in this format:\nAnswer: <most specific crop issue, disease, pest, or label>"
+        return (
+            "Respond in this format:\n"
+            "Answer: <canonical agricultural label>\n"
+            "Evidence: <brief visible symptom evidence>\n"
+            "Do not leave Answer blank or copy the placeholder text."
+        )
     if yes_no_refs and yes_no_refs.issubset({"yes", "no"}):
         return "Respond in this format:\nAnswer: <Yes or No>"
     if task_type == "vqa" or mode == "exact_match":

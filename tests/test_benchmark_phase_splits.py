@@ -68,3 +68,13 @@ def test_semantic_prompt_does_not_duplicate_existing_output_contract():
     prompt = semantic_prompt(row)
 
     assert prompt.count("Respond in this format:") == 1
+
+
+def test_semantic_prompt_matches_instructional_classification_contract():
+    row = _row("a", "missing/a.jpg")
+
+    prompt = semantic_prompt(row)
+
+    assert "Answer: <canonical agricultural label>" in prompt
+    assert "Evidence: <brief visible symptom evidence>" in prompt
+    assert "Do not leave Answer blank" in prompt

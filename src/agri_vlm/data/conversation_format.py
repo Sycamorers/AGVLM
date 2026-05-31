@@ -57,7 +57,12 @@ def output_instruction_for_sample(sample: UnifiedSample) -> str:
             "Diagnosis:\nEvidence:\nUncertainty:\nManagement:\nFollow-up:"
         )
     if sample.task_type == "classification" or sample.verifier.mode == "label" or sample.target.canonical_label:
-        return "Respond in this format:\nAnswer: <canonical agricultural label>"
+        return (
+            "Respond in this format:\n"
+            "Answer: <canonical agricultural label>\n"
+            "Evidence: <brief visible symptom evidence>\n"
+            "Do not leave Answer blank or copy the placeholder text."
+        )
     if _is_yes_no_target(sample):
         return "Respond in this format:\nAnswer: <Yes or No>"
     if sample.task_type == "vqa" or sample.verifier.mode in {"exact_match", "synonym"}:
@@ -123,10 +128,43 @@ def target_to_text(sample: UnifiedSample, *, target_format: str = PLAIN_FORMAT) 
     if sample.task_type == "consultation" or sample.verifier.mode == "structured" or target.structured:
         return _structured_target_to_text(sample)
     if sample.task_type == "classification" or sample.verifier.mode == "label" or target.canonical_label:
-        return "Answer: %s" % (target.canonical_label or target.answer_text or _plain_target_to_text(sample))
+        label = target.canonical_label or target.answer_text or _plain_target_to_text(sample)
+        return "Answer: %s\nEvidence: %s" % (label, _classification_evidence_to_text(sample))
     if sample.task_type == "vqa" or sample.verifier.mode in {"exact_match", "synonym"}:
         return "Answer: %s" % _plain_target_to_text(sample)
     return _plain_target_to_text(sample)
+
+
+def _first_nonempty_text(value: Any) -> str:
+    if isinstance(value, list):
+        for item in value:
+            text = _first_nonempty_text(item)
+            if text:
+                return text
+        return ""
+    if isinstance(value, dict):
+        for key in ("text", "evidence", "description", "value"):
+            text = _first_nonempty_text(value.get(key))
+            if text:
+                return text
+        return ""
+    text = str(value or "").strip()
+    return text
+
+
+def _classification_evidence_to_text(sample: UnifiedSample) -> str:
+    metadata = sample.metadata or {}
+    verifier = sample.verifier.model_dump(mode="json", exclude_none=True) if sample.verifier else {}
+    for container in (metadata, verifier):
+        for field_name in ("visual_evidence", "known_facts", "symptoms"):
+            evidence = _first_nonempty_text(container.get(field_name))
+            if evidence:
+                return evidence
+    crop = str(metadata.get("crop") or sample.verifier.crop or "").strip()
+    disease = str(metadata.get("disease") or sample.verifier.disease or "").strip()
+    if crop and disease:
+        return "Visible %s symptoms support the %s label." % (crop, disease)
+    return "Visible agricultural symptoms or pest features support this label."
 
 
 def _answer_text_field(sample: UnifiedSample, field_name: str) -> str:
