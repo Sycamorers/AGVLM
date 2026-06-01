@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AGVLM SFT Stage Decision</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f7f8f3;
+      --ink: #1f2521;
+      --muted: #647067;
+      --line: #d9dfd7;
+      --panel: #ffffff;
+      --accent: #2f7661;
+      --warn: #b15d2a;
+      --bad: #a23b3b;
+      --good: #23724d;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--ink); font: 14px/1.45 system-ui, -apple-system, Segoe UI, sans-serif; }
+    header { padding: 28px 32px 20px; background: #20372e; color: white; }
+    main { padding: 24px 32px 40px; max-width: 1480px; margin: 0 auto; }
+    h1 { margin: 0 0 8px; font-size: 30px; letter-spacing: 0; }
+    h2 { margin: 30px 0 12px; font-size: 19px; letter-spacing: 0; }
+    h3 { margin: 0 0 8px; font-size: 16px; letter-spacing: 0; }
+    h4 { margin: 18px 0 8px; }
+    p { margin: 6px 0; color: var(--muted); }
+    code { background: #eef2ec; border: 1px solid var(--line); border-radius: 4px; padding: 1px 4px; }
+    .summary { display: grid; grid-template-columns: repeat(4, minmax(170px, 1fr)); gap: 12px; margin-top: 18px; }
+    .tile, .card { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 14px; box-shadow: 0 1px 2px rgba(20, 32, 24, .04); }
+    .tile b { display: block; font-size: 24px; }
+    .tile span { color: var(--muted); }
+    .decision { color: white; background: #23724d; }
+    table { width: 100%; border-collapse: collapse; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+    th, td { text-align: left; border-bottom: 1px solid var(--line); padding: 9px 10px; vertical-align: top; }
+    thead th { background: #eef2ec; font-size: 12px; color: #47524b; text-transform: uppercase; }
+    tbody tr:last-child th, tbody tr:last-child td { border-bottom: 0; }
+    .pass { color: var(--good); font-weight: 700; }
+    .fail { color: var(--bad); font-weight: 700; }
+    .bar { height: 8px; background: #edf0ea; border-radius: 999px; overflow: hidden; min-width: 90px; }
+    .bar span { display: block; height: 100%; background: var(--accent); }
+    .cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+    .wide { min-width: 0; overflow: auto; }
+    .kpis { display: grid; grid-template-columns: repeat(4, minmax(120px, 1fr)); gap: 10px; margin: 10px 0 14px; }
+    .kpis div { border: 1px solid var(--line); border-radius: 6px; padding: 10px; background: #fbfcfa; }
+    .kpis b { display: block; font-size: 20px; }
+    .kpis span { color: var(--muted); font-size: 12px; }
+    ul { margin: 8px 0 0; padding-left: 18px; }
+    li { margin: 8px 0; }
+    li span { color: var(--muted); }
+    .note { background: #fff8ee; border: 1px solid #ead7bd; border-radius: 8px; padding: 12px; }
+    @media (max-width: 900px) {
+      header, main { padding-left: 16px; padding-right: 16px; }
+      .summary, .cards, .kpis { grid-template-columns: 1fr; }
+      table { font-size: 12px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>AGVLM SFT Stage Decision</h1>
+    <p>Ground-level RGB agriculture consultation benchmark gate for the current Stage2 B200 SFT candidate.</p>
+  </header>
+  <main>
+    <section class="summary">
+      <div class="tile"><b>completed</b><span>Benchmark status</span></div>
+      <div class="tile decision"><b>PROMOTE</b><span>Decision</span></div>
+      <div class="tile"><b>0.265</b><span>Stage2 task macro</span><div class="bar"><span style="width:26%"></span></div></div>
+      <div class="tile"><b>0.229</b><span>Active SFT task macro</span><div class="bar"><span style="width:23%"></span></div></div>
+    </section>
+
+    <section>
+      <h2>Benchmark Metrics</h2>
+      <table>
+        <thead>
+          <tr><th>Model</th><th>Key</th><th>N</th><th>Task Macro</th><th>Class F1</th><th>VQA Relaxed</th><th>Clarify F1</th><th>Invalid</th><th>Invalid Rate</th><th>Format-like Invalid</th><th>Class Out-of-label</th></tr>
+        </thead>
+        <tbody><tr><th>Phi-4 Base</th><td>agvlm_phi4_base</td><td>392</td><td>0.226</td><td>0.000</td><td>0.188</td><td>0.491</td><td>114</td><td>29.1%</td><td>n/a</td><td>100.0%</td></tr><tr><th>Active Previous SFT</th><td>agvlm_phi4_sft_completed</td><td>392</td><td>0.229</td><td>0.000</td><td>0.156</td><td>0.530</td><td>119</td><td>30.4%</td><td>n/a</td><td>100.0%</td></tr><tr><th>Balanced-v2 SFT</th><td>agvlm_phi4_sft_balanced_v2_instructional_completed</td><td>392</td><td>0.207</td><td>0.000</td><td>0.212</td><td>0.409</td><td>193</td><td>49.2%</td><td>n/a</td><td>0.0%</td></tr><tr><th>Classification-Repair Pilot</th><td>agvlm_phi4_sft_classification_repair_instructional_pilot_completed</td><td>392</td><td>0.234</td><td>0.000</td><td>0.224</td><td>0.479</td><td>185</td><td>47.2%</td><td>185</td><td>0.0%</td></tr><tr><th>Stage2 B200 Candidate</th><td>agvlm_phi4_sft_classification_repair_instructional_stage2_b200_candidate</td><td>392</td><td>0.265</td><td>0.001</td><td>0.224</td><td>0.568</td><td>83.000</td><td>21.2%</td><td>83.000</td><td>16.7%</td></tr></tbody>
+      </table>
+    </section>
+
+    <section><h2>Promotion Gate: Stage2 vs Active Previous SFT</h2><table><thead><tr><th>Metric</th><th>Direction</th><th>Baseline</th><th>Candidate</th><th>Preferred Delta</th><th>Status</th></tr></thead><tbody><tr><th>task_macro_average</th><td>higher</td><td>0.229</td><td>0.265</td><td>0.036</td><td class='pass'>pass</td></tr><tr><th>short_vqa.relaxed_accuracy</th><td>higher</td><td>0.156</td><td>0.224</td><td>0.068</td><td class='pass'>pass</td></tr><tr><th>clarify_or_respond.macro_f1</th><td>higher</td><td>0.530</td><td>0.568</td><td>0.038</td><td class='pass'>pass</td></tr><tr><th>num_invalid_predictions</th><td>lower</td><td>119</td><td>83.000</td><td>36.000</td><td class='pass'>pass</td></tr></tbody></table></section>
+    <section><h2>Regression Check: Stage2 vs Classification-Repair Pilot</h2><table><thead><tr><th>Metric</th><th>Direction</th><th>Baseline</th><th>Candidate</th><th>Preferred Delta</th><th>Status</th></tr></thead><tbody><tr><th>task_macro_average</th><td>higher</td><td>0.234</td><td>0.265</td><td>0.030</td><td class='pass'>pass</td></tr><tr><th>short_vqa.relaxed_accuracy</th><td>higher</td><td>0.224</td><td>0.224</td><td>0.000</td><td class='pass'>pass</td></tr><tr><th>clarify_or_respond.macro_f1</th><td>higher</td><td>0.479</td><td>0.568</td><td>0.090</td><td class='pass'>pass</td></tr><tr><th>num_invalid_predictions</th><td>lower</td><td>185</td><td>83.000</td><td>102</td><td class='pass'>pass</td></tr></tbody></table></section>
+
+    <section>
+      <h2>Training and Adapter Checks</h2>
+      <div class="cards">
+        <article class="card">
+          <h3>Adapter Validation</h3>
+          <p><code>/orange/hmedeiros/qinruoyao/agvlm/outputs/sft/phi4-reasoning-vision-15b-classification-repair-instructional-stage2-b200-4gpu</code></p>
+          <table><tbody>
+            <tr><th>Format</th><td>safetensors</td></tr>
+            <tr><th>PEFT Type</th><td>LORA</td></tr>
+            <tr><th>Num tensors</th><td>320</td></tr>
+            <tr><th>Non-empty tensors</th><td>320</td></tr>
+            <tr><th>First tensor</th><td>base_model.model.model.layers.0.mlp.down_proj.lora_A.weight</td></tr>
+          </tbody></table>
+        </article>
+        <article class="card">
+          <h3>Training Metrics</h3>
+          <p><code>/blue/hmedeiros/qinruoyao/agvlm/outputs/sft/phi4-reasoning-vision-15b-classification-repair-instructional-stage2-b200-4gpu/metrics/train_metrics.jsonl</code></p>
+          <table><tbody>
+            <tr><th>Max step</th><td>n/a</td></tr>
+            <tr><th>Loss first</th><td>6.036</td></tr>
+            <tr><th>Loss last</th><td>2.738</td></tr>
+            <tr><th>Eval loss first</th><td>2.507</td></tr>
+            <tr><th>Eval loss last</th><td>2.366</td></tr>
+          </tbody></table>
+        </article>
+      </div>
+    </section>
+
+    <section><h2>Output Engineering Diagnostics</h2><div class='cards'><article class='card wide'><h3>Classification-Repair Pilot</h3><p><code>/blue/hmedeiros/qinruoyao/agvlm/benchmarks/vlm_baselines/results/agvlm_classification_repair_pilot_benchmark_promptfix_20260531/predictions/sft-benchmark-agvlm-phi4-sft-classification-repair-instructional-pilot-completed-test.jsonl</code></p><div class='kpis'><div><b>185</b><span>Invalid</span></div><div><b>47.2%</b><span>Invalid rate</span></div><div><b>185</b><span>Format-like invalid</span></div><div><b>0.000</b><span>Out-of-label</span></div><div><b>57.1%</b><span>Explicit Decision rate</span></div></div><table><thead><tr><th>Task</th><th>N</th><th>Invalid</th><th>Invalid Rate</th><th>Format-like</th><th>Out-of-label</th><th>Parse Status</th></tr></thead><tbody><tr><th>clarify_or_respond</th><td>28.000</td><td>3.000</td><td>10.7%</td><td>3.000</td><td>0.000</td><td>{&#x27;exact&#x27;: 16, &#x27;inferred&#x27;: 9, &#x27;failed&#x27;: 3}</td></tr><tr><th>classification</th><td>114</td><td>114</td><td>100.0%</td><td>114</td><td>0.000</td><td>{&#x27;failed&#x27;: 114}</td></tr><tr><th>vqa</th><td>250</td><td>68.000</td><td>27.2%</td><td>68.000</td><td>0.000</td><td>{&#x27;exact&#x27;: 119, &#x27;raw&#x27;: 63, &#x27;failed&#x27;: 68}</td></tr></tbody></table><h4>Invalid examples</h4><ul><li><strong>classification</strong> <code>ip102-ip102-v1-1-images-14645-jpg</code> status=failed, parsed=<br><span>Answer:</span></li><li><strong>classification</strong> <code>plantdoc-659</code> status=failed, parsed=<br><span>Answer:</span></li><li><strong>classification</strong> <code>ip102-ip102-v1-1-images-12356-jpg</code> status=failed, parsed=<br><span>Answer:</span></li><li><strong>vqa</strong> <code>plantvillage_vqa-image_041298.JPG-121425</code> status=failed, parsed=<br><span>Answer:</span></li><li><strong>vqa</strong> <code>plantvillage_vqa-image_025507.JPG-074809</code> status=failed, parsed=<br><span>Answer:</span></li><li><strong>classification</strong> <code>ip102-ip102-v1-1-images-74554-jpg</code> status=failed, parsed=<br><span>Answer:</span></li></ul></article><article class='card wide'><h3>Stage2 B200 Candidate</h3><p><code>/blue/hmedeiros/qinruoyao/agvlm/benchmarks/vlm_baselines/results/agvlm_stage2_b200_benchmark_20260601/predictions/sft-benchmark-agvlm-phi4-sft-classification-repair-instructional-stage2-b200-candidate-test.jsonl</code></p><div class='kpis'><div><b>83.000</b><span>Invalid</span></div><div><b>21.2%</b><span>Invalid rate</span></div><div><b>83.000</b><span>Format-like invalid</span></div><div><b>19.000</b><span>Out-of-label</span></div><div><b>75.0%</b><span>Explicit Decision rate</span></div></div><table><thead><tr><th>Task</th><th>N</th><th>Invalid</th><th>Invalid Rate</th><th>Format-like</th><th>Out-of-label</th><th>Parse Status</th></tr></thead><tbody><tr><th>clarify_or_respond</th><td>28.000</td><td>2.000</td><td>7.1%</td><td>2.000</td><td>0.000</td><td>{&#x27;exact&#x27;: 21, &#x27;failed&#x27;: 2, &#x27;inferred&#x27;: 5}</td></tr><tr><th>classification</th><td>114</td><td>0.000</td><td>0.0%</td><td>0.000</td><td>19.000</td><td>{&#x27;exact&#x27;: 95, &#x27;out_of_label_space&#x27;: 19}</td></tr><tr><th>vqa</th><td>250</td><td>81.000</td><td>32.4%</td><td>81.000</td><td>0.000</td><td>{&#x27;exact&#x27;: 128, &#x27;failed&#x27;: 81, &#x27;raw&#x27;: 41}</td></tr></tbody></table><h4>Invalid examples</h4><ul><li><strong>vqa</strong> <code>plantvillage_vqa-image_020227.JPG-059114</code> status=failed, parsed=<br><span>Answer:</span></li><li><strong>vqa</strong> <code>plantvillage_vqa-image_041298.JPG-121425</code> status=failed, parsed=<br><span>Answer:</span></li><li><strong>vqa</strong> <code>plantvillage_vqa-image_025507.JPG-074809</code> status=failed, parsed=<br><span>Answer:</span></li><li><strong>vqa</strong> <code>plantvillage_vqa-image_032210.JPG-094792</code> status=failed, parsed=<br><span>Answer:</span></li><li><strong>vqa</strong> <code>plantvillage_vqa-image_036909.JPG-108530</code> status=failed, parsed=<br><span>Answer:</span></li><li><strong>vqa</strong> <code>plantvillage_vqa-image_030344.JPG-089342</code> status=failed, parsed=<br><span>Answer:</span></li></ul></article></div></section>
+
+    <section>
+      <h2>Run Notes</h2>
+      <div class="note">
+        <p>Stage output directory: <code>/blue/hmedeiros/qinruoyao/agvlm/benchmarks/vlm_baselines/results/agvlm_stage2_b200_benchmark_20260601</code></p>
+        <p>Slurm stdout: <code>/blue/hmedeiros/qinruoyao/agvlm/benchmarks/vlm_baselines/logs/slurm/agri-sft-bench-33629150.out</code></p>
+        <p>Slurm stderr: <code>/blue/hmedeiros/qinruoyao/agvlm/benchmarks/vlm_baselines/logs/slurm/agri-sft-bench-33629150.err</code></p>
+        <p>Hugging Face remote-code refresh warning observed: <strong>True</strong></p>
+        <p>Recent progress markers: [&quot;completed 275/392 samples; cuda={&#x27;available&#x27;: True, &#x27;device&#x27;: 0, &#x27;free_gb&#x27;: 6.49, &#x27;total_gb&#x27;: 22.03, &#x27;allocated_gb&#x27;: 13.4, &#x27;reserved_gb&#x27;: 15.31}&quot;, &quot;completed 300/392 samples; cuda={&#x27;available&#x27;: True, &#x27;device&#x27;: 0, &#x27;free_gb&#x27;: 6.49, &#x27;total_gb&#x27;: 22.03, &#x27;allocated_gb&#x27;: 13.4, &#x27;reserved_gb&#x27;: 15.31}&quot;, &quot;completed 325/392 samples; cuda={&#x27;available&#x27;: True, &#x27;device&#x27;: 0, &#x27;free_gb&#x27;: 6.49, &#x27;total_gb&#x27;: 22.03, &#x27;allocated_gb&#x27;: 13.4, &#x27;reserved_gb&#x27;: 15.31}&quot;, &quot;completed 350/392 samples; cuda={&#x27;available&#x27;: True, &#x27;device&#x27;: 0, &#x27;free_gb&#x27;: 6.49, &#x27;total_gb&#x27;: 22.03, &#x27;allocated_gb&#x27;: 13.4, &#x27;reserved_gb&#x27;: 15.31}&quot;, &quot;completed 375/392 samples; cuda={&#x27;available&#x27;: True, &#x27;device&#x27;: 0, &#x27;free_gb&#x27;: 6.49, &#x27;total_gb&#x27;: 22.03, &#x27;allocated_gb&#x27;: 13.4, &#x27;reserved_gb&#x27;: 15.31}&quot;]</p>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

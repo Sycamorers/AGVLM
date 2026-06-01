@@ -25,6 +25,7 @@ DEFAULT_REWARD_MODULES = [
     "clarify_vs_respond",
     "management_coverage",
     "hallucination_penalty",
+    "output_format",
 ]
 DEFAULT_REWARD_WEIGHTS = {
     "exact_match": 1.0,
@@ -35,6 +36,7 @@ DEFAULT_REWARD_WEIGHTS = {
     "clarify_vs_respond": 1.0,
     "management_coverage": 0.5,
     "hallucination_penalty": 1.0,
+    "output_format": 1.0,
 }
 
 

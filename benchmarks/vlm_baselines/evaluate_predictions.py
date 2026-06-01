@@ -10,7 +10,8 @@ from pathlib import Path
 import sys
 from typing import Any
 
-from metrics import evaluate_prediction_records
+from metrics import evaluate_prediction_records, parse_prediction_for_metrics
+from prediction_parsing import normalize_label
 from utils import BENCHMARK_ROOT, collect_environment_info, git_value, model_slug, read_jsonl, utc_now, write_csv, write_json
 
 
@@ -36,6 +37,55 @@ def _first(rows: list[dict[str, Any]], key: str, default: Any = None) -> Any:
     return default
 
 
+def _label_space_from_records(rows: list[dict[str, Any]]) -> list[str]:
+    labels: dict[str, str] = {}
+    for row in rows:
+        if row.get("verifier_mode") != "label" and row.get("task_type") not in {"classification", "label_diagnosis"}:
+            continue
+        candidates = [row.get("ground_truth")]
+        candidates.extend(row.get("references") or [])
+        verifier = row.get("verifier") or {}
+        if isinstance(verifier, dict):
+            candidates.extend(verifier.get("accepted_labels") or [])
+        for candidate in candidates:
+            key = normalize_label(str(candidate or ""))
+            if key:
+                labels.setdefault(key, str(candidate))
+    return [labels[key] for key in sorted(labels)]
+
+
+def refresh_parse_fields(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Refresh parser-derived fields from raw output before scoring.
+
+    Prediction JSONL files are long-lived artifacts. Re-parsing here keeps
+    metric runs aligned with parser fixes without requiring expensive
+    re-inference for every parser-only change.
+    """
+    label_space = _label_space_from_records(rows)
+    refreshed = []
+    for row in rows:
+        updated = dict(row)
+        parsed = parse_prediction_for_metrics(
+            raw_output=str(row.get("raw_output") or ""),
+            task_type=str(row.get("task_type") or ""),
+            verifier_mode=str(row.get("verifier_mode") or ""),
+            label_space=label_space,
+        )
+        updated.update(
+            {
+                "parsed_prediction": parsed.get("parsed_prediction", ""),
+                "normalized_prediction": parsed.get("normalized_prediction", ""),
+                "parse_status": parsed.get("parse_status", "missing"),
+                "invalid_prediction": bool(parsed.get("invalid_prediction")),
+                "sections": parsed.get("sections"),
+                "label_mentions": parsed.get("label_mentions"),
+                "out_of_label_space": bool(parsed.get("out_of_label_space")),
+            }
+        )
+        refreshed.append(updated)
+    return refreshed
+
+
 def evaluate_file(
     predictions_path: Path,
     *,
@@ -46,7 +96,7 @@ def evaluate_file(
     output_dir: Path | None = None,
     bootstrap_samples: int = 0,
 ) -> dict[str, Any]:
-    rows = read_jsonl(predictions_path)
+    rows = refresh_parse_fields(read_jsonl(predictions_path))
     metrics = evaluate_prediction_records(rows, bootstrap_samples=bootstrap_samples)
     inferred_model = model_name or _first(rows, "model_name", "unknown")
     inferred_key = model_key or _first(rows, "model_key", model_slug(str(inferred_model)))
@@ -111,9 +161,12 @@ def _summary_row(path: Path, payload: dict[str, Any]) -> dict[str, Any]:
         "invalid_prediction_rate": payload.get("invalid_prediction_rate", ""),
         "task_macro_average": payload.get("task_macro_average", ""),
         "classification_top1_accuracy": _metric_get(payload, "classification.top1_accuracy"),
+        "classification_accepted_label_accuracy": _metric_get(payload, "classification.accepted_label_accuracy"),
+        "classification_semantic_alias_accuracy": _metric_get(payload, "classification.semantic_alias_accuracy"),
         "classification_macro_f1": _metric_get(payload, "classification.macro_f1"),
         "classification_weighted_f1": _metric_get(payload, "classification.weighted_f1"),
         "classification_balanced_accuracy": _metric_get(payload, "classification.balanced_accuracy"),
+        "classification_out_of_label_space_rate": _metric_get(payload, "classification.out_of_label_space_rate"),
         "vqa_exact_match": _metric_get(payload, "short_vqa.exact_match"),
         "vqa_normalized_exact_match": _metric_get(payload, "short_vqa.normalized_exact_match"),
         "vqa_relaxed_accuracy": _metric_get(payload, "short_vqa.relaxed_accuracy"),
@@ -144,6 +197,7 @@ def _write_markdown(path: Path, rows: list[dict[str, Any]], fieldnames: list[str
         "num_examples",
         "task_macro_average",
         "classification_macro_f1",
+        "classification_out_of_label_space_rate",
         "vqa_relaxed_accuracy",
         "clarify_macro_f1",
         "consultation_structured_section_compliance",
@@ -184,9 +238,12 @@ def build_summary_table(metrics_dir: Path, output_path: Path) -> list[dict[str, 
         "invalid_prediction_rate",
         "task_macro_average",
         "classification_top1_accuracy",
+        "classification_accepted_label_accuracy",
+        "classification_semantic_alias_accuracy",
         "classification_macro_f1",
         "classification_weighted_f1",
         "classification_balanced_accuracy",
+        "classification_out_of_label_space_rate",
         "vqa_exact_match",
         "vqa_normalized_exact_match",
         "vqa_relaxed_accuracy",

@@ -1,0 +1,27 @@
+input_manifest_path: data/manifests/full/sft_train_phi4_max3_no_eval_overlap.jsonl
+output_manifest_path: data/manifests/full/sft_train_phi4_max3_closed_label_classification_repair.jsonl
+summary_output_path: data/manifests/full/sft_train_phi4_max3_closed_label_classification_repair_summary.json
+seed: 45
+shuffle: true
+classification_per_label_target: 512
+classification_per_label_target_by_source: {}
+strip_leading_numeric_prefix_sources:
+  - ip102
+task_targets:
+  vqa: 50000
+  consultation: 25000
+  clarify_or_respond: 6482
+stratify_fields_by_task:
+  vqa:
+    - source_dataset
+  consultation:
+    - source_dataset
+    - metadata.crop
+    - metadata.disease
+  clarify_or_respond:
+    - source_dataset
+    - target.decision
+min_per_stratum_by_task:
+  vqa: 1
+  consultation: 1
+  clarify_or_respond: 1

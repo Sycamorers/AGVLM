@@ -1,0 +1,78 @@
+{
+  "baseline_key": "agvlm_phi4_sft_completed",
+  "candidate_key": "agvlm_phi4_sft_balanced_v2_instructional_completed",
+  "diagnostic_metrics": [
+    {
+      "baseline": 0.0,
+      "candidate": 0.0,
+      "delta_in_preferred_direction": 0.0,
+      "direction": "higher",
+      "margin": 0.0,
+      "metric": "classification.top1_accuracy",
+      "passed": true
+    },
+    {
+      "baseline": 0.0,
+      "candidate": 0.0,
+      "delta_in_preferred_direction": 0.0,
+      "direction": "higher",
+      "margin": 0.0,
+      "metric": "classification.macro_f1",
+      "passed": true
+    },
+    {
+      "baseline": null,
+      "candidate": null,
+      "delta_in_preferred_direction": null,
+      "direction": "higher",
+      "margin": 0.0,
+      "metric": "local_metrics.average_reward",
+      "passed": false
+    }
+  ],
+  "failed_required_metrics": [
+    "task_macro_average",
+    "clarify_or_respond.macro_f1",
+    "num_invalid_predictions"
+  ],
+  "metrics_json": "reports/sft_regression_audit/completed_sft_benchmark_comparison_20260519.json",
+  "passed": false,
+  "required_metrics": [
+    {
+      "baseline": 0.22877419354838713,
+      "candidate": 0.207030303030303,
+      "delta_in_preferred_direction": -0.02174389051808412,
+      "direction": "higher",
+      "margin": 0.0,
+      "metric": "task_macro_average",
+      "passed": false
+    },
+    {
+      "baseline": 0.156,
+      "candidate": 0.212,
+      "delta_in_preferred_direction": 0.055999999999999994,
+      "direction": "higher",
+      "margin": 0.0,
+      "metric": "short_vqa.relaxed_accuracy",
+      "passed": true
+    },
+    {
+      "baseline": 0.5303225806451614,
+      "candidate": 0.40909090909090906,
+      "delta_in_preferred_direction": -0.1212316715542523,
+      "direction": "higher",
+      "margin": 0.0,
+      "metric": "clarify_or_respond.macro_f1",
+      "passed": false
+    },
+    {
+      "baseline": 119,
+      "candidate": 193,
+      "delta_in_preferred_direction": -74.0,
+      "direction": "lower",
+      "margin": 0,
+      "metric": "num_invalid_predictions",
+      "passed": false
+    }
+  ]
+}

@@ -1,0 +1,469 @@
+{
+  "answer_token_lengths": {
+    "count": 167498,
+    "max": 835,
+    "mean": 24.428602132562776,
+    "median": 12.0,
+    "min": 1
+  },
+  "by_source_dataset": {
+    "agbase": 20406,
+    "agrillava": 741,
+    "ip102": 52224,
+    "mirage": 10335,
+    "plantdoc": 14336,
+    "plantvillage": 19456,
+    "plantvillage_vqa": 50000
+  },
+  "by_task": {
+    "clarify_or_respond": 6482,
+    "classification": 86016,
+    "consultation": 25000,
+    "vqa": 50000
+  },
+  "by_task_source_top30": {
+    "clarify_or_respond::mirage": 6482,
+    "classification::ip102": 52224,
+    "classification::plantdoc": 14336,
+    "classification::plantvillage": 19456,
+    "consultation::agbase": 20406,
+    "consultation::agrillava": 741,
+    "consultation::mirage": 3853,
+    "vqa::plantvillage_vqa": 50000
+  },
+  "classification_label_entropy": 9.123609423697468,
+  "examples_by_flag": {
+    "short_answer": [
+      {
+        "answer_text": "Orange",
+        "canonical_label": null,
+        "decision": null,
+        "images": [
+          "data/raw/plantvillage_vqa/full/images/train/image_038061.JPG"
+        ],
+        "prompt": "Characterize this vegetation based on its taxonomic features.\n\nRespond in this format:\nAnswer: <short answer>",
+        "sample_id": "plantvillage_vqa-image_038061.JPG-111972",
+        "source_dataset": "plantvillage_vqa",
+        "target": "Answer: Orange",
+        "target_answer": "Orange",
+        "task_type": "vqa",
+        "verifier_mode": "exact_match"
+      },
+      {
+        "answer_text": "Yes",
+        "canonical_label": null,
+        "decision": null,
+        "images": [
+          "data/raw/plantvillage_vqa/full/images/train/image_038187.JPG"
+        ],
+        "prompt": "Is this Potato leaf infected with Early blight?\n\nRespond in this format:\nAnswer: <Yes or No>",
+        "sample_id": "plantvillage_vqa-image_038187.JPG-189771",
+        "source_dataset": "plantvillage_vqa",
+        "target": "Answer: Yes",
+        "target_answer": "Yes",
+        "task_type": "vqa",
+        "verifier_mode": "exact_match"
+      },
+      {
+        "answer_text": "Yes",
+        "canonical_label": null,
+        "decision": null,
+        "images": [
+          "data/raw/plantvillage_vqa/full/images/train/image_020230.jpg"
+        ],
+        "prompt": "Can this plant be classified as showing healthy development?\n\nRespond in this format:\nAnswer: <Yes or No>",
+        "sample_id": "plantvillage_vqa-image_020230.jpg-059128",
+        "source_dataset": "plantvillage_vqa",
+        "target": "Answer: Yes",
+        "target_answer": "Yes",
+        "task_type": "vqa",
+        "verifier_mode": "exact_match"
+      },
+      {
+        "answer_text": "No",
+        "canonical_label": null,
+        "decision": null,
+        "images": [
+          "data/raw/plantvillage_vqa/full/images/train/image_033225.JPG"
+        ],
+        "prompt": "Can you identify edge browning with tissue death symptoms?\n\nRespond in this format:\nAnswer: <Yes or No>",
+        "sample_id": "plantvillage_vqa-image_033225.JPG-174170",
+        "source_dataset": "plantvillage_vqa",
+        "target": "Answer: No",
+        "target_answer": "No",
+        "task_type": "vqa",
+        "verifier_mode": "exact_match"
+      },
+      {
+        "answer_text": "Orange",
+        "canonical_label": null,
+        "decision": null,
+        "images": [
+          "data/raw/plantvillage_vqa/full/images/train/image_003631.JPG"
+        ],
+        "prompt": "Categorize this plant according to its scientific nomenclature.\n\nRespond in this format:\nAnswer: <short answer>",
+        "sample_id": "plantvillage_vqa-image_003631.JPG-010504",
+        "source_dataset": "plantvillage_vqa",
+        "target": "Answer: Orange",
+        "target_answer": "Orange",
+        "task_type": "vqa",
+        "verifier_mode": "exact_match"
+      },
+      {
+        "answer_text": "No",
+        "canonical_label": null,
+        "decision": null,
+        "images": [
+          "data/raw/plantvillage_vqa/full/images/train/image_003032.JPG"
+        ],
+        "prompt": "Are there dead tissue lesions displaying ring-like structures?\n\nRespond in this format:\nAnswer: <Yes or No>",
+        "sample_id": "plantvillage_vqa-image_003032.JPG-164927",
+        "source_dataset": "plantvillage_vqa",
+        "target": "Answer: No",
+        "target_answer": "No",
+        "task_type": "vqa",
+        "verifier_mode": "exact_match"
+      },
+      {
+        "answer_text": "Yes",
+        "canonical_label": null,
+        "decision": null,
+        "images": [
+          "data/raw/plantvillage_vqa/full/images/train/image_038159.JPG"
+        ],
+        "prompt": "Is there a pattern of dark spots creating tiger-stripe effects between veins?\n\nRespond in this format:\nAnswer: <Yes or No>",
+        "sample_id": "plantvillage_vqa-image_038159.JPG-189765",
+        "source_dataset": "plantvillage_vqa",
+        "target": "Answer: Yes",
+        "target_answer": "Yes",
+        "task_type": "vqa",
+        "verifier_mode": "exact_match"
+      },
+      {
+        "answer_text": "No",
+        "canonical_label": null,
+        "decision": null,
+        "images": [
+          "data/raw/plantvillage_vqa/full/images/train/image_037385.JPG"
+        ],
+        "prompt": "Does this leaf display healthy, uncompromised status?\n\nRespond in this format:\nAnswer: <Yes or No>",
+        "sample_id": "plantvillage_vqa-image_037385.JPG-109946",
+        "source_dataset": "plantvillage_vqa",
+        "target": "Answer: No",
+        "target_answer": "No",
+        "task_type": "vqa",
+        "verifier_mode": "exact_match"
+      },
+      {
+        "answer_text": "No",
+        "canonical_label": null,
+        "decision": null,
+        "images": [
+          "data/raw/plantvillage_vqa/full/images/train/image_043091.JPG"
+        ],
+        "prompt": "Can you detect round lesions with concentric dark ring formations?\n\nRespond in this format:\nAnswer: <Yes or No>",
+        "sample_id": "plantvillage_vqa-image_043091.JPG-163757",
+        "source_dataset": "plantvillage_vqa",
+        "target": "Answer: No",
+        "target_answer": "No",
+        "task_type": "vqa",
+        "verifier_mode": "exact_match"
+      },
+      {
+        "answer_text": "Yes",
+        "canonical_label": null,
+        "decision": null,
+        "images": [
+          "data/raw/plantvillage_vqa/full/images/train/image_000626.JPG"
+        ],
+        "prompt": "Does this sample show disease-related irregularities?\n\nRespond in this format:\nAnswer: <Yes or No>",
+        "sample_id": "plantvillage_vqa-image_000626.JPG-001779",
+        "source_dataset": "plantvillage_vqa",
+        "target": "Answer: Yes",
+        "target_answer": "Yes",
+        "task_type": "vqa",
+        "verifier_mode": "exact_match"
+      },
+      {
+        "answer_text": "Yes",
+        "canonical_label": null,
+        "decision": null,
+        "images": [
+          "data/raw/plantvillage_vqa/full/images/train/image_030233.JPG"
+        ],
+        "prompt": "Can you recognize disease signs on this foliage?\n\nRespond in this format:\nAnswer: <Yes or No>",
+        "sample_id": "plantvillage_vqa-image_030233.JPG-088990",
+        "source_dataset": "plantvillage_vqa",
+        "target": "Answer: Yes",
+        "target_answer": "Yes",
+        "task_type": "vqa",
+        "verifier_mode": "exact_match"
+      },
+      {
+        "answer_text": "No",
+        "canonical_label": null,
+        "decision": null,
+        "images": [
+          "data/raw/plantvillage_vqa/full/images/train/image_022574.JPG"
+        ],
+        "prompt": "Are there yellow discoloration, curl symptoms, and reduced growth?\n\nRespond in this format:\nAnswer: <Yes or No>",
+        "sample_id": "plantvillage_vqa-image_022574.JPG-168410",
+        "source_dataset": "plantvillage_vqa",
+        "target": "Answer: No",
+        "target_answer": "No",
+        "task_type": "vqa",
+        "verifier_mode": "exact_match"
+      },
+      {
+        "answer_text": "No",
+        "canonical_label": null,
+        "decision": null,
+        "images": [
+          "data/raw/plantvillage_vqa/full/images/train/image_002710.JPG"
+        ],
+        "prompt": "Does this specimen display perfect health characteristics?\n\nRespond in this format:\nAnswer: <Yes or No>",
+        "sample_id": "plantvillage_vqa-image_002710.JPG-007909",
+        "source_dataset": "plantvillage_vqa",
+        "target": "Answer: No",
+        "target_answer": "No",
+        "task_type": "vqa",
+        "verifier_mode": "exact_match"
+      },
+      {
+        "answer_text": "Yes",
+        "canonical_label": null,
+        "decision": null,
+        "images": [
+          "data/raw/plantvillage_vqa/full/images/train/image_033578.JPG"
+        ],
+        "prompt": "What pathological signs are visible on this leaf specimen?\n\nRespond in this format:\nAnswer: <Yes or No>",
+        "sample_id": "plantvillage_vqa-image_033578.JPG-098749",
+        "source_dataset": "plantvillage_vqa",
+        "target": "Answer: Yes",
+        "target_answer": "Yes",
+        "task_type": "vqa",
+        "verifier_mode": "exact_match"
+      },
+      {
+        "answer_text": "No",
+        "canonical_label": null,
+        "decision": null,
+        "images": [
+          "data/raw/plantvillage_vqa/full/images/train/image_036711.jpg"
+        ],
+        "prompt": "Does this picture contain any foliage?\n\nRespond in this format:\nAnswer: <Yes or No>",
+        "sample_id": "plantvillage_vqa-image_036711.jpg-107960",
+        "source_dataset": "plantvillage_vqa",
+        "target": "Answer: No",
+        "target_answer": "No",
+        "task_type": "vqa",
+        "verifier_mode": "exact_match"
+      },
+      {
+        "answer_text": "Potato",
+        "canonical_label": null,
+        "decision": null,
+        "images": [
+          "data/raw/plantvillage_vqa/full/images/train/image_022599.JPG"
+        ],
+        "prompt": "Specify the scientific name of this plant variety.\n\nRespond in this format:\nAnswer: <short answer>",
+        "sample_id": "plantvillage_vqa-image_022599.JPG-066223",
+        "source_dataset": "plantvillage_vqa",
+        "target": "Answer: Potato",
+        "target_answer": "Potato",
+        "task_type": "vqa",
+        "verifier_mode": "exact_match"
+      },
+      {
+        "answer_text": "No",
+        "canonical_label": null,
+        "decision": null,
+        "images": [
+          "data/raw/plantvillage_vqa/full/images/train/image_008991.JPG"
+        ],
+        "prompt": "Can you detect necrotic areas exhibiting concentric circle patterns?\n\nRespond in this format:\nAnswer: <Yes or No>",
+        "sample_id": "plantvillage_vqa-image_008991.JPG-177009",
+        "source_dataset": "plantvillage_vqa",
+        "target": "Answer: No",
+        "target_answer": "No",
+        "task_type": "vqa",
+        "verifier_mode": "exact_match"
+      },
+      {
+        "answer_text": "Yes",
+        "canonical_label": null,
+        "decision": null,
+        "images": [
+          "data/raw/plantvillage_vqa/full/images/train/image_028359.JPG"
+        ],
+        "prompt": "Are there dark concentric circles creating target appearances?\n\nRespond in this format:\nAnswer: <Yes or No>",
+        "sample_id": "plantvillage_vqa-image_028359.JPG-187478",
+        "source_dataset": "plantvillage_vqa",
+        "target": "Answer: Yes",
+        "target_answer": "Yes",
+        "task_type": "vqa",
+        "verifier_mode": "exact_match"
+      },
+      {
+        "answer_text": "No",
+        "canonical_label": null,
+        "decision": null,
+        "images": [
+          "data/raw/plantvillage_vqa/full/images/train/image_012462.JPG"
+        ],
+        "prompt": "Would you rate this specimen's health as excellent?\n\nRespond in this format:\nAnswer: <Yes or No>",
+        "sample_id": "plantvillage_vqa-image_012462.JPG-036378",
+        "source_dataset": "plantvillage_vqa",
+        "target": "Answer: No",
+        "target_answer": "No",
+        "task_type": "vqa",
+        "verifier_mode": "exact_match"
+      },
+      {
+        "answer_text": "Potato",
+        "canonical_label": null,
+        "decision": null,
+        "images": [
+          "data/raw/plantvillage_vqa/full/images/train/image_002875.JPG"
+        ],
+        "prompt": "What is the botanical classification of this vegetation?\n\nRespond in this format:\nAnswer: <short answer>",
+        "sample_id": "plantvillage_vqa-image_002875.JPG-008364",
+        "source_dataset": "plantvillage_vqa",
+        "target": "Answer: Potato",
+        "target_answer": "Potato",
+        "task_type": "vqa",
+        "verifier_mode": "exact_match"
+      }
+    ]
+  },
+  "flag_by_source_dataset": {
+    "short_answer": {
+      "plantvillage_vqa": 25797
+    }
+  },
+  "flag_by_task": {
+    "short_answer": {
+      "vqa": 25797
+    }
+  },
+  "flag_counts": {
+    "short_answer": 25797
+  },
+  "flag_rates": {
+    "short_answer": 0.1540137792690062
+  },
+  "manifest_path": "data/manifests/full/sft_train_phi4_max3_closed_label_classification_repair.jsonl",
+  "num_rows": 167498,
+  "rendered_target_token_lengths": {
+    "count": 167498,
+    "max": 835,
+    "mean": 25.240647649524174,
+    "median": 13.0,
+    "min": 2
+  },
+  "target_format": "instructional",
+  "top_classification_labels": {
+    "alfalfa seed chalcid": 514,
+    "aphids": 515,
+    "apolygus lucorum": 514,
+    "apple cedar apple rust": 512,
+    "bactrocera tsuneonis": 514,
+    "beet fly": 513,
+    "beet spot flies": 513,
+    "blister beetle": 514,
+    "cabbage army worm": 512,
+    "cerodonta denticornis": 513,
+    "dacus dorsalis(hendel)": 512,
+    "dasineura sp": 514,
+    "deporaus marginatus pascoe": 514,
+    "english grain aphid": 514,
+    "flea beetle": 513,
+    "grape black rot": 512,
+    "green bug": 514,
+    "grub": 518,
+    "lawana imitata melichar": 512,
+    "longlegged spider mite": 514,
+    "odontothrips loti": 514,
+    "oides decempunctata": 512,
+    "parathrene regalis": 513,
+    "parlatoria zizyphus lucus": 514,
+    "peach borer": 512,
+    "penthaleus major": 513,
+    "pepper bell healthy": 512,
+    "red spider": 512,
+    "rhytidodera bowrinii white": 512,
+    "rice shell pest": 512,
+    "rice water weevil": 512,
+    "salurnis marginella guerr": 512,
+    "sericaorient alismots chulsky": 513,
+    "sternochetus frigidus": 514,
+    "strawberry leaf scorch": 512,
+    "tarnished plant bug": 513,
+    "tetradacus c bactrocera minax": 512,
+    "thrips": 514,
+    "tomato early blight": 512,
+    "tomato leaf mold": 513,
+    "tomato septoria leaf spot": 1024,
+    "tomato spider mites two spotted spider mite": 512,
+    "tomato tomato mosaic virus": 512,
+    "toxoptera aurantii": 514,
+    "toxoptera citricidus": 514,
+    "wheat blossom midge": 512,
+    "wheat phloeothrips": 514,
+    "wheat sawfly": 512,
+    "white backed plant hopper": 512,
+    "wireworm": 513
+  },
+  "top_rendered_answers": {
+    "aleurocanthus spiniferus evidence: visible agricultural symptoms or pest features support this label": 512,
+    "aphids evidence: visible agricultural symptoms or pest features support this label": 512,
+    "apple apple scab evidence: visible apple symptoms support the apple scab label": 512,
+    "apple cedar apple rust evidence: visible apple symptoms support the cedar apple rust label": 512,
+    "apple healthy evidence: visible apple symptoms support the healthy label": 512,
+    "asiatic rice borer evidence: visible agricultural symptoms or pest features support this label": 512,
+    "bird cherry oataphid evidence: visible agricultural symptoms or pest features support this label": 512,
+    "cabbage army worm evidence: visible agricultural symptoms or pest features support this label": 512,
+    "dacus dorsalis(hendel) evidence: visible agricultural symptoms or pest features support this label": 512,
+    "diagnosis: huanglongbing (hlb), or citrus greening": 1081,
+    "grape black rot evidence: visible grape symptoms support the black rot label": 512,
+    "grape esca black measles evidence: visible grape symptoms support the esca (black measles) label": 512,
+    "lawana imitata melichar evidence: visible agricultural symptoms or pest features support this label": 512,
+    "locustoidea evidence: visible agricultural symptoms or pest features support this label": 512,
+    "mole cricket evidence: visible agricultural symptoms or pest features support this label": 512,
+    "no": 12579,
+    "oides decempunctata evidence: visible agricultural symptoms or pest features support this label": 512,
+    "orange": 713,
+    "peach borer evidence: visible agricultural symptoms or pest features support this label": 512,
+    "pepper bell healthy evidence: visible pepper, bell symptoms support the healthy label": 512,
+    "potato healthy evidence: visible potato symptoms support the healthy label": 512,
+    "red spider evidence: visible agricultural symptoms or pest features support this label": 512,
+    "rhytidodera bowrinii white evidence: visible agricultural symptoms or pest features support this label": 512,
+    "rice shell pest evidence: visible agricultural symptoms or pest features support this label": 512,
+    "rice stemfly evidence: visible agricultural symptoms or pest features support this label": 512,
+    "rice water weevil evidence: visible agricultural symptoms or pest features support this label": 512,
+    "salurnis marginella guerr evidence: visible agricultural symptoms or pest features support this label": 512,
+    "strawberry leaf scorch evidence: visible strawberry symptoms support the leaf scorch label": 512,
+    "tetradacus c bactrocera minax evidence: visible agricultural symptoms or pest features support this label": 512,
+    "the causal agent is the tomato yellow leaf curl virus": 1081,
+    "the cause is the bacterium candidatus liberibacter asiaticus, leading to huanglongbing": 1032,
+    "the condition is identified as late blight": 573,
+    "the diagnosis is tomato yellow leaf curl virus (tylcv)": 1059,
+    "the large, dark, water-soaked lesions are a key sign of late blight": 581,
+    "the leaf shows blotchy, asymmetrical yellowing, a classic symptom of hlb": 1074,
+    "the plant is suffering from a late blight infection": 556,
+    "this is a viral infection: tylcv": 1050,
+    "this is citrus greening disease": 1056,
+    "this is late blight, caused by the oomycete phytophthora infestans": 550,
+    "this tomato leaf shows classic signs of tylcv, like yellowing and curling": 1033,
+    "tomato": 2320,
+    "tomato bacterial spot evidence: visible tomato symptoms support the bacterial spot label": 512,
+    "tomato early blight evidence: visible tomato symptoms support the early blight label": 512,
+    "tomato septoria leaf spot evidence: visible tomato symptoms support the septoria leaf spot label": 512,
+    "tomato spider mites two spotted spider mite evidence: visible tomato symptoms support the spider mites two-spotted spider mite label": 512,
+    "tomato tomato mosaic virus evidence: visible tomato symptoms support the tomato mosaic virus label": 512,
+    "wheat blossom midge evidence: visible agricultural symptoms or pest features support this label": 512,
+    "wheat sawfly evidence: visible agricultural symptoms or pest features support this label": 512,
+    "white backed plant hopper evidence: visible agricultural symptoms or pest features support this label": 512,
+    "yes": 8551
+  }
+}

@@ -9,6 +9,7 @@ from agri_vlm.rewards.composite import build_reward_input, compute_composite_rew
 from agri_vlm.rewards.exact_match import exact_match_reward
 from agri_vlm.rewards.hallucination_penalty import hallucination_penalty
 from agri_vlm.rewards.management_coverage import management_coverage_reward
+from agri_vlm.rewards.output_format import output_format_penalty
 from agri_vlm.rewards.parsing import extract_answer_field, extract_decision_field, extract_structured_sections
 from agri_vlm.rewards.preference import preference_proxy_reward
 from agri_vlm.rewards.structure import structured_format_reward
@@ -337,6 +338,33 @@ def test_preference_proxy_is_optional_and_pairwise_compatible() -> None:
     assert preference_proxy_reward(reward_input.model_copy(update={"prediction": "unsafe rejected answer"})) == pytest.approx(-0.9)
 
 
+def test_output_format_penalty_catches_incomplete_answer_prefix() -> None:
+    reward_input = RewardInput(
+        prediction="Answer:",
+        task_type="classification",
+        target_label="tomato early blight",
+    )
+    assert output_format_penalty(reward_input) <= -1.0
+
+
+def test_output_format_penalty_catches_generic_label() -> None:
+    reward_input = RewardInput(
+        prediction="Answer: plant disease",
+        task_type="vqa",
+        target_text="No",
+    )
+    assert output_format_penalty(reward_input) < 0.0
+
+
+def test_output_format_penalty_does_not_penalize_specific_answer() -> None:
+    reward_input = RewardInput(
+        prediction="Answer: tomato early blight",
+        task_type="classification",
+        target_label="tomato early blight",
+    )
+    assert output_format_penalty(reward_input) == 0.0
+
+
 def test_composite_reward_combines_modules() -> None:
     reward_input = RewardInput(
         prediction="leaf spot",
@@ -353,6 +381,20 @@ def test_composite_reward_combines_modules() -> None:
     assert breakdown.by_module["exact_match"] == 1.0
     assert breakdown.by_module["normalized_label"] == 1.0
     assert breakdown.total == 2.0
+
+
+def test_composite_reward_includes_output_format_penalty() -> None:
+    reward_input = RewardInput(
+        prediction="Answer:",
+        task_type="classification",
+        target_label="leaf spot",
+    )
+    breakdown = compute_composite_reward(
+        reward_input,
+        reward_modules=["output_format"],
+        reward_weights={},
+    )
+    assert breakdown.by_module["output_format"] <= -1.0
 
 
 def test_make_trl_reward_function_routes_extra_columns() -> None:

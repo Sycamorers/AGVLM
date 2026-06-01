@@ -13,6 +13,7 @@ from agri_vlm.rewards.classification import normalized_label_reward
 from agri_vlm.rewards.exact_match import exact_match_reward
 from agri_vlm.rewards.hallucination_penalty import hallucination_penalty
 from agri_vlm.rewards.management_coverage import management_coverage_reward
+from agri_vlm.rewards.output_format import output_format_penalty
 from agri_vlm.rewards.preference import preference_proxy_reward
 from agri_vlm.rewards.structure import structured_format_reward
 from agri_vlm.rewards.synonym_match import synonym_match_reward
@@ -29,6 +30,7 @@ REWARD_REGISTRY = {
     "clarify_vs_respond": clarify_vs_respond_reward,
     "management_coverage": management_coverage_reward,
     "hallucination_penalty": hallucination_penalty,
+    "output_format": output_format_penalty,
     "preference_proxy": preference_proxy_reward,
 }
 

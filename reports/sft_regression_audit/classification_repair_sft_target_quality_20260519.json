@@ -1,0 +1,332 @@
+{
+  "answer_token_lengths": {
+    "count": 167710,
+    "max": 902,
+    "mean": 24.678009659531334,
+    "median": 13.0,
+    "min": 1
+  },
+  "by_source_dataset": {
+    "agbase": 20406,
+    "agrillava": 741,
+    "ip102": 40614,
+    "mirage": 10335,
+    "plantdoc": 2111,
+    "plantvillage": 43503,
+    "plantvillage_vqa": 50000
+  },
+  "by_task": {
+    "clarify_or_respond": 6482,
+    "classification": 86228,
+    "consultation": 25000,
+    "vqa": 50000
+  },
+  "by_task_source_top30": {
+    "clarify_or_respond::mirage": 6482,
+    "classification::ip102": 40614,
+    "classification::plantdoc": 2111,
+    "classification::plantvillage": 43503,
+    "consultation::agbase": 20406,
+    "consultation::agrillava": 741,
+    "consultation::mirage": 3853,
+    "vqa::plantvillage_vqa": 50000
+  },
+  "classification_label_entropy": 8.407820601423854,
+  "examples_by_flag": {
+    "classification_numeric_label_prefix": [
+      {
+        "answer_text": "75 Panonchus citri McGregor",
+        "canonical_label": "75 Panonchus citri McGregor",
+        "decision": null,
+        "images": [
+          "data/raw/ip102/full/ip102_v1.1/images/58881.jpg"
+        ],
+        "prompt": "Identify the insect or pest shown in this agricultural image.\n\nRespond in this format:\nAnswer: <canonical agricultural label>\nEvidence: <brief visible symptom evidence>",
+        "sample_id": "ip102-ip102-v1-1-images-58881-jpg",
+        "source_dataset": "ip102",
+        "target": "Answer: 75 Panonchus citri McGregor\nEvidence: Visible agricultural symptoms or pest features support this label.",
+        "target_answer": "75 Panonchus citri McGregor\nEvidence: Visible agricultural symptoms or pest features support this label.",
+        "task_type": "classification",
+        "verifier_mode": "label"
+      },
+      {
+        "answer_text": "39 cabbage army worm",
+        "canonical_label": "39 cabbage army worm",
+        "decision": null,
+        "images": [
+          "data/raw/ip102/full/ip102_v1.1/images/27121.jpg"
+        ],
+        "prompt": "Identify the insect or pest shown in this agricultural image.\n\nRespond in this format:\nAnswer: <canonical agricultural label>\nEvidence: <brief visible symptom evidence>",
+        "sample_id": "ip102-ip102-v1-1-images-27121-jpg",
+        "source_dataset": "ip102",
+        "target": "Answer: 39 cabbage army worm\nEvidence: Visible agricultural symptoms or pest features support this label.",
+        "target_answer": "39 cabbage army worm\nEvidence: Visible agricultural symptoms or pest features support this label.",
+        "task_type": "classification",
+        "verifier_mode": "label"
+      },
+      {
+        "answer_text": "1 rice leaf roller",
+        "canonical_label": "1 rice leaf roller",
+        "decision": null,
+        "images": [
+          "data/raw/ip102/full/ip102_v1.1/images/00861.jpg"
+        ],
+        "prompt": "Identify the insect or pest shown in this agricultural image.\n\nRespond in this format:\nAnswer: <canonical agricultural label>\nEvidence: <brief visible symptom evidence>",
+        "sample_id": "ip102-ip102-v1-1-images-00861-jpg",
+        "source_dataset": "ip102",
+        "target": "Answer: 1 rice leaf roller\nEvidence: Visible agricultural symptoms or pest features support this label.",
+        "target_answer": "1 rice leaf roller\nEvidence: Visible agricultural symptoms or pest features support this label.",
+        "task_type": "classification",
+        "verifier_mode": "label"
+      },
+      {
+        "answer_text": "70 Cicadella viridis",
+        "canonical_label": "70 Cicadella viridis",
+        "decision": null,
+        "images": [
+          "data/raw/ip102/full/ip102_v1.1/images/52254.jpg"
+        ],
+        "prompt": "Identify the insect or pest shown in this agricultural image.\n\nRespond in this format:\nAnswer: <canonical agricultural label>\nEvidence: <brief visible symptom evidence>",
+        "sample_id": "ip102-ip102-v1-1-images-52254-jpg",
+        "source_dataset": "ip102",
+        "target": "Answer: 70 Cicadella viridis\nEvidence: Visible agricultural symptoms or pest features support this label.",
+        "target_answer": "70 Cicadella viridis\nEvidence: Visible agricultural symptoms or pest features support this label.",
+        "task_type": "classification",
+        "verifier_mode": "label"
+      },
+      {
+        "answer_text": "48 tarnished plant bug",
+        "canonical_label": "48 tarnished plant bug",
+        "decision": null,
+        "images": [
+          "data/raw/ip102/full/ip102_v1.1/images/32605.jpg"
+        ],
+        "prompt": "Identify the insect or pest shown in this agricultural image.\n\nRespond in this format:\nAnswer: <canonical agricultural label>\nEvidence: <brief visible symptom evidence>",
+        "sample_id": "ip102-ip102-v1-1-images-32605-jpg",
+        "source_dataset": "ip102",
+        "target": "Answer: 48 tarnished plant bug\nEvidence: Visible agricultural symptoms or pest features support this label.",
+        "target_answer": "48 tarnished plant bug\nEvidence: Visible agricultural symptoms or pest features support this label.",
+        "task_type": "classification",
+        "verifier_mode": "label"
+      }
+    ],
+    "short_answer": [
+      {
+        "answer_text": "Tomato",
+        "canonical_label": null,
+        "decision": null,
+        "images": [
+          "data/raw/plantvillage_vqa/full/images/train/image_006760.JPG"
+        ],
+        "prompt": "Which plant variety is depicted in this photograph?\n\nRespond in this format:\nAnswer: <short answer>",
+        "sample_id": "plantvillage_vqa-image_006760.JPG-019768",
+        "source_dataset": "plantvillage_vqa",
+        "target": "Answer: Tomato",
+        "target_answer": "Tomato",
+        "task_type": "vqa",
+        "verifier_mode": "exact_match"
+      },
+      {
+        "answer_text": "No",
+        "canonical_label": null,
+        "decision": null,
+        "images": [
+          "data/raw/plantvillage_vqa/full/images/train/image_008056.JPG"
+        ],
+        "prompt": "Is this a Apple leaf?\n\nRespond in this format:\nAnswer: <Yes or No>",
+        "sample_id": "plantvillage_vqa-image_008056.JPG-023603",
+        "source_dataset": "plantvillage_vqa",
+        "target": "Answer: No",
+        "target_answer": "No",
+        "task_type": "vqa",
+        "verifier_mode": "exact_match"
+      },
+      {
+        "answer_text": "Yes",
+        "canonical_label": null,
+        "decision": null,
+        "images": [
+          "data/raw/plantvillage_vqa/full/images/train/image_034704.JPG"
+        ],
+        "prompt": "Can you detect citrus greening pathogen effects on this orange leaf?\n\nRespond in this format:\nAnswer: <Yes or No>",
+        "sample_id": "plantvillage_vqa-image_034704.JPG-188956",
+        "source_dataset": "plantvillage_vqa",
+        "target": "Answer: Yes",
+        "target_answer": "Yes",
+        "task_type": "vqa",
+        "verifier_mode": "exact_match"
+      },
+      {
+        "answer_text": "Yes",
+        "canonical_label": null,
+        "decision": null,
+        "images": [
+          "data/raw/plantvillage_vqa/full/images/train/image_029294.JPG"
+        ],
+        "prompt": "Does this foliage exhibit symptomatic disease traits?\n\nRespond in this format:\nAnswer: <Yes or No>",
+        "sample_id": "plantvillage_vqa-image_029294.JPG-086209",
+        "source_dataset": "plantvillage_vqa",
+        "target": "Answer: Yes",
+        "target_answer": "Yes",
+        "task_type": "vqa",
+        "verifier_mode": "exact_match"
+      },
+      {
+        "answer_text": "Yes",
+        "canonical_label": null,
+        "decision": null,
+        "images": [
+          "data/raw/plantvillage_vqa/full/images/train/image_013150.JPG"
+        ],
+        "prompt": "Does this leaf belong to an orange tree specimen?\n\nRespond in this format:\nAnswer: <Yes or No>",
+        "sample_id": "plantvillage_vqa-image_013150.JPG-038482",
+        "source_dataset": "plantvillage_vqa",
+        "target": "Answer: Yes",
+        "target_answer": "Yes",
+        "task_type": "vqa",
+        "verifier_mode": "exact_match"
+      }
+    ]
+  },
+  "flag_by_source_dataset": {
+    "classification_numeric_label_prefix": {
+      "agbase": 8,
+      "agrillava": 2,
+      "ip102": 40614
+    },
+    "short_answer": {
+      "plantvillage_vqa": 25714
+    }
+  },
+  "flag_by_task": {
+    "classification_numeric_label_prefix": {
+      "classification": 40614,
+      "consultation": 10
+    },
+    "short_answer": {
+      "vqa": 25714
+    }
+  },
+  "flag_counts": {
+    "classification_numeric_label_prefix": 40624,
+    "short_answer": 25714
+  },
+  "flag_rates": {
+    "classification_numeric_label_prefix": 0.2422276548804484,
+    "short_answer": 0.15332419056705027
+  },
+  "manifest_path": "data/manifests/full/sft_train_phi4_max3_classification_repair_instructional.jsonl",
+  "num_rows": 167710,
+  "rendered_target_token_lengths": {
+    "count": 167710,
+    "max": 902,
+    "mean": 25.49029276727685,
+    "median": 14.0,
+    "min": 2
+  },
+  "target_format": "instructional",
+  "top_classification_labels": {
+    "1 rice leaf roller": 618,
+    "102 cicadellidae": 3073,
+    "16 mole cricket": 907,
+    "17 wireworm": 490,
+    "23 corn borer": 908,
+    "24 army worm": 582,
+    "25 aphids": 2217,
+    "4 asiatic rice borer": 569,
+    "40 beet army worm": 864,
+    "46 flax budworm": 558,
+    "49 locustoidea": 745,
+    "51 legume blister beetle": 759,
+    "52 blister beetle": 1036,
+    "59 limacodidae": 740,
+    "68 lycorma delicatula": 2859,
+    "69 xylotrechus": 621,
+    "70 cicadella viridis": 682,
+    "71 miridae": 2780,
+    "87 prodenia litura": 712,
+    "9 white backed plant hopper": 476,
+    "apple apple scab": 503,
+    "apple black rot": 496,
+    "apple healthy": 1336,
+    "blueberry healthy": 1198,
+    "cherry including sour healthy": 674,
+    "cherry including sour powdery mildew": 842,
+    "corn maize common rust": 953,
+    "corn maize healthy": 930,
+    "corn maize northern leaf blight": 788,
+    "grape black rot": 944,
+    "grape esca black measles": 1106,
+    "grape leaf blight isariopsis leaf spot": 861,
+    "orange haunglongbing citrus greening": 4406,
+    "peach bacterial spot": 1837,
+    "pepper bell bacterial spot": 797,
+    "pepper bell healthy": 1182,
+    "potato early blight": 800,
+    "potato late blight": 800,
+    "soybean healthy": 4072,
+    "squash powdery mildew": 1468,
+    "strawberry leaf scorch": 887,
+    "tomato bacterial spot": 1712,
+    "tomato early blight": 800,
+    "tomato healthy": 1307,
+    "tomato late blight": 1527,
+    "tomato leaf mold": 763,
+    "tomato septoria leaf spot": 1548,
+    "tomato spider mites two-spotted spider mite": 1341,
+    "tomato target spot": 1123,
+    "tomato tomato yellow leaf curl virus": 4286
+  },
+  "top_rendered_answers": {
+    "102 cicadellidae evidence: visible agricultural symptoms or pest features support this label": 3073,
+    "16 mole cricket evidence: visible agricultural symptoms or pest features support this label": 907,
+    "23 corn borer evidence: visible agricultural symptoms or pest features support this label": 908,
+    "25 aphids evidence: visible agricultural symptoms or pest features support this label": 2217,
+    "40 beet army worm evidence: visible agricultural symptoms or pest features support this label": 864,
+    "49 locustoidea evidence: visible agricultural symptoms or pest features support this label": 745,
+    "51 legume blister beetle evidence: visible agricultural symptoms or pest features support this label": 759,
+    "52 blister beetle evidence: visible agricultural symptoms or pest features support this label": 1036,
+    "59 limacodidae evidence: visible agricultural symptoms or pest features support this label": 740,
+    "68 lycorma delicatula evidence: visible agricultural symptoms or pest features support this label": 2859,
+    "71 miridae evidence: visible agricultural symptoms or pest features support this label": 2780,
+    "87 prodenia litura evidence: visible agricultural symptoms or pest features support this label": 712,
+    "apple healthy evidence: visible apple symptoms support the healthy label": 1336,
+    "blueberry healthy evidence: visible blueberry symptoms support the healthy label": 1198,
+    "cherry including sour powdery mildew evidence: visible cherry (including sour) symptoms support the powdery mildew label": 842,
+    "corn maize common rust evidence: visible corn (maize) symptoms support the common rust label": 953,
+    "corn maize healthy evidence: visible corn (maize) symptoms support the healthy label": 930,
+    "corn maize northern leaf blight evidence: visible corn (maize) symptoms support the northern leaf blight label": 788,
+    "diagnosis: huanglongbing (hlb), or citrus greening": 1125,
+    "grape black rot evidence: visible grape symptoms support the black rot label": 944,
+    "grape esca black measles evidence: visible grape symptoms support the esca (black measles) label": 1106,
+    "grape leaf blight isariopsis leaf spot evidence: visible grape symptoms support the leaf blight (isariopsis leaf spot) label": 861,
+    "no": 12489,
+    "orange haunglongbing citrus greening evidence: visible orange symptoms support the haunglongbing (citrus greening) label": 4406,
+    "peach bacterial spot evidence: visible peach symptoms support the bacterial spot label": 1837,
+    "pepper bell bacterial spot evidence: visible pepper, bell symptoms support the bacterial spot label": 797,
+    "pepper bell healthy evidence: visible pepper, bell symptoms support the healthy label": 1182,
+    "potato early blight evidence: visible potato symptoms support the early blight label": 800,
+    "potato late blight evidence: visible potato symptoms support the late blight label": 800,
+    "soybean healthy evidence: visible soybean symptoms support the healthy label": 4072,
+    "squash powdery mildew evidence: visible squash symptoms support the powdery mildew label": 1468,
+    "strawberry leaf scorch evidence: visible strawberry symptoms support the leaf scorch label": 887,
+    "the causal agent is the tomato yellow leaf curl virus": 1088,
+    "the cause is the bacterium candidatus liberibacter asiaticus, leading to huanglongbing": 1079,
+    "the diagnosis is tomato yellow leaf curl virus (tylcv)": 1028,
+    "the leaf shows blotchy, asymmetrical yellowing, a classic symptom of hlb": 1056,
+    "this is a viral infection: tylcv": 1032,
+    "this is citrus greening disease": 1027,
+    "this tomato leaf shows classic signs of tylcv, like yellowing and curling": 1001,
+    "tomato": 2386,
+    "tomato bacterial spot evidence: visible tomato symptoms support the bacterial spot label": 1712,
+    "tomato early blight evidence: visible tomato symptoms support the early blight label": 800,
+    "tomato healthy evidence: visible tomato symptoms support the healthy label": 1307,
+    "tomato late blight evidence: visible tomato symptoms support the late blight label": 1527,
+    "tomato leaf mold evidence: visible tomato symptoms support the leaf mold label": 762,
+    "tomato septoria leaf spot evidence: visible tomato symptoms support the septoria leaf spot label": 1417,
+    "tomato spider mites two-spotted spider mite evidence: visible tomato symptoms support the spider mites two-spotted spider mite label": 1341,
+    "tomato target spot evidence: visible tomato symptoms support the target spot label": 1123,
+    "tomato tomato yellow leaf curl virus evidence: visible tomato symptoms support the tomato yellow leaf curl virus label": 4286,
+    "yes": 8504
+  }
+}

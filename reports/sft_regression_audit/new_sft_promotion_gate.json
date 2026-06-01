@@ -1,0 +1,79 @@
+{
+  "baseline_key": "previous_sft",
+  "candidate_key": "new_sft",
+  "diagnostic_metrics": [
+    {
+      "baseline": 0.029914529914529916,
+      "candidate": 0.008547008547008548,
+      "delta_in_preferred_direction": -0.021367521367521368,
+      "direction": "higher",
+      "margin": 0.0,
+      "metric": "classification.top1_accuracy",
+      "passed": false
+    },
+    {
+      "baseline": 0.029948364888123923,
+      "candidate": 0.014056224899598393,
+      "delta_in_preferred_direction": -0.015892139988525532,
+      "direction": "higher",
+      "margin": 0.0,
+      "metric": "classification.macro_f1",
+      "passed": false
+    },
+    {
+      "baseline": -0.03052571614583334,
+      "candidate": 0.01795247395833333,
+      "delta_in_preferred_direction": 0.048478190104166666,
+      "direction": "higher",
+      "margin": 0.0,
+      "metric": "local_metrics.average_reward",
+      "passed": true
+    }
+  ],
+  "failed_required_metrics": [
+    "task_macro_average",
+    "short_vqa.relaxed_accuracy",
+    "clarify_or_respond.macro_f1",
+    "num_invalid_predictions"
+  ],
+  "metrics_json": "outputs/inference_checks/sft-round-comparison-phi4-512-turin-20260518T141832Z/multi_model_metrics.json",
+  "passed": false,
+  "required_metrics": [
+    {
+      "baseline": 0.13373053604378907,
+      "candidate": 0.06690763052208834,
+      "delta_in_preferred_direction": -0.06682290552170073,
+      "direction": "higher",
+      "margin": 0.0,
+      "metric": "task_macro_average",
+      "passed": false
+    },
+    {
+      "baseline": 0.128,
+      "candidate": 0.02,
+      "delta_in_preferred_direction": -0.108,
+      "direction": "higher",
+      "margin": 0.0,
+      "metric": "short_vqa.relaxed_accuracy",
+      "passed": false
+    },
+    {
+      "baseline": 0.24324324324324326,
+      "candidate": 0.16666666666666663,
+      "delta_in_preferred_direction": -0.07657657657657663,
+      "direction": "higher",
+      "margin": 0.0,
+      "metric": "clarify_or_respond.macro_f1",
+      "passed": false
+    },
+    {
+      "baseline": 216,
+      "candidate": 244,
+      "delta_in_preferred_direction": -28.0,
+      "direction": "lower",
+      "margin": 0,
+      "metric": "num_invalid_predictions",
+      "passed": false
+    }
+  ]
+}

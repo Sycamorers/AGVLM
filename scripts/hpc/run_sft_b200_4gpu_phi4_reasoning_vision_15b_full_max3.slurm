@@ -106,6 +106,8 @@ import yaml
 payload = yaml.safe_load(Path(sys.argv[1]).read_text()) or {}
 if "source_manifest_path" in payload:
     print("scripts/data/build_sft_train_eval_manifests.py")
+elif "classification_per_label_target" in payload:
+    print("scripts/data/build_closed_label_sft_manifest.py")
 elif "input_manifest_path" in payload and "task_targets" in payload:
     print("scripts/data/build_balanced_sft_v2_manifest.py")
 else:

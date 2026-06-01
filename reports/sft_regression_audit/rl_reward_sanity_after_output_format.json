@@ -1,0 +1,101 @@
+{
+  "assertion_failure_count": 0,
+  "assertion_failures": {},
+  "average_reward_by_candidate": {
+    "empty": -1.0,
+    "generic_clarify": -0.06,
+    "generic_overconfident": -2.849374999999996,
+    "generic_uncertain": -0.03625,
+    "known_bad": -0.285625,
+    "known_good": 1.5454999999999999,
+    "structured_consultation": 0.54425,
+    "target_answer": 1.5454999999999999
+  },
+  "average_reward_by_task_type": {
+    "clarify_or_respond": -0.59375,
+    "classification": 0.2123782467532465,
+    "consultation": -1.1480769230769228,
+    "vqa": -0.14435206422018348
+  },
+  "average_reward_by_task_type_candidate": {
+    "clarify_or_respond": {
+      "empty": -1.0,
+      "generic_clarify": 1.0,
+      "generic_overconfident": -3.375,
+      "generic_uncertain": -0.75,
+      "known_bad": -1.875,
+      "known_good": 1.0,
+      "structured_consultation": -0.75,
+      "target_answer": 1.0
+    },
+    "classification": {
+      "empty": -1.0,
+      "generic_clarify": 0.0,
+      "generic_overconfident": -3.2230519480519515,
+      "generic_uncertain": 0.0,
+      "known_bad": 0.0,
+      "known_good": 2.461038961038961,
+      "structured_consultation": 1.0,
+      "target_answer": 2.461038961038961
+    },
+    "consultation": {
+      "empty": -1.0,
+      "generic_clarify": -1.0,
+      "generic_overconfident": -4.6499999999999995,
+      "generic_uncertain": -0.5,
+      "known_bad": -4.25,
+      "known_good": 0.7384615384615384,
+      "structured_consultation": 0.7384615384615384,
+      "target_answer": 0.7384615384615384
+    },
+    "vqa": {
+      "empty": -1.0,
+      "generic_clarify": 0.0,
+      "generic_overconfident": -2.3658256880733943,
+      "generic_uncertain": 0.0,
+      "known_bad": 0.0,
+      "known_good": 1.0,
+      "structured_consultation": 0.21100917431192662,
+      "target_answer": 1.0
+    }
+  },
+  "average_reward_by_verifier_mode": {
+    "clarify": -0.59375,
+    "exact_match": -0.14435206422018348,
+    "label": 0.2123782467532465,
+    "structured": -1.1480769230769228
+  },
+  "examples": {},
+  "manifest_path": "data/manifests/full/rl_manifest.jsonl",
+  "reward_distribution": {
+    "max": 2.5,
+    "median": 0.0,
+    "min": -4.65,
+    "p25": -1.0,
+    "p75": 1.0,
+    "p95": 2.5
+  },
+  "reward_modules": [
+    "exact_match",
+    "normalized_label",
+    "synonym_match",
+    "structured_format",
+    "uncertainty_calibration",
+    "clarify_vs_respond",
+    "management_coverage",
+    "hallucination_penalty",
+    "output_format"
+  ],
+  "reward_weights": {
+    "clarify_vs_respond": 1.0,
+    "exact_match": 1.0,
+    "hallucination_penalty": 1.0,
+    "management_coverage": 0.5,
+    "normalized_label": 1.0,
+    "output_format": 1.0,
+    "structured_format": 0.5,
+    "synonym_match": 0.5,
+    "uncertainty_calibration": 0.5
+  },
+  "sampled_rows": 200
+}

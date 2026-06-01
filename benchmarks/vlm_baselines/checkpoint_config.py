@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import json
 from pathlib import Path
 from typing import Any
 
@@ -45,6 +46,79 @@ def _resolve_path(path_value: Any) -> Path | None:
     if not path.is_absolute():
         path = REPO_ROOT / path
     return path
+
+
+def _adapter_tensor_summary(path: Path) -> tuple[int, int, list[str]]:
+    if path.suffix == ".safetensors":
+        from safetensors import safe_open
+
+        with safe_open(str(path), framework="pt", device="cpu") as handle:
+            keys = list(handle.keys())
+            non_empty = sum(1 for key in keys if int(handle.get_tensor(key).numel()) > 0)
+        return len(keys), non_empty, keys
+    if path.suffix == ".bin":
+        import torch
+
+        payload = torch.load(path, map_location="cpu")
+        if isinstance(payload, dict):
+            state_dict = payload.get("state_dict") if isinstance(payload.get("state_dict"), dict) else payload
+        else:
+            state_dict = {}
+        tensor_items = [(key, value) for key, value in state_dict.items() if hasattr(value, "numel")]
+        non_empty = sum(1 for _, value in tensor_items if int(value.numel()) > 0)
+        return len(tensor_items), non_empty, [key for key, _ in tensor_items]
+    return 0, 0, []
+
+
+def _validate_peft_adapter_path(path: Path, *, model_key: str) -> list[str]:
+    errors: list[str] = []
+    config_path = path / "adapter_config.json"
+    if not config_path.is_file():
+        return ["Model %s adapter path is missing adapter_config.json: %s" % (model_key, path)]
+    try:
+        adapter_config = json.loads(config_path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        return ["Model %s adapter_config.json is not valid JSON: %s" % (model_key, config_path)]
+
+    tensor_path = None
+    for name in ["adapter_model.safetensors", "adapter_model.bin"]:
+        candidate = path / name
+        if candidate.is_file():
+            tensor_path = candidate
+            break
+    if tensor_path is None:
+        return ["Model %s adapter path is missing adapter_model.safetensors or adapter_model.bin: %s" % (model_key, path)]
+    if tensor_path.stat().st_size <= 0:
+        return ["Model %s adapter tensor file is empty: %s" % (model_key, tensor_path)]
+    try:
+        num_tensors, non_empty_tensors, tensor_names = _adapter_tensor_summary(tensor_path)
+    except Exception as exc:
+        return ["Model %s adapter tensor file could not be inspected: %s (%s)" % (model_key, tensor_path, exc)]
+    if num_tensors <= 0:
+        errors.append("Model %s adapter tensor file contains no tensors: %s" % (model_key, tensor_path))
+    if non_empty_tensors <= 0:
+        errors.append("Model %s adapter tensor file contains no non-empty tensors: %s" % (model_key, tensor_path))
+    if str(adapter_config.get("peft_type") or "").lower() == "lora" and not any("lora_" in name for name in tensor_names):
+        errors.append("Model %s LoRA adapter tensor file contains no lora_* tensors: %s" % (model_key, tensor_path))
+    return errors
+
+
+def _path_has_model_artifacts(path: Path, *, model_key: str) -> list[str]:
+    if path.is_file():
+        return [] if path.stat().st_size > 0 else ["Model %s checkpoint file is empty: %s" % (model_key, path)]
+    if not path.is_dir():
+        return ["Model %s checkpoint/adapter path is not a directory or file: %s" % (model_key, path)]
+    if (path / "adapter_config.json").exists():
+        return _validate_peft_adapter_path(path, model_key=model_key)
+    if (path / "config.json").exists():
+        has_weights = any(
+            candidate.is_file() and candidate.stat().st_size > 0
+            for pattern in ["model.safetensors", "pytorch_model.bin", "model-*.safetensors", "pytorch_model-*.bin"]
+            for candidate in path.glob(pattern)
+        )
+        if has_weights or (path / "model.safetensors.index.json").exists() or (path / "pytorch_model.bin.index.json").exists():
+            return []
+    return ["Model %s checkpoint/adapter path has no model artifacts: %s" % (model_key, path)]
 
 
 def _entry_from_baseline(raw: dict[str, Any]) -> dict[str, Any]:
@@ -142,6 +216,8 @@ def validate_model_entry(
             (errors if require_runnable else warnings).append(message)
         elif require_runnable and not resolved.exists():
             errors.append("Model %s checkpoint/adapter path does not exist: %s" % (model_key, resolved))
+        elif require_runnable:
+            errors.extend(_path_has_model_artifacts(resolved, model_key=model_key))
 
     if checkpoint_type == "sft":
         if normalize_text(base_model) == normalize_text(RAW_PHI4_REASONING) and _is_placeholder(adapter_path) and _is_placeholder(checkpoint_path):

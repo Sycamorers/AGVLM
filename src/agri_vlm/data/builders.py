@@ -1,8 +1,10 @@
 """Manifest builders for SFT, RL, and evaluation."""
 
+import copy
 from collections import Counter, defaultdict
 import hashlib
 from pathlib import Path
+import re
 from typing import Any, Dict, Iterable, List, Sequence, Tuple
 
 from agri_vlm.data.manifest_io import (
@@ -460,6 +462,306 @@ def build_balanced_sft_v2_manifest(
         "input_by_source_task": _nested_counter(rows, "source_dataset", "task_type"),
         "output_by_source_task": _nested_counter(validated_rows, "source_dataset", "task_type"),
         "output_by_verifier_mode": _nested_counter(validated_rows, "verifier.mode"),
+    }
+    if summary_output_path:
+        write_json(summary_output_path, summary)
+    return summary
+
+
+def _clean_classification_label(value: Any, *, strip_leading_numeric_prefix: bool) -> str:
+    label = re.sub(r"\s+", " ", str(value or "").replace("_", " ").replace("-", " ")).strip()
+    if strip_leading_numeric_prefix:
+        label = re.sub(r"^\d+\s+", "", label).strip()
+    return label
+
+
+def _dedupe_nonempty(values: Iterable[str]) -> List[str]:
+    output: List[str] = []
+    seen: set[str] = set()
+    for value in values:
+        text = str(value or "").strip()
+        key = normalize_text(text)
+        if not key or key in seen:
+            continue
+        seen.add(key)
+        output.append(text)
+    return output
+
+
+def _classification_target_label(row: Dict[str, Any]) -> str:
+    target = row.get("target") or {}
+    if target.get("canonical_label"):
+        return str(target["canonical_label"])
+    if target.get("answer_text"):
+        return str(target["answer_text"])
+    for value in target.get("canonical_labels") or []:
+        if value:
+            return str(value)
+    verifier = row.get("verifier") or {}
+    for value in verifier.get("accepted_labels") or []:
+        if value:
+            return str(value)
+    return ""
+
+
+def _repair_classification_label(
+    row: Dict[str, Any],
+    *,
+    strip_leading_numeric_prefix_sources: set[str],
+) -> tuple[Dict[str, Any], bool]:
+    if row.get("task_type") != "classification":
+        return dict(row), False
+
+    source = str(row.get("source_dataset") or "")
+    strip_prefix = source in strip_leading_numeric_prefix_sources
+    old_label = _classification_target_label(row)
+    new_label = _clean_classification_label(old_label, strip_leading_numeric_prefix=strip_prefix)
+    if not new_label:
+        raise ValueError("Classification sample %s has no canonical label." % row.get("sample_id"))
+
+    repaired = copy.deepcopy(row)
+    target = dict(repaired.get("target") or {})
+    verifier = dict(repaired.get("verifier") or {})
+    metadata = dict(repaired.get("metadata") or {})
+    changed = new_label != old_label
+
+    if changed:
+        metadata.setdefault("original_canonical_label", old_label)
+        metadata["classification_label_repair"] = "strip_leading_numeric_prefix" if strip_prefix else "normalize_spacing"
+    target["canonical_label"] = new_label
+    if not target.get("answer_text") or target.get("answer_text") == old_label:
+        target["answer_text"] = new_label
+    if target.get("canonical_labels"):
+        target["canonical_labels"] = _dedupe_nonempty(
+            _clean_classification_label(value, strip_leading_numeric_prefix=strip_prefix)
+            for value in target.get("canonical_labels") or []
+        )
+
+    verifier["mode"] = "label"
+    verifier["accepted_labels"] = _dedupe_nonempty(
+        [new_label]
+        + [
+            _clean_classification_label(value, strip_leading_numeric_prefix=strip_prefix)
+            for value in verifier.get("accepted_labels") or []
+        ]
+        + [str(value) for value in verifier.get("accepted_labels") or []]
+        + ([old_label] if old_label else [])
+    )
+    metadata["normalized_label"] = new_label
+    metadata["classification_balance_key"] = normalize_label(new_label)
+    repaired["target"] = target
+    repaired["verifier"] = verifier
+    repaired["metadata"] = metadata
+    return repaired, changed
+
+
+def _classification_label_spaces_by_source(rows: Sequence[Dict[str, Any]]) -> Dict[str, List[str]]:
+    labels: Dict[str, Dict[str, str]] = defaultdict(dict)
+    for row in rows:
+        if row.get("task_type") != "classification":
+            continue
+        source = str(row.get("source_dataset") or "")
+        label = _classification_target_label(row)
+        key = normalize_label(label)
+        if source and key:
+            labels[source].setdefault(key, label)
+    return {
+        source: [items[key] for key in sorted(items)]
+        for source, items in sorted(labels.items())
+    }
+
+
+def _attach_classification_label_space(
+    row: Dict[str, Any],
+    *,
+    label_spaces_by_source: Dict[str, List[str]],
+) -> Dict[str, Any]:
+    if row.get("task_type") != "classification":
+        return dict(row)
+    payload = copy.deepcopy(row)
+    source = str(payload.get("source_dataset") or "")
+    label_space = label_spaces_by_source.get(source) or []
+    metadata = dict(payload.get("metadata") or {})
+    metadata["classification_label_space_scope"] = "source_dataset"
+    metadata["classification_label_space_size"] = len(label_space)
+    metadata["classification_label_space"] = label_space
+    payload["metadata"] = metadata
+    return payload
+
+
+def _classification_rows_balanced_by_label(
+    rows: Sequence[Dict[str, Any]],
+    *,
+    default_per_label_target: int,
+    per_label_target_by_source: Dict[str, int],
+    seed: int,
+) -> tuple[List[Dict[str, Any]], Dict[str, Any]]:
+    groups: Dict[Tuple[str, str], List[Dict[str, Any]]] = defaultdict(list)
+    for row in rows:
+        source = str(row.get("source_dataset") or "")
+        label_key = normalize_label(_classification_target_label(row))
+        if not source or not label_key:
+            raise ValueError("Classification row %s has an empty source or label." % row.get("sample_id"))
+        groups[(source, label_key)].append(row)
+
+    output_rows: List[Dict[str, Any]] = []
+    group_summaries: Dict[str, Any] = {}
+    for (source, label_key), group_rows in sorted(groups.items()):
+        target_size = int(per_label_target_by_source.get(source, default_per_label_target))
+        if target_size < 1:
+            raise ValueError("classification per-label target must be positive for source %s." % source)
+        sampled = _repeat_rows_to_size(
+            group_rows,
+            target_size=target_size,
+            salt="%s::classification::%s::%s" % (seed, source, label_key),
+        )
+        output_rows.extend(sampled)
+        group_summaries["%s::%s" % (source, label_key)] = {
+            "input_rows": len(group_rows),
+            "target_rows": target_size,
+            "repeated_rows_added": max(0, target_size - len(group_rows)),
+            "capped_rows_removed": max(0, len(group_rows) - target_size),
+        }
+    return output_rows, group_summaries
+
+
+def build_closed_label_sft_manifest(
+    *,
+    input_manifest_path: Path,
+    output_manifest_path: Path,
+    classification_per_label_target: int,
+    task_targets: Dict[str, int],
+    stratify_fields_by_task: Dict[str, Sequence[str]],
+    seed: int,
+    shuffle: bool = True,
+    min_per_stratum_by_task: Dict[str, int] = None,
+    classification_per_label_target_by_source: Dict[str, int] = None,
+    strip_leading_numeric_prefix_sources: Sequence[str] = (),
+    summary_output_path: Path = None,
+) -> Dict[str, Any]:
+    """Build an SFT manifest with balanced closed-label classification rows."""
+    rows = list(read_jsonl(input_manifest_path))
+    if not rows:
+        raise ValueError("Input manifest is empty: %s" % input_manifest_path)
+    if classification_per_label_target < 1:
+        raise ValueError("classification_per_label_target must be positive.")
+
+    strip_sources = {str(source) for source in strip_leading_numeric_prefix_sources}
+    repaired_rows: List[Dict[str, Any]] = []
+    repaired_by_source: Counter[str] = Counter()
+    for row in rows:
+        repaired, changed = _repair_classification_label(
+            row,
+            strip_leading_numeric_prefix_sources=strip_sources,
+        )
+        repaired_rows.append(repaired)
+        if changed:
+            repaired_by_source[str(row.get("source_dataset") or "")] += 1
+
+    label_spaces_by_source = _classification_label_spaces_by_source(repaired_rows)
+    class_rows = [
+        _attach_classification_label_space(row, label_spaces_by_source=label_spaces_by_source)
+        for row in repaired_rows
+        if row.get("task_type") == "classification"
+    ]
+    non_class_rows = [row for row in repaired_rows if row.get("task_type") != "classification"]
+
+    input_tasks = Counter(str(row.get("task_type")) for row in repaired_rows)
+    non_class_tasks = sorted(task for task in input_tasks if task != "classification")
+    missing_targets = sorted(set(non_class_tasks) - set(task_targets))
+    unused_targets = sorted(set(task_targets) - set(non_class_tasks))
+    if missing_targets or unused_targets:
+        raise ValueError(
+            "task_targets must exactly cover non-classification task types. missing=%s unused=%s"
+            % (missing_targets, unused_targets)
+        )
+
+    class_balanced, class_group_plan = _classification_rows_balanced_by_label(
+        class_rows,
+        default_per_label_target=classification_per_label_target,
+        per_label_target_by_source={
+            str(key): int(value) for key, value in (classification_per_label_target_by_source or {}).items()
+        },
+        seed=seed,
+    )
+
+    min_per_stratum_by_task = {
+        str(task): int(value) for task, value in (min_per_stratum_by_task or {}).items()
+    }
+    output_rows = list(class_balanced)
+    task_plan: Dict[str, Any] = {
+        "classification": {
+            "input_rows": len(class_rows),
+            "target_rows": len(class_balanced),
+            "label_group_count": len(class_group_plan),
+            "default_per_label_target": classification_per_label_target,
+            "per_label_target_by_source": {
+                str(key): int(value) for key, value in (classification_per_label_target_by_source or {}).items()
+            },
+            "repaired_rows_by_source": dict(sorted(repaired_by_source.items())),
+        }
+    }
+    for task_type in non_class_tasks:
+        task_rows = [row for row in non_class_rows if str(row.get("task_type")) == task_type]
+        target_count = int(task_targets[task_type])
+        if target_count < 1:
+            raise ValueError("task_targets.%s must be positive." % task_type)
+        stratum_fields = list(stratify_fields_by_task.get(task_type) or ["source_dataset"])
+        min_per_stratum = min_per_stratum_by_task.get(task_type, 1)
+        sampled = _sample_nested_stratified(
+            task_rows,
+            target_size=min(target_count, len(task_rows)),
+            stratum_fields=stratum_fields,
+            min_per_stratum=min_per_stratum,
+            salt="%s::%s::sample" % (seed, task_type),
+        )
+        balanced = _repeat_rows_to_size(
+            sampled,
+            target_size=target_count,
+            salt="%s::%s::repeat" % (seed, task_type),
+        )
+        output_rows.extend(balanced)
+        task_plan[task_type] = {
+            "input_rows": len(task_rows),
+            "target_rows": target_count,
+            "unique_selected_rows": len(sampled),
+            "repeated_rows_added": max(0, len(balanced) - len(sampled)),
+            "stratify_fields": stratum_fields,
+            "min_per_stratum": min_per_stratum,
+        }
+
+    if shuffle:
+        output_rows = sorted(output_rows, key=lambda row: _stable_manifest_row_key(row, "%s::shuffle" % seed))
+
+    validated = write_manifest(output_manifest_path, output_rows)
+    validated_rows = [sample.model_dump(mode="json") for sample in validated]
+    summary = {
+        "input_manifest_path": str(input_manifest_path),
+        "output_manifest_path": str(output_manifest_path),
+        "input_rows": len(rows),
+        "output_rows": len(validated_rows),
+        "seed": seed,
+        "shuffle": shuffle,
+        "classification_per_label_target": classification_per_label_target,
+        "strip_leading_numeric_prefix_sources": sorted(strip_sources),
+        "task_targets": dict(sorted(task_targets.items())),
+        "task_plan": task_plan,
+        "classification_group_plan": class_group_plan,
+        "classification_label_space_sizes_by_source": {
+            source: len(labels) for source, labels in sorted(label_spaces_by_source.items())
+        },
+        "input_by_task_type": dict(sorted(input_tasks.items())),
+        "output_by_task_type": _counter_dict(validated_rows, "task_type"),
+        "input_by_source_task": _nested_counter(rows, "source_dataset", "task_type"),
+        "output_by_source_task": _nested_counter(validated_rows, "source_dataset", "task_type"),
+        "output_by_verifier_mode": _nested_counter(validated_rows, "verifier.mode"),
+        "output_classification_labels_top100": dict(
+            Counter(
+                "%s::%s" % (row.get("source_dataset"), _classification_target_label(row))
+                for row in validated_rows
+                if row.get("task_type") == "classification"
+            ).most_common(100)
+        ),
     }
     if summary_output_path:
         write_json(summary_output_path, summary)

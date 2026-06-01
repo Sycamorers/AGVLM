@@ -1,0 +1,79 @@
+{
+  "benchmark_job_id": "32676558",
+  "benchmark_output_dir": "benchmarks/vlm_baselines/results/agvlm_previous_sft_benchmark_watch_autocast_min2/attempt-1",
+  "benchmark_slurm": {
+    "command": "sacct -j 32676558 -X --format=JobIDRaw,State,ExitCode,Elapsed -P -n",
+    "exit_code": "0:0",
+    "returncode": 0,
+    "state": "COMPLETED",
+    "stderr": "",
+    "stdout": "32676558|COMPLETED|0:0|00:17:28"
+  },
+  "checks": [
+    {
+      "actual": 392,
+      "name": "num_examples",
+      "op": ">=",
+      "passed": true,
+      "required": 392
+    },
+    {
+      "actual": 0.0,
+      "name": "failure_rate",
+      "op": "<=",
+      "passed": true,
+      "required": 0.0
+    },
+    {
+      "actual": 0.30357142857142855,
+      "name": "invalid_prediction_rate",
+      "op": "<=",
+      "passed": true,
+      "required": 0.5
+    },
+    {
+      "actual": 0.22877419354838713,
+      "name": "task_macro_average",
+      "op": ">=",
+      "passed": true,
+      "required": 0.13
+    },
+    {
+      "actual": 0.156,
+      "name": "vqa.relaxed_accuracy",
+      "op": ">=",
+      "passed": true,
+      "required": 0.12
+    },
+    {
+      "actual": 0.5303225806451614,
+      "name": "clarify_or_respond.macro_f1",
+      "op": ">=",
+      "passed": true,
+      "required": 0.2
+    }
+  ],
+  "data_config": "configs/data/sft_train_eval_phi4_max3.yaml",
+  "decision": "submit_training",
+  "metrics": {
+    "clarify_macro_f1": 0.5303225806451614,
+    "failure_rate": 0.0,
+    "invalid_prediction_rate": 0.30357142857142855,
+    "num_examples": 392,
+    "task_macro_average": 0.22877419354838713,
+    "vqa_relaxed_accuracy": 0.156
+  },
+  "metrics_path": "benchmarks/vlm_baselines/results/agvlm_previous_sft_benchmark_watch_autocast_min2/attempt-1/metrics/sft-benchmark_agvlm-phi4-sft-completed_test_metrics.json",
+  "model_config": "configs/model/phi4_reasoning_vision_15b_turin_24g.yaml",
+  "model_key": "agvlm_phi4_sft_completed",
+  "preflight_config": "configs/train/sft_phi4_reasoning_vision_15b_turin_16gpu_balanced_v2_instructional_preflight.yaml",
+  "train_config": "configs/train/sft_phi4_reasoning_vision_15b_turin_16gpu_balanced_v2_instructional_full.yaml",
+  "train_slurm": "scripts/hpc/run_sft_turin_16gpu_phi4_reasoning_vision_15b_full_max3.slurm",
+  "training_job_id": "32677813",
+  "training_submission": {
+    "command": "sbatch --parsable --export=ALL,DATA_CONFIG=configs/data/sft_train_eval_phi4_max3.yaml,MODEL_CONFIG=configs/model/phi4_reasoning_vision_15b_turin_24g.yaml,TRAIN_CONFIG=configs/train/sft_phi4_reasoning_vision_15b_turin_16gpu_balanced_v2_instructional_full.yaml,PREFLIGHT_CONFIG=configs/train/sft_phi4_reasoning_vision_15b_turin_16gpu_balanced_v2_instructional_preflight.yaml scripts/hpc/run_sft_turin_16gpu_phi4_reasoning_vision_15b_full_max3.slurm",
+    "returncode": 0,
+    "stderr": "",
+    "stdout": "32677813"
+  }
+}

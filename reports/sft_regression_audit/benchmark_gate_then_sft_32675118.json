@@ -1,0 +1,21 @@
+{
+  "benchmark_job_id": "32675118",
+  "benchmark_output_dir": "benchmarks/vlm_baselines/results/agvlm_previous_sft_benchmark_20260518_adapter_4bit_dtypefix",
+  "benchmark_slurm": {
+    "command": "sacct -j 32675118 -X --format=JobIDRaw,State,ExitCode,Elapsed -P -n",
+    "exit_code": "1:0",
+    "returncode": 0,
+    "state": "FAILED",
+    "stderr": "",
+    "stdout": "32675118|FAILED|1:0|00:00:54"
+  },
+  "checks": [],
+  "data_config": "configs/data/sft_train_eval_phi4_max3.yaml",
+  "decision": "reject",
+  "model_config": "configs/model/phi4_reasoning_vision_15b_turin_24g.yaml",
+  "model_key": "agvlm_phi4_sft_completed",
+  "preflight_config": "configs/train/sft_phi4_reasoning_vision_15b_turin_16gpu_balanced_v2_instructional_preflight.yaml",
+  "reason": "Benchmark job did not complete successfully.",
+  "train_config": "configs/train/sft_phi4_reasoning_vision_15b_turin_16gpu_balanced_v2_instructional_full.yaml",
+  "train_slurm": "scripts/hpc/run_sft_turin_16gpu_phi4_reasoning_vision_15b_full_max3.slurm"
+}

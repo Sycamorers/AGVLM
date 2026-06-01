@@ -27,6 +27,38 @@ def test_classification_scores_and_balanced_accuracy():
     assert metrics["macro_f1"] < metrics["weighted_f1"]
 
 
+def test_classification_reports_accepted_label_alias_accuracy():
+    rows = [
+        {
+            "ground_truth": "23 corn borer",
+            "references": ["23 corn borer", "corn borer", "caterpillar"],
+            "normalized_prediction": "caterpillar",
+            "invalid_prediction": False,
+        }
+    ]
+    metrics = classification_metrics(rows)
+    assert metrics["top1_accuracy"] == 0.0
+    assert metrics["accepted_label_accuracy"] == 1.0
+    assert metrics["semantic_alias_accuracy"] == 1.0
+    assert metrics["out_of_label_space_rate"] == 0.0
+
+
+def test_classification_out_of_label_space_is_not_invalid_format():
+    rows = [
+        {
+            "ground_truth": "tomato late blight",
+            "normalized_prediction": "corn leaf blight",
+            "parse_status": "out_of_label_space",
+            "invalid_prediction": False,
+            "out_of_label_space": True,
+        }
+    ]
+    metrics = classification_metrics(rows)
+    assert metrics["invalid_output_rate"] == 0.0
+    assert metrics["out_of_label_space_rate"] == 1.0
+    assert metrics["top1_accuracy"] == 0.0
+
+
 def test_classification_parser_marks_ambiguous_invalid():
     parsed = parse_prediction_for_metrics(
         raw_output="Could be tomato late blight or tomato early blight.",

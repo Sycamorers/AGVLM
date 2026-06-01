@@ -84,6 +84,23 @@ models:
     model_family: phi4_reasoning_vision
     notes: In-progress 2026-05-31 B200 stage2 classification-repair candidate. Benchmark and promotion-gate after adapter validation before replacing the active SFT or using for RL.
 
+  agvlm_phi4_sft_closed_label_classification_repair_stage3_b200_candidate:
+    model_name: agvlm_phi4_sft_closed_label_classification_repair_stage3_b200_candidate
+    adapter_type: agvlm_sft
+    checkpoint_type: sft
+    base_model_name_or_path: microsoft/Phi-4-reasoning-vision-15B
+    processor_name_or_path: microsoft/Phi-4-reasoning-vision-15B
+    checkpoint_path: ""
+    adapter_path: /orange/hmedeiros/qinruoyao/agvlm/outputs/sft/phi4-reasoning-vision-15b-closed-label-classification-repair-stage3-b200-4gpu
+    initialized_from_sft_checkpoint: /orange/hmedeiros/qinruoyao/agvlm/outputs/sft/phi4-reasoning-vision-15b-classification-repair-instructional-stage2-b200-4gpu
+    trust_remote_code: true
+    max_images: 3
+    image_policy: all_images
+    dtype: bf16
+    quantization: 4bit
+    model_family: phi4_reasoning_vision
+    notes: Pending 2026-06-01 closed-label, per-class-balanced classification-repair SFT candidate. Benchmark before replacing the active SFT or using for RL.
+
   agvlm_phi4_rl_completed:
     model_name: agvlm_phi4_rl_completed
     adapter_type: agvlm_rl

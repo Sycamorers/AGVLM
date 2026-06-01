@@ -41,6 +41,23 @@ def _is_yes_no_target(sample: UnifiedSample) -> bool:
     return bool(normalized) and normalized.issubset({"yes", "no"})
 
 
+def _classification_label_space(sample: UnifiedSample) -> List[str]:
+    metadata = sample.metadata or {}
+    raw_labels = metadata.get("classification_label_space") or metadata.get("allowed_classification_labels") or []
+    if not isinstance(raw_labels, list):
+        return []
+    labels: List[str] = []
+    seen = set()
+    for raw_label in raw_labels:
+        label = str(raw_label or "").strip()
+        key = " ".join(label.lower().split())
+        if not key or key in seen:
+            continue
+        seen.add(key)
+        labels.append(label)
+    return labels
+
+
 def output_instruction_for_sample(sample: UnifiedSample) -> str:
     """Return the preferred explicit output contract for SFT-style training."""
     if sample.task_type == "clarify_or_respond" or sample.verifier.mode == "clarify" or sample.target.decision:
@@ -57,11 +74,21 @@ def output_instruction_for_sample(sample: UnifiedSample) -> str:
             "Diagnosis:\nEvidence:\nUncertainty:\nManagement:\nFollow-up:"
         )
     if sample.task_type == "classification" or sample.verifier.mode == "label" or sample.target.canonical_label:
+        label_space = _classification_label_space(sample)
+        label_instruction = ""
+        answer_placeholder = "<canonical agricultural label>"
+        if len(label_space) > 1:
+            label_instruction = (
+                "Choose exactly one label from this allowed label set:\n"
+                f"Allowed labels: {'; '.join(label_space)}\n"
+            )
+            answer_placeholder = "<one allowed label>"
         return (
+            f"{label_instruction}"
             "Respond in this format:\n"
-            "Answer: <canonical agricultural label>\n"
+            f"Answer: {answer_placeholder}\n"
             "Evidence: <brief visible symptom evidence>\n"
-            "Do not leave Answer blank or copy the placeholder text."
+            "Do not leave Answer blank, invent labels, or copy the placeholder text."
         )
     if _is_yes_no_target(sample):
         return "Respond in this format:\nAnswer: <Yes or No>"
