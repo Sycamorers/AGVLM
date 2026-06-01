@@ -40,6 +40,16 @@ def test_conflicting_labels_are_ambiguous():
     assert parsed["invalid_prediction"] is True
 
 
+def test_unmatched_but_parseable_label_is_not_format_invalid():
+    parsed = extract_label_from_answer(
+        "Answer: corn leaf blight\nEvidence: brown spots",
+        ["tomato late blight", "tomato early blight"],
+    )
+    assert parsed["parse_status"] == "out_of_label_space"
+    assert parsed["invalid_prediction"] is False
+    assert parsed["out_of_label_space"] is True
+
+
 def test_decision_field_and_inferred_status():
     decision, status = extract_decision_field("Decision: clarify\nAnswer: Please send a close-up.")
     assert (decision, status) == ("clarify", "exact")

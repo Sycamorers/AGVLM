@@ -5,7 +5,7 @@
 #SBATCH --ntasks-per-node=1
 #SBATCH --gpus=4
 #SBATCH --cpus-per-task=56
-#SBATCH --mem=650G
+#SBATCH --mem=800G
 #SBATCH --time=3-00:00:00
 #SBATCH --output=logs/slurm/%x-%j.out
 #SBATCH --error=logs/slurm/%x-%j.err
@@ -92,6 +92,32 @@ PY
 fail_fast() {
   echo "ERROR: $1" >&2
   exit 2
+}
+
+run_data_prep() {
+  local data_config="$1"
+  local builder
+  builder="$(python - "$data_config" <<'PY'
+import sys
+from pathlib import Path
+
+import yaml
+
+payload = yaml.safe_load(Path(sys.argv[1]).read_text()) or {}
+if "source_manifest_path" in payload:
+    print("scripts/data/build_sft_train_eval_manifests.py")
+elif "classification_per_label_target" in payload:
+    print("scripts/data/build_closed_label_sft_manifest.py")
+elif "input_manifest_path" in payload and "task_targets" in payload:
+    print("scripts/data/build_balanced_sft_v2_manifest.py")
+else:
+    raise SystemExit(
+        "Unsupported data config shape for %s; expected train/eval keys or balanced-manifest keys." % sys.argv[1]
+    )
+PY
+)"
+  echo "Running data prep with $builder --config $data_config"
+  python "$builder" --config "$data_config"
 }
 
 run_training() {
@@ -194,7 +220,7 @@ if command -v nvidia-smi >/dev/null 2>&1; then
 fi
 
 python scripts/verify_environment.py
-python scripts/data/build_sft_train_eval_manifests.py --config "$DATA_CONFIG"
+run_data_prep "$DATA_CONFIG"
 
 echo "Running B200 Phi-4 reasoning vision SFT preflight: $PREFLIGHT_CONFIG"
 set +e

@@ -1,0 +1,73 @@
+{
+  "benchmark_job_id": "32675757",
+  "benchmark_output_dir": "benchmarks/vlm_baselines/results/agvlm_previous_sft_benchmark_watch_dtypefix_v2/attempt-2",
+  "benchmark_slurm": {
+    "command": "sacct -j 32675757 -X --format=JobIDRaw,State,ExitCode,Elapsed -P -n",
+    "exit_code": "0:0",
+    "returncode": 0,
+    "state": "COMPLETED",
+    "stderr": "",
+    "stdout": "32675757|COMPLETED|0:0|00:07:33"
+  },
+  "checks": [
+    {
+      "actual": 392,
+      "name": "num_examples",
+      "op": ">=",
+      "passed": true,
+      "required": 392
+    },
+    {
+      "actual": 1.0,
+      "name": "failure_rate",
+      "op": "<=",
+      "passed": false,
+      "required": 0.0
+    },
+    {
+      "actual": 1.0,
+      "name": "invalid_prediction_rate",
+      "op": "<=",
+      "passed": false,
+      "required": 0.5
+    },
+    {
+      "actual": null,
+      "name": "task_macro_average",
+      "op": ">=",
+      "passed": false,
+      "required": 0.13
+    },
+    {
+      "actual": null,
+      "name": "vqa.relaxed_accuracy",
+      "op": ">=",
+      "passed": false,
+      "required": 0.12
+    },
+    {
+      "actual": null,
+      "name": "clarify_or_respond.macro_f1",
+      "op": ">=",
+      "passed": false,
+      "required": 0.2
+    }
+  ],
+  "data_config": "configs/data/sft_train_eval_phi4_max3.yaml",
+  "decision": "reject",
+  "metrics": {
+    "clarify_macro_f1": null,
+    "failure_rate": 1.0,
+    "invalid_prediction_rate": 1.0,
+    "num_examples": 392,
+    "task_macro_average": null,
+    "vqa_relaxed_accuracy": null
+  },
+  "metrics_path": "benchmarks/vlm_baselines/results/agvlm_previous_sft_benchmark_watch_dtypefix_v2/attempt-2/metrics/sft-benchmark_agvlm-phi4-sft-completed_test_metrics.json",
+  "model_config": "configs/model/phi4_reasoning_vision_15b_turin_24g.yaml",
+  "model_key": "agvlm_phi4_sft_completed",
+  "preflight_config": "configs/train/sft_phi4_reasoning_vision_15b_turin_16gpu_balanced_v2_instructional_preflight.yaml",
+  "reason": "Benchmark metrics did not pass configured gates.",
+  "train_config": "configs/train/sft_phi4_reasoning_vision_15b_turin_16gpu_balanced_v2_instructional_full.yaml",
+  "train_slurm": "scripts/hpc/run_sft_turin_16gpu_phi4_reasoning_vision_15b_full_max3.slurm"
+}

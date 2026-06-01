@@ -1,0 +1,786 @@
+{
+  "answer_token_lengths": {
+    "count": 292514,
+    "max": 1155,
+    "mean": 27.826179259796113,
+    "median": 4.0,
+    "min": 1
+  },
+  "by_source_dataset": {
+    "agbase": 40738,
+    "agrillava": 1839,
+    "ip102": 40614,
+    "mirage": 24019,
+    "plantdoc": 2111,
+    "plantvillage": 43503,
+    "plantvillage_vqa": 139690
+  },
+  "by_task": {
+    "clarify_or_respond": 6482,
+    "classification": 86228,
+    "consultation": 60114,
+    "vqa": 139690
+  },
+  "by_task_source_top30": {
+    "clarify_or_respond::mirage": 6482,
+    "classification::ip102": 40614,
+    "classification::plantdoc": 2111,
+    "classification::plantvillage": 43503,
+    "consultation::agbase": 40738,
+    "consultation::agrillava": 1839,
+    "consultation::mirage": 17537,
+    "vqa::plantvillage_vqa": 139690
+  },
+  "classification_label_entropy": 8.943353370014107,
+  "examples_by_flag": {
+    "classification_numeric_label_prefix": [
+      {
+        "answer_text": "1 rice leaf roller",
+        "canonical_label": "1 rice leaf roller",
+        "decision": null,
+        "images": [
+          "data/raw/ip102/full/ip102_v1.1/images/00002.jpg"
+        ],
+        "prompt": "Identify the insect or pest shown in this agricultural image.\n\nRespond in this format:\nAnswer: <canonical agricultural label>",
+        "sample_id": "ip102-ip102-v1-1-images-00002-jpg",
+        "source_dataset": "ip102",
+        "target": "Answer: 1 rice leaf roller",
+        "target_answer": "1 rice leaf roller",
+        "task_type": "classification",
+        "verifier_mode": "label"
+      },
+      {
+        "answer_text": "1 rice leaf roller",
+        "canonical_label": "1 rice leaf roller",
+        "decision": null,
+        "images": [
+          "data/raw/ip102/full/ip102_v1.1/images/00003.jpg"
+        ],
+        "prompt": "Identify the insect or pest shown in this agricultural image.\n\nRespond in this format:\nAnswer: <canonical agricultural label>",
+        "sample_id": "ip102-ip102-v1-1-images-00003-jpg",
+        "source_dataset": "ip102",
+        "target": "Answer: 1 rice leaf roller",
+        "target_answer": "1 rice leaf roller",
+        "task_type": "classification",
+        "verifier_mode": "label"
+      },
+      {
+        "answer_text": "1 rice leaf roller",
+        "canonical_label": "1 rice leaf roller",
+        "decision": null,
+        "images": [
+          "data/raw/ip102/full/ip102_v1.1/images/00005.jpg"
+        ],
+        "prompt": "Identify the insect or pest shown in this agricultural image.\n\nRespond in this format:\nAnswer: <canonical agricultural label>",
+        "sample_id": "ip102-ip102-v1-1-images-00005-jpg",
+        "source_dataset": "ip102",
+        "target": "Answer: 1 rice leaf roller",
+        "target_answer": "1 rice leaf roller",
+        "task_type": "classification",
+        "verifier_mode": "label"
+      },
+      {
+        "answer_text": "1 rice leaf roller",
+        "canonical_label": "1 rice leaf roller",
+        "decision": null,
+        "images": [
+          "data/raw/ip102/full/ip102_v1.1/images/00008.jpg"
+        ],
+        "prompt": "Identify the insect or pest shown in this agricultural image.\n\nRespond in this format:\nAnswer: <canonical agricultural label>",
+        "sample_id": "ip102-ip102-v1-1-images-00008-jpg",
+        "source_dataset": "ip102",
+        "target": "Answer: 1 rice leaf roller",
+        "target_answer": "1 rice leaf roller",
+        "task_type": "classification",
+        "verifier_mode": "label"
+      },
+      {
+        "answer_text": "1 rice leaf roller",
+        "canonical_label": "1 rice leaf roller",
+        "decision": null,
+        "images": [
+          "data/raw/ip102/full/ip102_v1.1/images/00011.jpg"
+        ],
+        "prompt": "Identify the insect or pest shown in this agricultural image.\n\nRespond in this format:\nAnswer: <canonical agricultural label>",
+        "sample_id": "ip102-ip102-v1-1-images-00011-jpg",
+        "source_dataset": "ip102",
+        "target": "Answer: 1 rice leaf roller",
+        "target_answer": "1 rice leaf roller",
+        "task_type": "classification",
+        "verifier_mode": "label"
+      },
+      {
+        "answer_text": "1 rice leaf roller",
+        "canonical_label": "1 rice leaf roller",
+        "decision": null,
+        "images": [
+          "data/raw/ip102/full/ip102_v1.1/images/00015.jpg"
+        ],
+        "prompt": "Identify the insect or pest shown in this agricultural image.\n\nRespond in this format:\nAnswer: <canonical agricultural label>",
+        "sample_id": "ip102-ip102-v1-1-images-00015-jpg",
+        "source_dataset": "ip102",
+        "target": "Answer: 1 rice leaf roller",
+        "target_answer": "1 rice leaf roller",
+        "task_type": "classification",
+        "verifier_mode": "label"
+      },
+      {
+        "answer_text": "1 rice leaf roller",
+        "canonical_label": "1 rice leaf roller",
+        "decision": null,
+        "images": [
+          "data/raw/ip102/full/ip102_v1.1/images/00017.jpg"
+        ],
+        "prompt": "Identify the insect or pest shown in this agricultural image.\n\nRespond in this format:\nAnswer: <canonical agricultural label>",
+        "sample_id": "ip102-ip102-v1-1-images-00017-jpg",
+        "source_dataset": "ip102",
+        "target": "Answer: 1 rice leaf roller",
+        "target_answer": "1 rice leaf roller",
+        "task_type": "classification",
+        "verifier_mode": "label"
+      },
+      {
+        "answer_text": "1 rice leaf roller",
+        "canonical_label": "1 rice leaf roller",
+        "decision": null,
+        "images": [
+          "data/raw/ip102/full/ip102_v1.1/images/00018.jpg"
+        ],
+        "prompt": "Identify the insect or pest shown in this agricultural image.\n\nRespond in this format:\nAnswer: <canonical agricultural label>",
+        "sample_id": "ip102-ip102-v1-1-images-00018-jpg",
+        "source_dataset": "ip102",
+        "target": "Answer: 1 rice leaf roller",
+        "target_answer": "1 rice leaf roller",
+        "task_type": "classification",
+        "verifier_mode": "label"
+      },
+      {
+        "answer_text": "1 rice leaf roller",
+        "canonical_label": "1 rice leaf roller",
+        "decision": null,
+        "images": [
+          "data/raw/ip102/full/ip102_v1.1/images/00019.jpg"
+        ],
+        "prompt": "Identify the insect or pest shown in this agricultural image.\n\nRespond in this format:\nAnswer: <canonical agricultural label>",
+        "sample_id": "ip102-ip102-v1-1-images-00019-jpg",
+        "source_dataset": "ip102",
+        "target": "Answer: 1 rice leaf roller",
+        "target_answer": "1 rice leaf roller",
+        "task_type": "classification",
+        "verifier_mode": "label"
+      },
+      {
+        "answer_text": "1 rice leaf roller",
+        "canonical_label": "1 rice leaf roller",
+        "decision": null,
+        "images": [
+          "data/raw/ip102/full/ip102_v1.1/images/00021.jpg"
+        ],
+        "prompt": "Identify the insect or pest shown in this agricultural image.\n\nRespond in this format:\nAnswer: <canonical agricultural label>",
+        "sample_id": "ip102-ip102-v1-1-images-00021-jpg",
+        "source_dataset": "ip102",
+        "target": "Answer: 1 rice leaf roller",
+        "target_answer": "1 rice leaf roller",
+        "task_type": "classification",
+        "verifier_mode": "label"
+      },
+      {
+        "answer_text": "1 rice leaf roller",
+        "canonical_label": "1 rice leaf roller",
+        "decision": null,
+        "images": [
+          "data/raw/ip102/full/ip102_v1.1/images/00022.jpg"
+        ],
+        "prompt": "Identify the insect or pest shown in this agricultural image.\n\nRespond in this format:\nAnswer: <canonical agricultural label>",
+        "sample_id": "ip102-ip102-v1-1-images-00022-jpg",
+        "source_dataset": "ip102",
+        "target": "Answer: 1 rice leaf roller",
+        "target_answer": "1 rice leaf roller",
+        "task_type": "classification",
+        "verifier_mode": "label"
+      },
+      {
+        "answer_text": "1 rice leaf roller",
+        "canonical_label": "1 rice leaf roller",
+        "decision": null,
+        "images": [
+          "data/raw/ip102/full/ip102_v1.1/images/00024.jpg"
+        ],
+        "prompt": "Identify the insect or pest shown in this agricultural image.\n\nRespond in this format:\nAnswer: <canonical agricultural label>",
+        "sample_id": "ip102-ip102-v1-1-images-00024-jpg",
+        "source_dataset": "ip102",
+        "target": "Answer: 1 rice leaf roller",
+        "target_answer": "1 rice leaf roller",
+        "task_type": "classification",
+        "verifier_mode": "label"
+      },
+      {
+        "answer_text": "1 rice leaf roller",
+        "canonical_label": "1 rice leaf roller",
+        "decision": null,
+        "images": [
+          "data/raw/ip102/full/ip102_v1.1/images/00025.jpg"
+        ],
+        "prompt": "Identify the insect or pest shown in this agricultural image.\n\nRespond in this format:\nAnswer: <canonical agricultural label>",
+        "sample_id": "ip102-ip102-v1-1-images-00025-jpg",
+        "source_dataset": "ip102",
+        "target": "Answer: 1 rice leaf roller",
+        "target_answer": "1 rice leaf roller",
+        "task_type": "classification",
+        "verifier_mode": "label"
+      },
+      {
+        "answer_text": "1 rice leaf roller",
+        "canonical_label": "1 rice leaf roller",
+        "decision": null,
+        "images": [
+          "data/raw/ip102/full/ip102_v1.1/images/00027.jpg"
+        ],
+        "prompt": "Identify the insect or pest shown in this agricultural image.\n\nRespond in this format:\nAnswer: <canonical agricultural label>",
+        "sample_id": "ip102-ip102-v1-1-images-00027-jpg",
+        "source_dataset": "ip102",
+        "target": "Answer: 1 rice leaf roller",
+        "target_answer": "1 rice leaf roller",
+        "task_type": "classification",
+        "verifier_mode": "label"
+      },
+      {
+        "answer_text": "1 rice leaf roller",
+        "canonical_label": "1 rice leaf roller",
+        "decision": null,
+        "images": [
+          "data/raw/ip102/full/ip102_v1.1/images/00028.jpg"
+        ],
+        "prompt": "Identify the insect or pest shown in this agricultural image.\n\nRespond in this format:\nAnswer: <canonical agricultural label>",
+        "sample_id": "ip102-ip102-v1-1-images-00028-jpg",
+        "source_dataset": "ip102",
+        "target": "Answer: 1 rice leaf roller",
+        "target_answer": "1 rice leaf roller",
+        "task_type": "classification",
+        "verifier_mode": "label"
+      },
+      {
+        "answer_text": "1 rice leaf roller",
+        "canonical_label": "1 rice leaf roller",
+        "decision": null,
+        "images": [
+          "data/raw/ip102/full/ip102_v1.1/images/00030.jpg"
+        ],
+        "prompt": "Identify the insect or pest shown in this agricultural image.\n\nRespond in this format:\nAnswer: <canonical agricultural label>",
+        "sample_id": "ip102-ip102-v1-1-images-00030-jpg",
+        "source_dataset": "ip102",
+        "target": "Answer: 1 rice leaf roller",
+        "target_answer": "1 rice leaf roller",
+        "task_type": "classification",
+        "verifier_mode": "label"
+      },
+      {
+        "answer_text": "1 rice leaf roller",
+        "canonical_label": "1 rice leaf roller",
+        "decision": null,
+        "images": [
+          "data/raw/ip102/full/ip102_v1.1/images/00031.jpg"
+        ],
+        "prompt": "Identify the insect or pest shown in this agricultural image.\n\nRespond in this format:\nAnswer: <canonical agricultural label>",
+        "sample_id": "ip102-ip102-v1-1-images-00031-jpg",
+        "source_dataset": "ip102",
+        "target": "Answer: 1 rice leaf roller",
+        "target_answer": "1 rice leaf roller",
+        "task_type": "classification",
+        "verifier_mode": "label"
+      },
+      {
+        "answer_text": "1 rice leaf roller",
+        "canonical_label": "1 rice leaf roller",
+        "decision": null,
+        "images": [
+          "data/raw/ip102/full/ip102_v1.1/images/00032.jpg"
+        ],
+        "prompt": "Identify the insect or pest shown in this agricultural image.\n\nRespond in this format:\nAnswer: <canonical agricultural label>",
+        "sample_id": "ip102-ip102-v1-1-images-00032-jpg",
+        "source_dataset": "ip102",
+        "target": "Answer: 1 rice leaf roller",
+        "target_answer": "1 rice leaf roller",
+        "task_type": "classification",
+        "verifier_mode": "label"
+      },
+      {
+        "answer_text": "1 rice leaf roller",
+        "canonical_label": "1 rice leaf roller",
+        "decision": null,
+        "images": [
+          "data/raw/ip102/full/ip102_v1.1/images/00033.jpg"
+        ],
+        "prompt": "Identify the insect or pest shown in this agricultural image.\n\nRespond in this format:\nAnswer: <canonical agricultural label>",
+        "sample_id": "ip102-ip102-v1-1-images-00033-jpg",
+        "source_dataset": "ip102",
+        "target": "Answer: 1 rice leaf roller",
+        "target_answer": "1 rice leaf roller",
+        "task_type": "classification",
+        "verifier_mode": "label"
+      },
+      {
+        "answer_text": "1 rice leaf roller",
+        "canonical_label": "1 rice leaf roller",
+        "decision": null,
+        "images": [
+          "data/raw/ip102/full/ip102_v1.1/images/00037.jpg"
+        ],
+        "prompt": "Identify the insect or pest shown in this agricultural image.\n\nRespond in this format:\nAnswer: <canonical agricultural label>",
+        "sample_id": "ip102-ip102-v1-1-images-00037-jpg",
+        "source_dataset": "ip102",
+        "target": "Answer: 1 rice leaf roller",
+        "target_answer": "1 rice leaf roller",
+        "task_type": "classification",
+        "verifier_mode": "label"
+      }
+    ],
+    "short_answer": [
+      {
+        "answer_text": "apple healthy",
+        "canonical_label": "apple healthy",
+        "decision": null,
+        "images": [
+          "data/raw/plantvillage/full/images/train/001228.png"
+        ],
+        "prompt": "Identify the crop issue or pest in this agricultural image.\n\nRespond in this format:\nAnswer: <canonical agricultural label>",
+        "sample_id": "plantvillage-train-001228",
+        "source_dataset": "plantvillage",
+        "target": "Answer: apple healthy",
+        "target_answer": "apple healthy",
+        "task_type": "classification",
+        "verifier_mode": "label"
+      },
+      {
+        "answer_text": "apple healthy",
+        "canonical_label": "apple healthy",
+        "decision": null,
+        "images": [
+          "data/raw/plantvillage/full/images/train/001229.png"
+        ],
+        "prompt": "Identify the crop issue or pest in this agricultural image.\n\nRespond in this format:\nAnswer: <canonical agricultural label>",
+        "sample_id": "plantvillage-train-001229",
+        "source_dataset": "plantvillage",
+        "target": "Answer: apple healthy",
+        "target_answer": "apple healthy",
+        "task_type": "classification",
+        "verifier_mode": "label"
+      },
+      {
+        "answer_text": "apple healthy",
+        "canonical_label": "apple healthy",
+        "decision": null,
+        "images": [
+          "data/raw/plantvillage/full/images/train/001230.png"
+        ],
+        "prompt": "Identify the crop issue or pest in this agricultural image.\n\nRespond in this format:\nAnswer: <canonical agricultural label>",
+        "sample_id": "plantvillage-train-001230",
+        "source_dataset": "plantvillage",
+        "target": "Answer: apple healthy",
+        "target_answer": "apple healthy",
+        "task_type": "classification",
+        "verifier_mode": "label"
+      },
+      {
+        "answer_text": "apple healthy",
+        "canonical_label": "apple healthy",
+        "decision": null,
+        "images": [
+          "data/raw/plantvillage/full/images/train/001231.png"
+        ],
+        "prompt": "Identify the crop issue or pest in this agricultural image.\n\nRespond in this format:\nAnswer: <canonical agricultural label>",
+        "sample_id": "plantvillage-train-001231",
+        "source_dataset": "plantvillage",
+        "target": "Answer: apple healthy",
+        "target_answer": "apple healthy",
+        "task_type": "classification",
+        "verifier_mode": "label"
+      },
+      {
+        "answer_text": "apple healthy",
+        "canonical_label": "apple healthy",
+        "decision": null,
+        "images": [
+          "data/raw/plantvillage/full/images/train/001232.png"
+        ],
+        "prompt": "Identify the crop issue or pest in this agricultural image.\n\nRespond in this format:\nAnswer: <canonical agricultural label>",
+        "sample_id": "plantvillage-train-001232",
+        "source_dataset": "plantvillage",
+        "target": "Answer: apple healthy",
+        "target_answer": "apple healthy",
+        "task_type": "classification",
+        "verifier_mode": "label"
+      },
+      {
+        "answer_text": "apple healthy",
+        "canonical_label": "apple healthy",
+        "decision": null,
+        "images": [
+          "data/raw/plantvillage/full/images/train/001233.png"
+        ],
+        "prompt": "Identify the crop issue or pest in this agricultural image.\n\nRespond in this format:\nAnswer: <canonical agricultural label>",
+        "sample_id": "plantvillage-train-001233",
+        "source_dataset": "plantvillage",
+        "target": "Answer: apple healthy",
+        "target_answer": "apple healthy",
+        "task_type": "classification",
+        "verifier_mode": "label"
+      },
+      {
+        "answer_text": "apple healthy",
+        "canonical_label": "apple healthy",
+        "decision": null,
+        "images": [
+          "data/raw/plantvillage/full/images/train/001234.png"
+        ],
+        "prompt": "Identify the crop issue or pest in this agricultural image.\n\nRespond in this format:\nAnswer: <canonical agricultural label>",
+        "sample_id": "plantvillage-train-001234",
+        "source_dataset": "plantvillage",
+        "target": "Answer: apple healthy",
+        "target_answer": "apple healthy",
+        "task_type": "classification",
+        "verifier_mode": "label"
+      },
+      {
+        "answer_text": "apple healthy",
+        "canonical_label": "apple healthy",
+        "decision": null,
+        "images": [
+          "data/raw/plantvillage/full/images/train/001235.png"
+        ],
+        "prompt": "Identify the crop issue or pest in this agricultural image.\n\nRespond in this format:\nAnswer: <canonical agricultural label>",
+        "sample_id": "plantvillage-train-001235",
+        "source_dataset": "plantvillage",
+        "target": "Answer: apple healthy",
+        "target_answer": "apple healthy",
+        "task_type": "classification",
+        "verifier_mode": "label"
+      },
+      {
+        "answer_text": "apple healthy",
+        "canonical_label": "apple healthy",
+        "decision": null,
+        "images": [
+          "data/raw/plantvillage/full/images/train/001236.png"
+        ],
+        "prompt": "Identify the crop issue or pest in this agricultural image.\n\nRespond in this format:\nAnswer: <canonical agricultural label>",
+        "sample_id": "plantvillage-train-001236",
+        "source_dataset": "plantvillage",
+        "target": "Answer: apple healthy",
+        "target_answer": "apple healthy",
+        "task_type": "classification",
+        "verifier_mode": "label"
+      },
+      {
+        "answer_text": "apple healthy",
+        "canonical_label": "apple healthy",
+        "decision": null,
+        "images": [
+          "data/raw/plantvillage/full/images/train/001237.png"
+        ],
+        "prompt": "Identify the crop issue or pest in this agricultural image.\n\nRespond in this format:\nAnswer: <canonical agricultural label>",
+        "sample_id": "plantvillage-train-001237",
+        "source_dataset": "plantvillage",
+        "target": "Answer: apple healthy",
+        "target_answer": "apple healthy",
+        "task_type": "classification",
+        "verifier_mode": "label"
+      },
+      {
+        "answer_text": "apple healthy",
+        "canonical_label": "apple healthy",
+        "decision": null,
+        "images": [
+          "data/raw/plantvillage/full/images/train/001238.png"
+        ],
+        "prompt": "Identify the crop issue or pest in this agricultural image.\n\nRespond in this format:\nAnswer: <canonical agricultural label>",
+        "sample_id": "plantvillage-train-001238",
+        "source_dataset": "plantvillage",
+        "target": "Answer: apple healthy",
+        "target_answer": "apple healthy",
+        "task_type": "classification",
+        "verifier_mode": "label"
+      },
+      {
+        "answer_text": "apple healthy",
+        "canonical_label": "apple healthy",
+        "decision": null,
+        "images": [
+          "data/raw/plantvillage/full/images/train/001239.png"
+        ],
+        "prompt": "Identify the crop issue or pest in this agricultural image.\n\nRespond in this format:\nAnswer: <canonical agricultural label>",
+        "sample_id": "plantvillage-train-001239",
+        "source_dataset": "plantvillage",
+        "target": "Answer: apple healthy",
+        "target_answer": "apple healthy",
+        "task_type": "classification",
+        "verifier_mode": "label"
+      },
+      {
+        "answer_text": "apple healthy",
+        "canonical_label": "apple healthy",
+        "decision": null,
+        "images": [
+          "data/raw/plantvillage/full/images/train/001240.png"
+        ],
+        "prompt": "Identify the crop issue or pest in this agricultural image.\n\nRespond in this format:\nAnswer: <canonical agricultural label>",
+        "sample_id": "plantvillage-train-001240",
+        "source_dataset": "plantvillage",
+        "target": "Answer: apple healthy",
+        "target_answer": "apple healthy",
+        "task_type": "classification",
+        "verifier_mode": "label"
+      },
+      {
+        "answer_text": "apple healthy",
+        "canonical_label": "apple healthy",
+        "decision": null,
+        "images": [
+          "data/raw/plantvillage/full/images/train/001241.png"
+        ],
+        "prompt": "Identify the crop issue or pest in this agricultural image.\n\nRespond in this format:\nAnswer: <canonical agricultural label>",
+        "sample_id": "plantvillage-train-001241",
+        "source_dataset": "plantvillage",
+        "target": "Answer: apple healthy",
+        "target_answer": "apple healthy",
+        "task_type": "classification",
+        "verifier_mode": "label"
+      },
+      {
+        "answer_text": "apple healthy",
+        "canonical_label": "apple healthy",
+        "decision": null,
+        "images": [
+          "data/raw/plantvillage/full/images/train/001242.png"
+        ],
+        "prompt": "Identify the crop issue or pest in this agricultural image.\n\nRespond in this format:\nAnswer: <canonical agricultural label>",
+        "sample_id": "plantvillage-train-001242",
+        "source_dataset": "plantvillage",
+        "target": "Answer: apple healthy",
+        "target_answer": "apple healthy",
+        "task_type": "classification",
+        "verifier_mode": "label"
+      },
+      {
+        "answer_text": "apple healthy",
+        "canonical_label": "apple healthy",
+        "decision": null,
+        "images": [
+          "data/raw/plantvillage/full/images/train/001243.png"
+        ],
+        "prompt": "Identify the crop issue or pest in this agricultural image.\n\nRespond in this format:\nAnswer: <canonical agricultural label>",
+        "sample_id": "plantvillage-train-001243",
+        "source_dataset": "plantvillage",
+        "target": "Answer: apple healthy",
+        "target_answer": "apple healthy",
+        "task_type": "classification",
+        "verifier_mode": "label"
+      },
+      {
+        "answer_text": "apple healthy",
+        "canonical_label": "apple healthy",
+        "decision": null,
+        "images": [
+          "data/raw/plantvillage/full/images/train/001244.png"
+        ],
+        "prompt": "Identify the crop issue or pest in this agricultural image.\n\nRespond in this format:\nAnswer: <canonical agricultural label>",
+        "sample_id": "plantvillage-train-001244",
+        "source_dataset": "plantvillage",
+        "target": "Answer: apple healthy",
+        "target_answer": "apple healthy",
+        "task_type": "classification",
+        "verifier_mode": "label"
+      },
+      {
+        "answer_text": "apple healthy",
+        "canonical_label": "apple healthy",
+        "decision": null,
+        "images": [
+          "data/raw/plantvillage/full/images/train/001245.png"
+        ],
+        "prompt": "Identify the crop issue or pest in this agricultural image.\n\nRespond in this format:\nAnswer: <canonical agricultural label>",
+        "sample_id": "plantvillage-train-001245",
+        "source_dataset": "plantvillage",
+        "target": "Answer: apple healthy",
+        "target_answer": "apple healthy",
+        "task_type": "classification",
+        "verifier_mode": "label"
+      },
+      {
+        "answer_text": "apple healthy",
+        "canonical_label": "apple healthy",
+        "decision": null,
+        "images": [
+          "data/raw/plantvillage/full/images/train/001246.png"
+        ],
+        "prompt": "Identify the crop issue or pest in this agricultural image.\n\nRespond in this format:\nAnswer: <canonical agricultural label>",
+        "sample_id": "plantvillage-train-001246",
+        "source_dataset": "plantvillage",
+        "target": "Answer: apple healthy",
+        "target_answer": "apple healthy",
+        "task_type": "classification",
+        "verifier_mode": "label"
+      },
+      {
+        "answer_text": "apple healthy",
+        "canonical_label": "apple healthy",
+        "decision": null,
+        "images": [
+          "data/raw/plantvillage/full/images/train/001247.png"
+        ],
+        "prompt": "Identify the crop issue or pest in this agricultural image.\n\nRespond in this format:\nAnswer: <canonical agricultural label>",
+        "sample_id": "plantvillage-train-001247",
+        "source_dataset": "plantvillage",
+        "target": "Answer: apple healthy",
+        "target_answer": "apple healthy",
+        "task_type": "classification",
+        "verifier_mode": "label"
+      }
+    ]
+  },
+  "flag_by_source_dataset": {
+    "classification_numeric_label_prefix": {
+      "agbase": 8,
+      "agrillava": 2,
+      "ip102": 40614
+    },
+    "short_answer": {
+      "ip102": 12185,
+      "plantdoc": 649,
+      "plantvillage": 9323,
+      "plantvillage_vqa": 72073
+    }
+  },
+  "flag_by_task": {
+    "classification_numeric_label_prefix": {
+      "classification": 40614,
+      "consultation": 10
+    },
+    "short_answer": {
+      "classification": 22157,
+      "vqa": 72073
+    }
+  },
+  "flag_counts": {
+    "classification_numeric_label_prefix": 40624,
+    "short_answer": 94230
+  },
+  "flag_rates": {
+    "classification_numeric_label_prefix": 0.13887882289394696,
+    "short_answer": 0.32213842756244143
+  },
+  "manifest_path": "data/manifests/full/sft_train_phi4_max3_no_eval_overlap.jsonl",
+  "num_rows": 292514,
+  "rendered_target_token_lengths": {
+    "count": 292514,
+    "max": 1155,
+    "mean": 28.598511524234738,
+    "median": 5.0,
+    "min": 2
+  },
+  "target_format": "instructional",
+  "top_classification_labels": {
+    "1 rice leaf roller": 618,
+    "102 cicadellidae": 3073,
+    "16 mole cricket": 907,
+    "23 corn borer": 908,
+    "24 army worm": 582,
+    "25 aphids": 2217,
+    "4 asiatic rice borer": 569,
+    "40 beet army worm": 864,
+    "46 flax budworm": 558,
+    "49 locustoidea": 745,
+    "51 legume blister beetle": 759,
+    "52 blister beetle": 1036,
+    "59 limacodidae": 740,
+    "68 lycorma delicatula": 2859,
+    "69 xylotrechus": 621,
+    "70 cicadella viridis": 682,
+    "71 miridae": 2780,
+    "87 prodenia litura": 712,
+    "apple healthy": 1336,
+    "blueberry healthy": 1198,
+    "cherry including sour healthy": 674,
+    "cherry including sour powdery mildew": 842,
+    "corn maize common rust": 953,
+    "corn maize healthy": 930,
+    "corn maize northern leaf blight": 788,
+    "grape black rot": 944,
+    "grape esca black measles": 1106,
+    "grape leaf blight isariopsis leaf spot": 861,
+    "grass": 1134,
+    "none": 1112,
+    "orange haunglongbing citrus greening": 4406,
+    "peach bacterial spot": 1837,
+    "pepper bell bacterial spot": 797,
+    "pepper bell healthy": 1182,
+    "potato early blight": 800,
+    "potato late blight": 800,
+    "soybean healthy": 4072,
+    "squash powdery mildew": 1468,
+    "strawberry leaf scorch": 887,
+    "tomato bacterial spot": 1712,
+    "tomato early blight": 800,
+    "tomato healthy": 1307,
+    "tomato late blight": 1527,
+    "tomato leaf mold": 763,
+    "tomato septoria leaf spot": 1548,
+    "tomato spider mites two-spotted spider mite": 1341,
+    "tomato target spot": 1123,
+    "tomato tomato yellow leaf curl virus": 4286,
+    "tree": 600,
+    "yes": 552
+  },
+  "top_rendered_answers": {
+    "102 cicadellidae": 3073,
+    "25 aphids": 2217,
+    "68 lycorma delicatula": 2859,
+    "71 miridae": 2780,
+    "a healthy leaf would be uniformly green and free of the evidence of orange or brown pustular structures": 1074,
+    "a healthy version of this plant would not exhibit the evidence of orange or brown pustular structures": 1132,
+    "apple healthy": 1336,
+    "blueberry healthy": 1198,
+    "diagnosis: huanglongbing (hlb), or citrus greening": 3023,
+    "grape esca black measles": 1106,
+    "if the plant were healthy, the evidence of orange or brown pustular structures would be absent": 1090,
+    "no": 35095,
+    "orange": 1966,
+    "orange haunglongbing citrus greening": 4406,
+    "peach bacterial spot": 1837,
+    "pepper bell healthy": 1182,
+    "soybean healthy": 4072,
+    "squash powdery mildew": 1468,
+    "the causal agent is the tomato yellow leaf curl virus": 2958,
+    "the cause is the bacterium candidatus liberibacter asiaticus, leading to huanglongbing": 2955,
+    "the condition is identified as late blight": 1544,
+    "the diagnosis is bacterial spot": 1310,
+    "the diagnosis is septoria leaf spot": 1345,
+    "the diagnosis is tomato yellow leaf curl virus (tylcv)": 2962,
+    "the key visual difference would be the absence of evidence of orange or brown pustular structures": 1079,
+    "the large, dark, water-soaked lesions are a key sign of late blight": 1643,
+    "the leaf shows blotchy, asymmetrical yellowing, a classic symptom of hlb": 2963,
+    "the numerous small, angular spots are characteristic of bacterial spot": 1416,
+    "the pest responsible is the two-spotted spider mite": 1224,
+    "the plant is affected by bacterial spot disease": 1382,
+    "the plant is suffering from a fungal infection: septoria leaf spot": 1274,
+    "the plant is suffering from a late blight infection": 1585,
+    "the stippling and fine webbing are clear signs of a spider mite infestation": 1221,
+    "these 'bullseye' lesions are a tell-tale sign of early blight": 1099,
+    "this is a viral infection: tylcv": 2846,
+    "this is bacterial spot. note the small, dark, water-soaked lesions": 1414,
+    "this is citrus greening disease": 2888,
+    "this is damage from spider mites": 1230,
+    "this is late blight, caused by the oomycete phytophthora infestans": 1567,
+    "this is septoria leaf spot, characterized by small, circular spots with dark borders": 1278,
+    "this tomato leaf shows classic signs of tylcv, like yellowing and curling": 2841,
+    "tomato": 6571,
+    "tomato bacterial spot": 1712,
+    "tomato healthy": 1307,
+    "tomato late blight": 1527,
+    "tomato septoria leaf spot": 1548,
+    "tomato spider mites two-spotted spider mite": 1341,
+    "tomato target spot": 1123,
+    "tomato tomato yellow leaf curl virus": 4286,
+    "yes": 23881
+  }
+}

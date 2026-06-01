@@ -215,7 +215,28 @@ def test_instructional_sft_format_adds_prompt_contract_and_answer_target() -> No
     prompt_text = prompt_messages[-1]["content"][-1]["text"]
     assert "Respond in this format:" in prompt_text
     assert "Answer: <canonical agricultural label>" in prompt_text
-    assert training_messages[-1]["content"][0]["text"] == "Answer: apple scab"
+    assert "Evidence: <brief visible symptom evidence>" in prompt_text
+    assert "Do not leave Answer blank" in prompt_text
+    assert training_messages[-1]["content"][0]["text"] == (
+        "Answer: apple scab\n"
+        "Evidence: Visible agricultural symptoms or pest features support this label."
+    )
+
+
+def test_instructional_sft_format_adds_closed_classification_label_space() -> None:
+    from agri_vlm.data.conversation_format import sample_to_prompt_messages
+    from agri_vlm.schemas.dataset_schema import UnifiedSample
+
+    payload = _sample()
+    payload["metadata"] = {"classification_label_space": ["apple scab", "late blight", "healthy"]}
+    sample = UnifiedSample.model_validate(payload)
+
+    prompt_messages = sample_to_prompt_messages(sample, prompt_format="instructional")
+    prompt_text = prompt_messages[-1]["content"][-1]["text"]
+
+    assert "Choose exactly one label from this allowed label set:" in prompt_text
+    assert "Allowed labels: apple scab; late blight; healthy" in prompt_text
+    assert "Answer: <one allowed label>" in prompt_text
 
 
 def test_instructional_sft_format_renders_clarify_decision_target() -> None:

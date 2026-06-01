@@ -132,11 +132,18 @@ def classification_metrics(records: list[dict[str, Any]]) -> dict[str, Any]:
         return {"num_examples": 0}
     refs = [normalize_label(record.get("ground_truth")) for record in records]
     preds = [normalize_label(_normalized_prediction(record)) for record in records]
+    accepted_refs = []
+    for record, ref in zip(records, refs):
+        aliases = {ref} if ref else set()
+        aliases.update(normalize_label(value) for value in _references(record) if normalize_label(value))
+        accepted_refs.append(aliases)
+    known_labels = sorted({label for aliases in accepted_refs for label in aliases if label})
     ref_labels = sorted(label for label in set(refs) if label)
     pred_labels = sorted(label for label in set(preds) if label)
     all_labels = sorted(set(ref_labels) | set(pred_labels) | {"<invalid>"})
 
     correct = sum(1 for ref, pred in zip(refs, preds) if ref and ref == pred)
+    accepted_correct = sum(1 for aliases, pred in zip(accepted_refs, preds) if pred and pred in aliases)
     confusion: dict[str, dict[str, int]] = defaultdict(lambda: defaultdict(int))
     for ref, pred, record in zip(refs, preds, records):
         pred_label = pred if pred and not record.get("invalid_prediction") else "<invalid>"
@@ -164,13 +171,20 @@ def classification_metrics(records: list[dict[str, Any]]) -> dict[str, Any]:
     out_of_space = sum(
         1
         for record, pred in zip(records, preds)
-        if pred and pred not in ref_labels and record.get("invalid_prediction")
+        if pred
+        and (
+            record.get("out_of_label_space")
+            or record.get("parse_status") == "out_of_label_space"
+            or (pred not in known_labels and not record.get("invalid_prediction"))
+        )
     )
     parse_status_counts = Counter(str(record.get("parse_status") or "missing") for record in records)
     return {
         "num_examples": len(records),
         "top1_accuracy": correct / float(len(records)),
         "accuracy": correct / float(len(records)),
+        "accepted_label_accuracy": accepted_correct / float(len(records)),
+        "semantic_alias_accuracy": accepted_correct / float(len(records)),
         "macro_f1": mean(macro_f1_values) if macro_f1_values else 0.0,
         "weighted_f1": weighted_f1_sum / float(total_support) if total_support else 0.0,
         "balanced_accuracy": mean(recall_values) if recall_values else 0.0,

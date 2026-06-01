@@ -1,0 +1,648 @@
+{
+  "answer_token_lengths": {
+    "count": 180000,
+    "max": 1155,
+    "mean": 35.30552222222222,
+    "median": 6.0,
+    "min": 1
+  },
+  "by_source_dataset": {
+    "agbase": 26765,
+    "agrillava": 1096,
+    "ip102": 25439,
+    "mirage": 35139,
+    "plantdoc": 1332,
+    "plantvillage": 27229,
+    "plantvillage_vqa": 63000
+  },
+  "by_task": {
+    "clarify_or_respond": 27000,
+    "classification": 54000,
+    "consultation": 36000,
+    "vqa": 63000
+  },
+  "by_task_source_top30": {
+    "clarify_or_respond::mirage": 27000,
+    "classification::ip102": 25439,
+    "classification::plantdoc": 1332,
+    "classification::plantvillage": 27229,
+    "consultation::agbase": 26765,
+    "consultation::agrillava": 1096,
+    "consultation::mirage": 8139,
+    "vqa::plantvillage_vqa": 63000
+  },
+  "classification_label_entropy": 9.277334506959498,
+  "examples_by_flag": {
+    "classification_numeric_label_prefix": [
+      {
+        "answer_text": "Species: tomato\nDiagnosis: 2,4-d type broadleaf herbicide damage",
+        "canonical_label": "2 4-d type broadleaf herbicide damage",
+        "decision": null,
+        "images": [
+          "data/raw/agbase/full/836959/836959_1.jpg",
+          "data/raw/agbase/full/836959/836959_2.jpg",
+          "data/raw/agbase/full/836959/836959_3.jpg"
+        ],
+        "prompt": "Provide an expert agricultural diagnosis and management plan for the issue shown.\n\nRespond using these line-start section headers exactly once:\nDiagnosis:\nEvidence:\nUncertainty:\nManagement:\nFollow-up:",
+        "sample_id": "agbase-agbase-836959",
+        "source_dataset": "agbase",
+        "target": "Diagnosis: 2,4-d type broadleaf herbicide damage\nEvidence: Visible symptoms should be checked against the image and crop context.\nUncertainty: Image-only assessment; confirm with field context before treatment.\nManagement: No source-specific management step was provided; recommend local extension follow-up.\nFollow-up: Share close-up images and crop history if symptoms progress or the diagnosis is uncertain.",
+        "target_answer": "Diagnosis: 2,4-d type broadleaf herbicide damage\nEvidence: Visible symptoms should be checked against the image and crop context.\nUncertainty: Image-only assessment; confirm with field context before treatment.\nManagement: No source-specific management step was provided; recommend local extension follow-up.\nFollow-up: Share close-up images and crop history if symptoms progress or the diagnosis is uncertain.",
+        "task_type": "consultation",
+        "verifier_mode": "structured"
+      },
+      {
+        "answer_text": "Species: 1. carrion plant 2. honeysuckle 3. black raspberry, virginia creeper",
+        "canonical_label": "1 carrion plant 2 honeysuckle 3 black raspberry virginia creeper",
+        "decision": null,
+        "images": [
+          "data/raw/agbase/full/585016/585016_2.jpg",
+          "data/raw/agbase/full/585016/585016_1.jpg",
+          "data/raw/agbase/full/585016/585016_3.jpg"
+        ],
+        "prompt": "Provide an expert agricultural diagnosis and management plan for the issue shown.\n\nRespond using these line-start section headers exactly once:\nDiagnosis:\nEvidence:\nUncertainty:\nManagement:\nFollow-up:",
+        "sample_id": "agbase-agbase-585016",
+        "source_dataset": "agbase",
+        "target": "Diagnosis: 1. carrion plant 2. honeysuckle 3. black raspberry, virginia creeper\nEvidence: Visible symptoms should be checked against the image and crop context.\nUncertainty: Image-only assessment; confirm with field context before treatment.\nManagement: No source-specific management step was provided; recommend local extension follow-up.\nFollow-up: Share close-up images and crop history if symptoms progress or the diagnosis is uncertain.",
+        "target_answer": "Diagnosis: 1. carrion plant 2. honeysuckle 3. black raspberry, virginia creeper\nEvidence: Visible symptoms should be checked against the image and crop context.\nUncertainty: Image-only assessment; confirm with field context before treatment.\nManagement: No source-specific management step was provided; recommend local extension follow-up.\nFollow-up: Share close-up images and crop history if symptoms progress or the diagnosis is uncertain.",
+        "task_type": "consultation",
+        "verifier_mode": "structured"
+      },
+      {
+        "answer_text": "Species: crab apple, honey crisp\nDiagnosis: 4 lined plant bug for honey crisp, likely fungal disease for crab apple\nManagement: no treatment needed for honey crisp tree as the damage is superficial and cosmetic. for crab apple, expert recommends sending sample to plant disease clinic for accurate diagnosis",
+        "canonical_label": "4 lined plant bug for honey crisp likely fungal disease for crab apple",
+        "decision": null,
+        "images": [
+          "data/raw/agbase/full/841118/841118_1.jpg",
+          "data/raw/agbase/full/841118/841118_2.jpg"
+        ],
+        "prompt": "Provide an expert agricultural diagnosis and management plan for the issue shown.\n\nRespond using these line-start section headers exactly once:\nDiagnosis:\nEvidence:\nUncertainty:\nManagement:\nFollow-up:",
+        "sample_id": "agbase-agbase-841118",
+        "source_dataset": "agbase",
+        "target": "Diagnosis: 4 lined plant bug for honey crisp, likely fungal disease for crab apple\nEvidence: Visible symptoms should be checked against the image and crop context.\nUncertainty: Image-only assessment; confirm with field context before treatment.\nManagement: no treatment needed for honey crisp tree as the damage is superficial and cosmetic. for crab apple, expert recommends sending sample to plant disease clinic for accurate diagnosis\nFollow-up: Share close-up images and crop history if symptoms progress or the diagnosis is uncertain.",
+        "target_answer": "Diagnosis: 4 lined plant bug for honey crisp, likely fungal disease for crab apple\nEvidence: Visible symptoms should be checked against the image and crop context.\nUncertainty: Image-only assessment; confirm with field context before treatment.\nManagement: no treatment needed for honey crisp tree as the damage is superficial and cosmetic. for crab apple, expert recommends sending sample to plant disease clinic for accurate diagnosis\nFollow-up: Share close-up images and crop history if symptoms progress or the diagnosis is uncertain.",
+        "task_type": "consultation",
+        "verifier_mode": "structured"
+      },
+      {
+        "answer_text": "Species: hydrangea\nDiagnosis: 4 lined plant bug damage and/or fungal disease\nSymptoms: significant damage, wilting\nManagement: test the soil before watering. water under the leaves, not overhead. water in the morning to allow leaves to dry, and again late in the day if the soil is dry to 2 inches.",
+        "canonical_label": "4 lined plant bug damage and or fungal disease",
+        "decision": null,
+        "images": [
+          "data/raw/agbase/full/649244/649244_1.jpg",
+          "data/raw/agbase/full/649244/649244_3.jpg",
+          "data/raw/agbase/full/649244/649244_2.jpg"
+        ],
+        "prompt": "Provide an expert agricultural diagnosis and management plan for the issue shown.\n\nRespond using these line-start section headers exactly once:\nDiagnosis:\nEvidence:\nUncertainty:\nManagement:\nFollow-up:",
+        "sample_id": "agbase-agbase-649244",
+        "source_dataset": "agbase",
+        "target": "Diagnosis: 4 lined plant bug damage and/or fungal disease\nEvidence: significant damage, wilting\nUncertainty: Image-only assessment; confirm with field context before treatment.\nManagement: test the soil before watering. water under the leaves, not overhead. water in the morning to allow leaves to dry, and again late in the day if the soil is dry to 2 inches.\nFollow-up: Share close-up images and crop history if symptoms progress or the diagnosis is uncertain.",
+        "target_answer": "Diagnosis: 4 lined plant bug damage and/or fungal disease\nEvidence: significant damage, wilting\nUncertainty: Image-only assessment; confirm with field context before treatment.\nManagement: test the soil before watering. water under the leaves, not overhead. water in the morning to allow leaves to dry, and again late in the day if the soil is dry to 2 inches.\nFollow-up: Share close-up images and crop history if symptoms progress or the diagnosis is uncertain.",
+        "task_type": "consultation",
+        "verifier_mode": "structured"
+      },
+      {
+        "answer_text": "Species: 1. smartweed or knotweed (persicaria), 2. cabbage family (possibly brassica oleracea), 3. unknown (possibly flowering cherry or a root sucker from a nearby tree)",
+        "canonical_label": "1 smartweed or knotweed persicaria 2 cabbage family possibly brassica oleracea 3 unknown possibly flowering cherry or a root sucker from a nearby tree",
+        "decision": null,
+        "images": [
+          "data/raw/agbase/full/658447/658447_2.jpg",
+          "data/raw/agbase/full/658447/658447_1.jpg",
+          "data/raw/agbase/full/658447/658447_3.jpg"
+        ],
+        "prompt": "Provide an expert agricultural diagnosis and management plan for the issue shown.\n\nRespond using these line-start section headers exactly once:\nDiagnosis:\nEvidence:\nUncertainty:\nManagement:\nFollow-up:",
+        "sample_id": "agbase-agbase-658447",
+        "source_dataset": "agbase",
+        "target": "Diagnosis: 1. smartweed or knotweed (persicaria), 2. cabbage family (possibly brassica oleracea), 3. unknown (possibly flowering cherry or a root sucker from a nearby tree)\nEvidence: Visible symptoms should be checked against the image and crop context.\nUncertainty: Image-only assessment; confirm with field context before treatment.\nManagement: No source-specific management step was provided; recommend local extension follow-up.\nFollow-up: Share close-up images and crop history if symptoms progress or the diagnosis is uncertain.",
+        "target_answer": "Diagnosis: 1. smartweed or knotweed (persicaria), 2. cabbage family (possibly brassica oleracea), 3. unknown (possibly flowering cherry or a root sucker from a nearby tree)\nEvidence: Visible symptoms should be checked against the image and crop context.\nUncertainty: Image-only assessment; confirm with field context before treatment.\nManagement: No source-specific management step was provided; recommend local extension follow-up.\nFollow-up: Share close-up images and crop history if symptoms progress or the diagnosis is uncertain.",
+        "task_type": "consultation",
+        "verifier_mode": "structured"
+      },
+      {
+        "answer_text": "12 days",
+        "canonical_label": "12 days",
+        "decision": null,
+        "images": [
+          "data/raw/agrillava/full/Img/alfalfa_seed_chalcid_6.jpg"
+        ],
+        "prompt": "How long does it take for the insect in the picture to fully develop?\n\nRespond using these line-start section headers exactly once:\nDiagnosis:\nEvidence:\nUncertainty:\nManagement:\nFollow-up:",
+        "sample_id": "agrillava-agrillava-000043",
+        "source_dataset": "agrillava",
+        "target": "Diagnosis: 12 days\nEvidence: Visible symptoms should be checked against the image and crop context.\nUncertainty: Image-only assessment; confirm with field context before treatment.\nManagement: No source-specific management step was provided; recommend local extension follow-up.\nFollow-up: Share close-up images and crop history if symptoms progress or the diagnosis is uncertain.",
+        "target_answer": "Diagnosis: 12 days\nEvidence: Visible symptoms should be checked against the image and crop context.\nUncertainty: Image-only assessment; confirm with field context before treatment.\nManagement: No source-specific management step was provided; recommend local extension follow-up.\nFollow-up: Share close-up images and crop history if symptoms progress or the diagnosis is uncertain.",
+        "task_type": "consultation",
+        "verifier_mode": "structured"
+      },
+      {
+        "answer_text": "Species: 1. unknown plant (possibly false daisy), 2. purple beautyberry (callicarpa)",
+        "canonical_label": "1 unknown plant possibly false daisy 2 purple beautyberry callicarpa",
+        "decision": null,
+        "images": [
+          "data/raw/agbase/full/723809/723809_3.jpg",
+          "data/raw/agbase/full/723809/723809_1.jpg",
+          "data/raw/agbase/full/723809/723809_2.jpg"
+        ],
+        "prompt": "Provide an expert agricultural diagnosis and management plan for the issue shown.\n\nRespond using these line-start section headers exactly once:\nDiagnosis:\nEvidence:\nUncertainty:\nManagement:\nFollow-up:",
+        "sample_id": "agbase-agbase-723809",
+        "source_dataset": "agbase",
+        "target": "Diagnosis: 1. unknown plant (possibly false daisy), 2. purple beautyberry (callicarpa)\nEvidence: Visible symptoms should be checked against the image and crop context.\nUncertainty: Image-only assessment; confirm with field context before treatment.\nManagement: No source-specific management step was provided; recommend local extension follow-up.\nFollow-up: Share close-up images and crop history if symptoms progress or the diagnosis is uncertain.",
+        "target_answer": "Diagnosis: 1. unknown plant (possibly false daisy), 2. purple beautyberry (callicarpa)\nEvidence: Visible symptoms should be checked against the image and crop context.\nUncertainty: Image-only assessment; confirm with field context before treatment.\nManagement: No source-specific management step was provided; recommend local extension follow-up.\nFollow-up: Share close-up images and crop history if symptoms progress or the diagnosis is uncertain.",
+        "task_type": "consultation",
+        "verifier_mode": "structured"
+      },
+      {
+        "answer_text": "8.0-9.8mm",
+        "canonical_label": "8 0-9 8mm",
+        "decision": null,
+        "images": [
+          "data/raw/agrillava/full/Img/citrus_bactrocera_tsuneonis_25.jpg"
+        ],
+        "prompt": "What is the length range of Bactrocera tsuneonis pupae?\n\nRespond using these line-start section headers exactly once:\nDiagnosis:\nEvidence:\nUncertainty:\nManagement:\nFollow-up:",
+        "sample_id": "agrillava-agrillava-000404",
+        "source_dataset": "agrillava",
+        "target": "Diagnosis: 8.0-9.8mm\nEvidence: Visible symptoms should be checked against the image and crop context.\nUncertainty: Image-only assessment; confirm with field context before treatment.\nManagement: No source-specific management step was provided; recommend local extension follow-up.\nFollow-up: Share close-up images and crop history if symptoms progress or the diagnosis is uncertain.",
+        "target_answer": "Diagnosis: 8.0-9.8mm\nEvidence: Visible symptoms should be checked against the image and crop context.\nUncertainty: Image-only assessment; confirm with field context before treatment.\nManagement: No source-specific management step was provided; recommend local extension follow-up.\nFollow-up: Share close-up images and crop history if symptoms progress or the diagnosis is uncertain.",
+        "task_type": "consultation",
+        "verifier_mode": "structured"
+      },
+      {
+        "answer_text": "Species: 4 o'clocks\nManagement: remove most of the larvae by hand, or apply bt (bacillus thuringiensis) to exposed larvae",
+        "canonical_label": "4 o clocks",
+        "decision": null,
+        "images": [
+          "data/raw/agbase/full/756931/756931_1.jpg",
+          "data/raw/agbase/full/756931/756931_2.jpg"
+        ],
+        "prompt": "Provide an expert agricultural diagnosis and management plan for the issue shown.\n\nRespond using these line-start section headers exactly once:\nDiagnosis:\nEvidence:\nUncertainty:\nManagement:\nFollow-up:",
+        "sample_id": "agbase-agbase-756931",
+        "source_dataset": "agbase",
+        "target": "Diagnosis: 4 o'clocks\nEvidence: Visible symptoms should be checked against the image and crop context.\nUncertainty: Image-only assessment; confirm with field context before treatment.\nManagement: remove most of the larvae by hand, or apply bt (bacillus thuringiensis) to exposed larvae\nFollow-up: Share close-up images and crop history if symptoms progress or the diagnosis is uncertain.",
+        "target_answer": "Diagnosis: 4 o'clocks\nEvidence: Visible symptoms should be checked against the image and crop context.\nUncertainty: Image-only assessment; confirm with field context before treatment.\nManagement: remove most of the larvae by hand, or apply bt (bacillus thuringiensis) to exposed larvae\nFollow-up: Share close-up images and crop history if symptoms progress or the diagnosis is uncertain.",
+        "task_type": "consultation",
+        "verifier_mode": "structured"
+      },
+      {
+        "answer_text": "Species: phlox\nDiagnosis: 2,4-d damage from herbicide\nSymptoms: shriveling, yellowing on leaves at their bases\nManagement: wait and see, cut back damaged areas when cooler, avoid repeat herbicide application in hot weather",
+        "canonical_label": "2 4-d damage from herbicide",
+        "decision": null,
+        "images": [
+          "data/raw/agbase/full/753624/753624_1.jpg",
+          "data/raw/agbase/full/753624/753624_2.jpg",
+          "data/raw/agbase/full/753624/753624_3.jpg"
+        ],
+        "prompt": "Provide an expert agricultural diagnosis and management plan for the issue shown.\n\nRespond using these line-start section headers exactly once:\nDiagnosis:\nEvidence:\nUncertainty:\nManagement:\nFollow-up:",
+        "sample_id": "agbase-agbase-753624",
+        "source_dataset": "agbase",
+        "target": "Diagnosis: 2,4-d damage from herbicide\nEvidence: shriveling, yellowing on leaves at their bases\nUncertainty: Image-only assessment; confirm with field context before treatment.\nManagement: wait and see, cut back damaged areas when cooler, avoid repeat herbicide application in hot weather\nFollow-up: Share close-up images and crop history if symptoms progress or the diagnosis is uncertain.",
+        "target_answer": "Diagnosis: 2,4-d damage from herbicide\nEvidence: shriveling, yellowing on leaves at their bases\nUncertainty: Image-only assessment; confirm with field context before treatment.\nManagement: wait and see, cut back damaged areas when cooler, avoid repeat herbicide application in hot weather\nFollow-up: Share close-up images and crop history if symptoms progress or the diagnosis is uncertain.",
+        "task_type": "consultation",
+        "verifier_mode": "structured"
+      }
+    ],
+    "short_answer": [
+      {
+        "answer_text": "tomato healthy",
+        "canonical_label": "tomato healthy",
+        "decision": null,
+        "images": [
+          "data/raw/plantvillage/full/images/train/043048.png"
+        ],
+        "prompt": "Identify the crop issue or pest in this agricultural image.\n\nRespond in this format:\nAnswer: <canonical agricultural label>",
+        "sample_id": "plantvillage-train-043048",
+        "source_dataset": "plantvillage",
+        "target": "Answer: tomato healthy",
+        "target_answer": "tomato healthy",
+        "task_type": "classification",
+        "verifier_mode": "label"
+      },
+      {
+        "answer_text": "Xylotrechus",
+        "canonical_label": "Xylotrechus",
+        "decision": null,
+        "images": [
+          "data/raw/ip102/full/ip102_v1.1/images/50469.jpg"
+        ],
+        "prompt": "Identify the insect or pest shown in this agricultural image.\n\nRespond in this format:\nAnswer: <canonical agricultural label>",
+        "sample_id": "ip102-ip102-v1-1-images-50469-jpg",
+        "source_dataset": "ip102",
+        "target": "Answer: Xylotrechus",
+        "target_answer": "Xylotrechus",
+        "task_type": "classification",
+        "verifier_mode": "label"
+      },
+      {
+        "answer_text": "No",
+        "canonical_label": null,
+        "decision": null,
+        "images": [
+          "data/raw/plantvillage_vqa/full/images/train/image_015013.JPG"
+        ],
+        "prompt": "Is this a Peach leaf?\n\nRespond in this format:\nAnswer: <Yes or No>",
+        "sample_id": "plantvillage_vqa-image_015013.JPG-043920",
+        "source_dataset": "plantvillage_vqa",
+        "target": "Answer: No",
+        "target_answer": "No",
+        "task_type": "vqa",
+        "verifier_mode": "exact_match"
+      },
+      {
+        "answer_text": "Potato",
+        "canonical_label": null,
+        "decision": null,
+        "images": [
+          "data/raw/plantvillage_vqa/full/images/train/image_040352.JPG"
+        ],
+        "prompt": "What is the scientific identification of this plant sample?\n\nRespond in this format:\nAnswer: <short answer>",
+        "sample_id": "plantvillage_vqa-image_040352.JPG-118734",
+        "source_dataset": "plantvillage_vqa",
+        "target": "Answer: Potato",
+        "target_answer": "Potato",
+        "task_type": "vqa",
+        "verifier_mode": "exact_match"
+      },
+      {
+        "answer_text": "Xylotrechus",
+        "canonical_label": "Xylotrechus",
+        "decision": null,
+        "images": [
+          "data/raw/ip102/full/ip102_v1.1/images/50394.jpg"
+        ],
+        "prompt": "Identify the insect or pest shown in this agricultural image.\n\nRespond in this format:\nAnswer: <canonical agricultural label>",
+        "sample_id": "ip102-ip102-v1-1-images-50394-jpg",
+        "source_dataset": "ip102",
+        "target": "Answer: Xylotrechus",
+        "target_answer": "Xylotrechus",
+        "task_type": "classification",
+        "verifier_mode": "label"
+      },
+      {
+        "answer_text": "No",
+        "canonical_label": null,
+        "decision": null,
+        "images": [
+          "data/raw/plantvillage_vqa/full/images/train/image_002936.JPG"
+        ],
+        "prompt": "Is this a Strawberry leaf?\n\nRespond in this format:\nAnswer: <Yes or No>",
+        "sample_id": "plantvillage_vqa-image_002936.JPG-008542",
+        "source_dataset": "plantvillage_vqa",
+        "target": "Answer: No",
+        "target_answer": "No",
+        "task_type": "vqa",
+        "verifier_mode": "exact_match"
+      },
+      {
+        "answer_text": "corn borer",
+        "canonical_label": "corn borer",
+        "decision": null,
+        "images": [
+          "data/raw/ip102/full/ip102_v1.1/images/15931.jpg"
+        ],
+        "prompt": "Identify the insect or pest shown in this agricultural image.\n\nRespond in this format:\nAnswer: <canonical agricultural label>",
+        "sample_id": "ip102-ip102-v1-1-images-15931-jpg",
+        "source_dataset": "ip102",
+        "target": "Answer: corn borer",
+        "target_answer": "corn borer",
+        "task_type": "classification",
+        "verifier_mode": "label"
+      },
+      {
+        "answer_text": "Cicadellidae",
+        "canonical_label": "Cicadellidae",
+        "decision": null,
+        "images": [
+          "data/raw/ip102/full/ip102_v1.1/images/72237.jpg"
+        ],
+        "prompt": "Identify the insect or pest shown in this agricultural image.\n\nRespond in this format:\nAnswer: <canonical agricultural label>",
+        "sample_id": "ip102-ip102-v1-1-images-72237-jpg",
+        "source_dataset": "ip102",
+        "target": "Answer: Cicadellidae",
+        "target_answer": "Cicadellidae",
+        "task_type": "classification",
+        "verifier_mode": "label"
+      },
+      {
+        "answer_text": "No",
+        "canonical_label": null,
+        "decision": null,
+        "images": [
+          "data/raw/plantvillage_vqa/full/images/train/image_043053.JPG"
+        ],
+        "prompt": "Does this leaf show zero symptomatic features?\n\nRespond in this format:\nAnswer: <Yes or No>",
+        "sample_id": "plantvillage_vqa-image_043053.JPG-126568",
+        "source_dataset": "plantvillage_vqa",
+        "target": "Answer: No",
+        "target_answer": "No",
+        "task_type": "vqa",
+        "verifier_mode": "exact_match"
+      },
+      {
+        "answer_text": "Tomato",
+        "canonical_label": null,
+        "decision": null,
+        "images": [
+          "data/raw/plantvillage_vqa/full/images/train/image_025689.JPG"
+        ],
+        "prompt": "Provide the taxonomic classification of this plant specimen.\n\nRespond in this format:\nAnswer: <short answer>",
+        "sample_id": "plantvillage_vqa-image_025689.JPG-075351",
+        "source_dataset": "plantvillage_vqa",
+        "target": "Answer: Tomato",
+        "target_answer": "Tomato",
+        "task_type": "vqa",
+        "verifier_mode": "exact_match"
+      },
+      {
+        "answer_text": "Yes",
+        "canonical_label": null,
+        "decision": null,
+        "images": [
+          "data/raw/plantvillage_vqa/full/images/train/image_010516.JPG"
+        ],
+        "prompt": "Does this specimen lack all symptomatic signs?\n\nRespond in this format:\nAnswer: <Yes or No>",
+        "sample_id": "plantvillage_vqa-image_010516.JPG-030662",
+        "source_dataset": "plantvillage_vqa",
+        "target": "Answer: Yes",
+        "target_answer": "Yes",
+        "task_type": "vqa",
+        "verifier_mode": "exact_match"
+      },
+      {
+        "answer_text": "lytta polita",
+        "canonical_label": "lytta polita",
+        "decision": null,
+        "images": [
+          "data/raw/ip102/full/ip102_v1.1/images/35033.jpg"
+        ],
+        "prompt": "Identify the insect or pest shown in this agricultural image.\n\nRespond in this format:\nAnswer: <canonical agricultural label>",
+        "sample_id": "ip102-ip102-v1-1-images-35033-jpg",
+        "source_dataset": "ip102",
+        "target": "Answer: lytta polita",
+        "target_answer": "lytta polita",
+        "task_type": "classification",
+        "verifier_mode": "label"
+      },
+      {
+        "answer_text": "blister beetle",
+        "canonical_label": "blister beetle",
+        "decision": null,
+        "images": [
+          "data/raw/ip102/full/ip102_v1.1/images/36908.jpg"
+        ],
+        "prompt": "Identify the insect or pest shown in this agricultural image.\n\nRespond in this format:\nAnswer: <canonical agricultural label>",
+        "sample_id": "ip102-ip102-v1-1-images-36908-jpg",
+        "source_dataset": "ip102",
+        "target": "Answer: blister beetle",
+        "target_answer": "blister beetle",
+        "task_type": "classification",
+        "verifier_mode": "label"
+      },
+      {
+        "answer_text": "No",
+        "canonical_label": null,
+        "decision": null,
+        "images": [
+          "data/raw/plantvillage_vqa/full/images/train/image_025793.JPG"
+        ],
+        "prompt": "Is this a Pepper bell leaf?\n\nRespond in this format:\nAnswer: <Yes or No>",
+        "sample_id": "plantvillage_vqa-image_025793.JPG-075674",
+        "source_dataset": "plantvillage_vqa",
+        "target": "Answer: No",
+        "target_answer": "No",
+        "task_type": "vqa",
+        "verifier_mode": "exact_match"
+      },
+      {
+        "answer_text": "Orange",
+        "canonical_label": null,
+        "decision": null,
+        "images": [
+          "data/raw/plantvillage_vqa/full/images/train/image_013531.JPG"
+        ],
+        "prompt": "What specific plant species does this specimen represent?\n\nRespond in this format:\nAnswer: <short answer>",
+        "sample_id": "plantvillage_vqa-image_013531.JPG-039649",
+        "source_dataset": "plantvillage_vqa",
+        "target": "Answer: Orange",
+        "target_answer": "Orange",
+        "task_type": "vqa",
+        "verifier_mode": "exact_match"
+      },
+      {
+        "answer_text": "soybean healthy",
+        "canonical_label": "soybean healthy",
+        "decision": null,
+        "images": [
+          "data/raw/plantvillage/full/images/train/022908.png"
+        ],
+        "prompt": "Identify the crop issue or pest in this agricultural image.\n\nRespond in this format:\nAnswer: <canonical agricultural label>",
+        "sample_id": "plantvillage-train-022908",
+        "source_dataset": "plantvillage",
+        "target": "Answer: soybean healthy",
+        "target_answer": "soybean healthy",
+        "task_type": "classification",
+        "verifier_mode": "label"
+      },
+      {
+        "answer_text": "No",
+        "canonical_label": null,
+        "decision": null,
+        "images": [
+          "data/raw/plantvillage_vqa/full/images/train/image_037506.JPG"
+        ],
+        "prompt": "Is this a Pepper bell leaf?\n\nRespond in this format:\nAnswer: <Yes or No>",
+        "sample_id": "plantvillage_vqa-image_037506.JPG-110297",
+        "source_dataset": "plantvillage_vqa",
+        "target": "Answer: No",
+        "target_answer": "No",
+        "task_type": "vqa",
+        "verifier_mode": "exact_match"
+      },
+      {
+        "answer_text": "Prodenia litura",
+        "canonical_label": "Prodenia litura",
+        "decision": null,
+        "images": [
+          "data/raw/ip102/full/ip102_v1.1/images/62833.jpg"
+        ],
+        "prompt": "Identify the insect or pest shown in this agricultural image.\n\nRespond in this format:\nAnswer: <canonical agricultural label>",
+        "sample_id": "ip102-ip102-v1-1-images-62833-jpg",
+        "source_dataset": "ip102",
+        "target": "Answer: Prodenia litura",
+        "target_answer": "Prodenia litura",
+        "task_type": "classification",
+        "verifier_mode": "label"
+      },
+      {
+        "answer_text": "peach borer",
+        "canonical_label": "peach borer",
+        "decision": null,
+        "images": [
+          "data/raw/ip102/full/ip102_v1.1/images/22368.jpg"
+        ],
+        "prompt": "Identify the insect or pest shown in this agricultural image.\n\nRespond in this format:\nAnswer: <canonical agricultural label>",
+        "sample_id": "ip102-ip102-v1-1-images-22368-jpg",
+        "source_dataset": "ip102",
+        "target": "Answer: peach borer",
+        "target_answer": "peach borer",
+        "task_type": "classification",
+        "verifier_mode": "label"
+      },
+      {
+        "answer_text": "Yes",
+        "canonical_label": null,
+        "decision": null,
+        "images": [
+          "data/raw/plantvillage_vqa/full/images/train/image_022283.JPG"
+        ],
+        "prompt": "Is this tomato leaf displaying characteristic TYLCV manifestations?\n\nRespond in this format:\nAnswer: <Yes or No>",
+        "sample_id": "plantvillage_vqa-image_022283.JPG-186155",
+        "source_dataset": "plantvillage_vqa",
+        "target": "Answer: Yes",
+        "target_answer": "Yes",
+        "task_type": "vqa",
+        "verifier_mode": "exact_match"
+      }
+    ]
+  },
+  "flag_by_source_dataset": {
+    "classification_numeric_label_prefix": {
+      "agbase": 8,
+      "agrillava": 2
+    },
+    "short_answer": {
+      "ip102": 17886,
+      "plantdoc": 410,
+      "plantvillage": 5837,
+      "plantvillage_vqa": 32606
+    }
+  },
+  "flag_by_task": {
+    "classification_numeric_label_prefix": {
+      "consultation": 10
+    },
+    "short_answer": {
+      "classification": 24133,
+      "vqa": 32606
+    }
+  },
+  "flag_counts": {
+    "classification_numeric_label_prefix": 10,
+    "short_answer": 56739
+  },
+  "flag_rates": {
+    "classification_numeric_label_prefix": 5.555555555555556e-05,
+    "short_answer": 0.31521666666666665
+  },
+  "manifest_path": "data/manifests/full/sft_train_phi4_max3_balanced_v2_instructional_labelrepaired.jsonl",
+  "num_rows": 180000,
+  "rendered_target_token_lengths": {
+    "count": 180000,
+    "max": 1155,
+    "mean": 35.95552222222222,
+    "median": 7.0,
+    "min": 2
+  },
+  "target_format": "instructional",
+  "top_classification_labels": {
+    "aphids": 1390,
+    "apple apple scab": 315,
+    "apple black rot": 311,
+    "apple healthy": 836,
+    "army worm": 364,
+    "asiatic rice borer": 356,
+    "beet army worm": 541,
+    "blister beetle": 652,
+    "blueberry healthy": 750,
+    "cherry including sour healthy": 422,
+    "cherry including sour powdery mildew": 527,
+    "cicadella viridis": 427,
+    "cicadellidae": 1923,
+    "corn borer": 568,
+    "corn maize common rust": 597,
+    "corn maize healthy": 582,
+    "corn maize northern leaf blight": 493,
+    "flax budworm": 349,
+    "grape black rot": 591,
+    "grape esca black measles": 692,
+    "grape leaf blight isariopsis leaf spot": 539,
+    "grass": 527,
+    "legume blister beetle": 475,
+    "limacodidae": 463,
+    "locustoidea": 466,
+    "lycorma delicatula": 1789,
+    "miridae": 1739,
+    "mole cricket": 568,
+    "none": 517,
+    "orange haunglongbing citrus greening": 2756,
+    "peach bacterial spot": 1149,
+    "pepper bell bacterial spot": 499,
+    "pepper bell healthy": 740,
+    "potato early blight": 501,
+    "potato late blight": 501,
+    "prodenia litura": 446,
+    "rice leaf roller": 387,
+    "soybean healthy": 2548,
+    "squash powdery mildew": 919,
+    "strawberry leaf scorch": 555,
+    "tomato bacterial spot": 1071,
+    "tomato early blight": 501,
+    "tomato healthy": 818,
+    "tomato late blight": 956,
+    "tomato leaf mold": 478,
+    "tomato septoria leaf spot": 969,
+    "tomato spider mites two-spotted spider mite": 839,
+    "tomato target spot": 703,
+    "tomato tomato yellow leaf curl virus": 2681,
+    "xylotrechus": 389
+  },
+  "top_rendered_answers": {
+    "aphids": 1387,
+    "apple healthy": 836,
+    "blister beetle": 648,
+    "blueberry healthy": 750,
+    "cicadellidae": 1923,
+    "corn borer": 568,
+    "corn maize common rust": 597,
+    "corn maize healthy": 582,
+    "diagnosis: huanglongbing (hlb), or citrus greening": 1390,
+    "grape black rot": 591,
+    "grape esca black measles": 692,
+    "lycorma delicatula": 1789,
+    "miridae": 1739,
+    "mole cricket": 568,
+    "no": 15872,
+    "orange": 946,
+    "orange haunglongbing citrus greening": 2756,
+    "peach bacterial spot": 1149,
+    "pepper bell healthy": 740,
+    "soybean healthy": 2548,
+    "squash powdery mildew": 919,
+    "the causal agent is the tomato yellow leaf curl virus": 1294,
+    "the cause is the bacterium candidatus liberibacter asiaticus, leading to huanglongbing": 1326,
+    "the condition is identified as late blight": 701,
+    "the diagnosis is bacterial spot": 567,
+    "the diagnosis is septoria leaf spot": 596,
+    "the diagnosis is tomato yellow leaf curl virus (tylcv)": 1344,
+    "the large, dark, water-soaked lesions are a key sign of late blight": 781,
+    "the leaf shows blotchy, asymmetrical yellowing, a classic symptom of hlb": 1343,
+    "the numerous small, angular spots are characteristic of bacterial spot": 639,
+    "the pest responsible is the two-spotted spider mite": 561,
+    "the plant is affected by bacterial spot disease": 646,
+    "the plant is suffering from a fungal infection: septoria leaf spot": 572,
+    "the plant is suffering from a late blight infection": 720,
+    "the stippling and fine webbing are clear signs of a spider mite infestation": 586,
+    "this is a viral infection: tylcv": 1301,
+    "this is bacterial spot. note the small, dark, water-soaked lesions": 676,
+    "this is citrus greening disease": 1232,
+    "this is late blight, caused by the oomycete phytophthora infestans": 693,
+    "this is septoria leaf spot, characterized by small, circular spots with dark borders": 565,
+    "this tomato leaf shows classic signs of tylcv, like yellowing and curling": 1268,
+    "tomato": 2968,
+    "tomato bacterial spot": 1071,
+    "tomato healthy": 818,
+    "tomato late blight": 956,
+    "tomato septoria leaf spot": 969,
+    "tomato spider mites two-spotted spider mite": 839,
+    "tomato target spot": 703,
+    "tomato tomato yellow leaf curl virus": 2681,
+    "yes": 10760
+  }
+}

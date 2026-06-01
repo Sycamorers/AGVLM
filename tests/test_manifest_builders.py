@@ -3,6 +3,7 @@ from pathlib import Path
 
 from agri_vlm.data.builders import (
     build_balanced_sft_v2_manifest,
+    build_closed_label_sft_manifest,
     build_eval_manifests,
     build_rl_manifest,
     build_sft_manifest,
@@ -219,4 +220,59 @@ def test_build_balanced_sft_v2_manifest_caps_and_repeats(tmp_path: Path) -> None
     assert summary["task_plan"]["clarify_or_respond"]["unique_selected_rows"] == 2
     assert summary["task_plan"]["clarify_or_respond"]["repeated_rows_added"] == 3
     assert len({row.sample_id for row in output_rows if row.task_type == "clarify_or_respond"}) == 2
+    assert summary_path.exists()
+
+
+def test_build_closed_label_sft_manifest_balances_and_adds_label_space(tmp_path: Path) -> None:
+    source_path = tmp_path / "source.jsonl"
+    output_path = tmp_path / "closed.jsonl"
+    summary_path = tmp_path / "summary.json"
+    rows = []
+    for index in range(3):
+        row = sample_row("ip-a-%s" % index, "ip102", "classification", "train")
+        row["target"]["canonical_label"] = "23 corn borer"
+        row["target"]["answer_text"] = "23 corn borer"
+        row["verifier"]["accepted_labels"] = ["23 corn borer"]
+        rows.append(row)
+    row = sample_row("ip-b", "ip102", "classification", "train")
+    row["target"]["canonical_label"] = "6 rice gall midge"
+    row["target"]["answer_text"] = "6 rice gall midge"
+    row["verifier"]["accepted_labels"] = ["6 rice gall midge"]
+    rows.append(row)
+    row = sample_row("plantdoc-a", "plantdoc", "classification", "train")
+    row["target"]["canonical_label"] = "tomato leaf mold"
+    row["target"]["answer_text"] = "tomato leaf mold"
+    row["verifier"]["accepted_labels"] = ["tomato leaf mold"]
+    rows.append(row)
+    for index in range(2):
+        rows.append(sample_row("vqa-%s" % index, "plantvillage_vqa", "vqa", "train"))
+    write_manifest(source_path, rows)
+
+    summary = build_closed_label_sft_manifest(
+        input_manifest_path=source_path,
+        output_manifest_path=output_path,
+        summary_output_path=summary_path,
+        classification_per_label_target=2,
+        task_targets={"vqa": 3},
+        stratify_fields_by_task={"vqa": ["source_dataset"]},
+        strip_leading_numeric_prefix_sources=["ip102"],
+        seed=17,
+    )
+
+    output_rows = read_manifest(output_path)
+    counts = Counter(row.task_type for row in output_rows)
+    assert counts == {"classification": 6, "vqa": 3}
+    labels = Counter(
+        (row.source_dataset, row.target.canonical_label)
+        for row in output_rows
+        if row.task_type == "classification"
+    )
+    assert labels[("ip102", "corn borer")] == 2
+    assert labels[("ip102", "rice gall midge")] == 2
+    assert labels[("plantdoc", "tomato leaf mold")] == 2
+    ip_row = next(row for row in output_rows if row.task_type == "classification" and row.source_dataset == "ip102")
+    assert ip_row.metadata["classification_label_space"] == ["corn borer", "rice gall midge"]
+    assert ip_row.metadata["classification_label_space_size"] == 2
+    assert "23 corn borer" in ip_row.verifier.accepted_labels
+    assert summary["classification_label_space_sizes_by_source"]["ip102"] == 2
     assert summary_path.exists()

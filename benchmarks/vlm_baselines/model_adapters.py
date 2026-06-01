@@ -7,12 +7,17 @@ in lightweight environments.
 from __future__ import annotations
 
 import copy
+from contextlib import nullcontext
 from dataclasses import dataclass
 import gc
 from pathlib import Path
+import re
+import sys
+import traceback
 from typing import Any
 
 from dataset_adapter import BenchmarkSample, build_chat_messages, build_plain_prompt
+from prediction_parsing import extract_answer_field, normalize_text
 from utils import REPO_ROOT, maybe_cuda_memory
 
 
@@ -49,11 +54,12 @@ MODEL_SPECS: dict[str, AdapterSpec] = {
     ),
     "microsoft/Phi-4-multimodal-instruct": AdapterSpec(
         model_name="microsoft/Phi-4-multimodal-instruct",
-        loader_classes=["AutoModelForCausalLM"],
+        loader_classes=["Phi4MMForCausalLM", "AutoModelForCausalLM"],
         prompt_style="phi4",
         trust_remote_code=True,
         default_attn_implementation="eager",
-        notes="Uses Phi-4 multimodal image placeholder prompt format.",
+        processor_kwargs={"dynamic_hd": 4},
+        notes="Uses Phi-4 multimodal image placeholder prompt format with capped dynamic image crops for L4 inference.",
     ),
     "allenai/Molmo2-4B": AdapterSpec(
         model_name="allenai/Molmo2-4B",
@@ -79,13 +85,145 @@ MODEL_SPECS: dict[str, AdapterSpec] = {
     ),
     "microsoft/Phi-4-reasoning-vision-15B": AdapterSpec(
         model_name="microsoft/Phi-4-reasoning-vision-15B",
-        loader_classes=["AutoModelForCausalLM", "AutoModelForImageTextToText"],
+        loader_classes=["Phi4ForCausalLMV", "AutoModelForCausalLM", "AutoModelForImageTextToText"],
         prompt_style="phi4",
         trust_remote_code=True,
         default_attn_implementation="eager",
         notes="Project base model for SFT/RL checkpoint benchmarking.",
     ),
 }
+
+
+def patch_phi4mm_base_generation_hook(model_class: Any) -> bool:
+    """Patch Phi-4-MM remote code for newer PEFT versions.
+
+    The model's remote code applies LoRA adapters to the inner Phi4MMModel
+    during construction. PEFT 0.18 expects CAUSAL_LM bases to expose
+    prepare_inputs_for_generation, but that hook only exists on the outer
+    Phi4MMForCausalLM class. Adding a minimal pass-through hook to the inner
+    class restores construction without changing generated outputs.
+    """
+
+    module = sys.modules.get(getattr(model_class, "__module__", ""))
+    base_class = getattr(module, "Phi4MMModel", None) if module is not None else None
+    if base_class is None or hasattr(base_class, "prepare_inputs_for_generation"):
+        return False
+
+    def prepare_inputs_for_generation(self: Any, input_ids: Any, **kwargs: Any) -> dict[str, Any]:
+        model_inputs = {"input_ids": input_ids}
+        model_inputs.update({key: value for key, value in kwargs.items() if value is not None})
+        return model_inputs
+
+    setattr(base_class, "prepare_inputs_for_generation", prepare_inputs_for_generation)
+    return True
+
+
+def patch_dynamic_cache_usable_length() -> bool:
+    try:
+        from transformers.cache_utils import DynamicCache
+    except Exception:
+        return False
+    if hasattr(DynamicCache, "get_usable_length"):
+        return False
+
+    def get_usable_length(self: Any, new_seq_length: int | None = None, layer_idx: int = 0) -> int:
+        del new_seq_length
+        try:
+            return int(self.get_seq_length(layer_idx))
+        except TypeError:
+            return int(self.get_seq_length())
+
+    setattr(DynamicCache, "get_usable_length", get_usable_length)
+    return True
+
+
+def patch_phi4mm_num_logits_default(model_class: Any) -> bool:
+    original_forward = getattr(model_class, "forward", None)
+    if original_forward is None or getattr(original_forward, "_agri_vlm_num_logits_patch", False):
+        return False
+
+    def forward(self: Any, *args: Any, num_logits_to_keep: int | None = 0, **kwargs: Any) -> Any:
+        if num_logits_to_keep is None:
+            num_logits_to_keep = 0
+        return original_forward(self, *args, num_logits_to_keep=num_logits_to_keep, **kwargs)
+
+    setattr(forward, "_agri_vlm_num_logits_patch", True)
+    setattr(model_class, "forward", forward)
+    return True
+
+
+def patch_phi4mm_quantized_lora_disable(model_class: Any) -> bool:
+    original_set = getattr(model_class, "set_lora_adapter", None)
+    original_unset = getattr(model_class, "unset_lora_adapter", None)
+    if (
+        original_set is None
+        or original_unset is None
+        or getattr(original_set, "_agri_vlm_quantized_lora_patch", False)
+        or getattr(original_unset, "_agri_vlm_quantized_lora_patch", False)
+    ):
+        return False
+
+    def iter_lora_layers(self: Any) -> Any:
+        from peft.tuners.lora.layer import LoraLayer
+
+        for module in self.modules():
+            if isinstance(module, LoraLayer):
+                yield module
+
+    def ensure_unmerged(module: Any) -> None:
+        if getattr(module, "merged", False):
+            import warnings
+
+            warnings.warn("Adapter cannot be set when the model is merged. Unmerging the model first.")
+            module.unmerge()
+
+    def freeze_float_parameters(module: Any) -> None:
+        for layer_name in getattr(module, "adapter_layer_names", []):
+            layer = getattr(module, layer_name)
+            parameters = layer.parameters() if hasattr(layer, "parameters") else []
+            for parameter in parameters:
+                if parameter.is_floating_point() or parameter.is_complex():
+                    parameter.requires_grad_(False)
+
+    def set_lora_adapter(self: Any, adapter_name: str) -> None:
+        for module in iter_lora_layers(self):
+            ensure_unmerged(module)
+            freeze_float_parameters(module)
+            module._active_adapter = [adapter_name]
+            module._disable_adapters = False
+
+    def unset_lora_adapter(self: Any) -> None:
+        for module in iter_lora_layers(self):
+            ensure_unmerged(module)
+            freeze_float_parameters(module)
+            module._disable_adapters = True
+
+    setattr(set_lora_adapter, "_agri_vlm_quantized_lora_patch", True)
+    setattr(unset_lora_adapter, "_agri_vlm_quantized_lora_patch", True)
+    setattr(model_class, "set_lora_adapter", set_lora_adapter)
+    setattr(model_class, "unset_lora_adapter", unset_lora_adapter)
+    return True
+
+
+def patch_phi4_reasoning_quantized_dtype_sync(model_class: Any) -> bool:
+    """Skip Phi-4 reasoning vision's invalid post-load dtype cast for 4-bit models."""
+
+    original_to = getattr(model_class, "to", None)
+    if original_to is None or getattr(original_to, "_agri_vlm_quantized_dtype_sync_patch", False):
+        return False
+
+    def to(self: Any, *args: Any, **kwargs: Any) -> Any:
+        try:
+            return original_to(self, *args, **kwargs)
+        except ValueError as exc:
+            message = str(exc)
+            if "bitsandbytes model" in message and "dtype" in message:
+                return self
+            raise
+
+    setattr(to, "_agri_vlm_quantized_dtype_sync_patch", True)
+    setattr(model_class, "to", to)
+    return True
 
 
 def is_oom_error(exc: BaseException) -> bool:
@@ -179,6 +317,7 @@ class HuggingFaceVLMAdapter:
             )
             model_kwargs["quantization_config"] = bnb_config
             model_kwargs["device_map"] = self._device_map()
+            model_kwargs["dtype"] = self.torch_dtype
         elif self.device == "auto":
             model_kwargs["device_map"] = "auto"
             model_kwargs["torch_dtype"] = self.torch_dtype
@@ -190,7 +329,7 @@ class HuggingFaceVLMAdapter:
 
         errors: list[str] = []
         for class_name in self.spec.loader_classes:
-            model_class = getattr(transformers, class_name, None)
+            model_class = self._resolve_model_class(transformers, class_name)
             if model_class is None:
                 errors.append("%s is not available in transformers" % class_name)
                 continue
@@ -198,7 +337,7 @@ class HuggingFaceVLMAdapter:
                 self.model = self._from_pretrained_with_retries(model_class, model_kwargs)
                 break
             except Exception as exc:
-                errors.append("%s: %s: %s" % (class_name, type(exc).__name__, exc))
+                errors.append("%s: %s: %s\n%s" % (class_name, type(exc).__name__, exc, traceback.format_exc()))
                 if is_oom_error(exc):
                     raise
         if self.model is None:
@@ -227,6 +366,42 @@ class HuggingFaceVLMAdapter:
             "model_commit_hash": getattr(model_config, "_commit_hash", None),
             "memory_after_load": maybe_cuda_memory(self.device),
         }
+
+    def _resolve_model_class(self, transformers: Any, class_name: str) -> Any:
+        model_class = getattr(transformers, class_name, None)
+        if model_class is not None:
+            return model_class
+        if class_name == "Phi4MMForCausalLM":
+            return self._load_phi4mm_causal_lm_class()
+        if class_name == "Phi4ForCausalLMV":
+            return self._load_phi4_reasoning_causal_lm_class()
+        return None
+
+    def _load_phi4mm_causal_lm_class(self) -> Any:
+        from transformers.dynamic_module_utils import get_class_from_dynamic_module
+
+        model_class = get_class_from_dynamic_module(
+            "modeling_phi4mm.Phi4MMForCausalLM",
+            self._model_load_source(),
+            trust_remote_code=True,
+        )
+        patch_phi4mm_base_generation_hook(model_class)
+        patch_phi4mm_num_logits_default(model_class)
+        patch_phi4mm_quantized_lora_disable(model_class)
+        patch_dynamic_cache_usable_length()
+        return model_class
+
+    def _load_phi4_reasoning_causal_lm_class(self) -> Any:
+        from transformers.dynamic_module_utils import get_class_from_dynamic_module
+
+        model_class = get_class_from_dynamic_module(
+            "modeling_phi4_visionr.Phi4ForCausalLMV",
+            self._model_load_source(),
+            trust_remote_code=True,
+        )
+        patch_phi4_reasoning_quantized_dtype_sync(model_class)
+        patch_dynamic_cache_usable_length()
+        return model_class
 
     def _from_pretrained_with_retries(self, model_class: Any, model_kwargs: dict[str, Any]) -> Any:
         kwargs = dict(model_kwargs)
@@ -261,7 +436,14 @@ class HuggingFaceVLMAdapter:
             from peft import PeftModel
         except Exception as exc:
             raise RuntimeError("peft is required to load adapter_path=%s: %s" % (self.adapter_path, exc)) from exc
-        return PeftModel.from_pretrained(model, self.adapter_path)
+        kwargs: dict[str, Any] = {"is_trainable": False}
+        if self.quantization == "4bit":
+            kwargs["autocast_adapter_dtype"] = False
+        try:
+            return PeftModel.from_pretrained(model, self.adapter_path, **kwargs)
+        except TypeError:
+            kwargs.pop("autocast_adapter_dtype", None)
+            return PeftModel.from_pretrained(model, self.adapter_path, **kwargs)
 
     def _resolve_dtype(self, torch: Any) -> Any:
         requested = (self.dtype_name or "bf16").lower()
@@ -306,7 +488,7 @@ class HuggingFaceVLMAdapter:
         if self.spec.prompt_style == "paligemma":
             inputs = self.processor(text=prompt, images=pil_images[0], return_tensors="pt")
         elif self.spec.prompt_style == "phi4":
-            phi_prompt = build_plain_prompt(sample.row, image_count=len(pil_images))
+            phi_prompt = build_plain_prompt(sample.row, image_count=len(pil_images), label_space=sample.label_space)
             inputs = self.processor(text=phi_prompt, images=pil_images, return_tensors="pt")
             prompt = phi_prompt
         elif self.spec.prompt_style == "qwen_vl":
@@ -321,7 +503,12 @@ class HuggingFaceVLMAdapter:
                 return_dict=True,
             )
         else:
-            messages = build_chat_messages(sample.row, image_paths=image_paths, include_image_paths=False)
+            messages = build_chat_messages(
+                sample.row,
+                image_paths=image_paths,
+                label_space=sample.label_space,
+                include_image_paths=False,
+            )
             prompt = self.processor.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
             inputs = self.processor(text=[prompt], images=[pil_images], padding=True, return_tensors="pt")
         inputs = self._move_inputs(inputs)
@@ -352,7 +539,12 @@ class HuggingFaceVLMAdapter:
         image_paths: list[str],
         pil_images: list[Any],
     ) -> tuple[Any, str]:
-        messages = build_chat_messages(sample.row, image_paths=image_paths, include_image_paths=True)
+        messages = build_chat_messages(
+            sample.row,
+            image_paths=image_paths,
+            label_space=sample.label_space,
+            include_image_paths=True,
+        )
         prompt = self.processor.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
         try:
             from qwen_vl_utils import process_vision_info
@@ -427,25 +619,84 @@ class HuggingFaceVLMAdapter:
             "num_beams": int(generation_config.get("num_beams", 1)),
             "use_cache": True,
         }
+        min_new_tokens = int(generation_config.get("min_new_tokens") or 0)
+        if min_new_tokens:
+            generate_kwargs["min_new_tokens"] = min_new_tokens
         if generate_kwargs["do_sample"]:
             generate_kwargs["temperature"] = float(generation_config.get("temperature", 1.0))
             generate_kwargs["top_p"] = float(generation_config.get("top_p", 1.0))
-        with torch.no_grad():
-            output_ids = self.model.generate(**inputs, **generate_kwargs)
-        input_length = int(inputs["input_ids"].shape[-1]) if "input_ids" in inputs else 0
-        if input_length and getattr(output_ids, "shape", [0, 0])[-1] > input_length:
-            decoded_ids = output_ids[:, input_length:]
-        else:
-            decoded_ids = output_ids
-        raw_output = self._decode(decoded_ids)
-        if not raw_output.strip() and decoded_ids is not output_ids:
-            raw_output = self._decode(output_ids)
+        raw_output = self._generate_text(inputs, prepared["prompt"], generate_kwargs, torch)
+        postprocessed = self.postprocess(self._strip_prompt_echo(raw_output, prepared["prompt"]))
+        format_retry_used = False
+        raw_output_before_retry = None
+        if self._needs_format_retry(sample, postprocessed):
+            retry_kwargs = dict(generate_kwargs)
+            retry_kwargs["min_new_tokens"] = min(
+                int(retry_kwargs.get("max_new_tokens", 128)),
+                max(int(retry_kwargs.get("min_new_tokens") or 0), 8),
+            )
+            raw_output_before_retry = postprocessed
+            retry_raw_output = self._generate_text(inputs, prepared["prompt"], retry_kwargs, torch)
+            retry_postprocessed = self.postprocess(self._strip_prompt_echo(retry_raw_output, prepared["prompt"]))
+            if retry_postprocessed.strip():
+                postprocessed = retry_postprocessed
+                format_retry_used = True
         return {
-            "raw_output": self.postprocess(raw_output),
+            "raw_output": postprocessed,
             "prompt": prepared["prompt"],
             "images_used": prepared["images_used"],
             "image_policy": prepared["image_policy"],
+            "format_retry_used": format_retry_used,
+            "raw_output_before_format_retry": raw_output_before_retry,
         }
+
+    def _generate_text(self, inputs: Any, prompt: str, generate_kwargs: dict[str, Any], torch: Any) -> str:
+        with torch.no_grad(), self._generation_autocast_context(torch):
+            output_ids = self.model.generate(**inputs, **generate_kwargs)
+        input_length = int(inputs["input_ids"].shape[-1]) if "input_ids" in inputs else 0
+        decoded_ids = output_ids
+        sliced = False
+        if input_length and getattr(output_ids, "shape", [0, 0])[-1] > input_length:
+            decoded_ids = output_ids[:, input_length:]
+            sliced = True
+        raw_output = self._decode(decoded_ids)
+        if not raw_output.strip() and sliced:
+            raw_output = self._strip_prompt_echo(self._decode(output_ids), prompt)
+        return raw_output
+
+    def _needs_format_retry(self, sample: BenchmarkSample, raw_output: str) -> bool:
+        task_type = sample.task_type
+        verifier_mode = sample.verifier_mode
+        if task_type not in {"classification", "label_diagnosis", "vqa", "clarify_or_respond"} and verifier_mode not in {
+            "label",
+            "exact_match",
+            "synonym",
+            "clarify",
+        }:
+            return False
+        text = (raw_output or "").strip()
+        if not text:
+            return True
+        normalized = normalize_text(text)
+        if normalized in {"answer", "answer:", "final answer", "final answer:", "decision", "decision:"}:
+            return True
+        answer, answer_status = extract_answer_field(text)
+        if answer_status == "failed" and re.search(r"(?im)^\s*(?:final\s+)?answer\s*:\s*$", text):
+            return True
+        if (task_type == "clarify_or_respond" or verifier_mode == "clarify") and "decision:" not in text.lower():
+            return True
+        return False
+
+    def _generation_autocast_context(self, torch: Any) -> Any:
+        if self.torch_dtype not in (getattr(torch, "bfloat16", None), getattr(torch, "float16", None)):
+            return nullcontext()
+        device = self._generation_device()
+        device_type = getattr(device, "type", None)
+        if device_type is None and str(device).startswith("cuda"):
+            device_type = "cuda"
+        if device_type == "cuda" and hasattr(torch, "autocast"):
+            return torch.autocast(device_type="cuda", dtype=self.torch_dtype)
+        return nullcontext()
 
     def _decode(self, output_ids: Any) -> str:
         decoder = getattr(self.processor, "batch_decode", None)
@@ -453,6 +704,13 @@ class HuggingFaceVLMAdapter:
             return decoder(output_ids, skip_special_tokens=True, clean_up_tokenization_spaces=False)[0]
         tokenizer = getattr(self.processor, "tokenizer", self.processor)
         return tokenizer.decode(output_ids[0], skip_special_tokens=True)
+
+    def _strip_prompt_echo(self, raw_output: str, prompt: str) -> str:
+        output = (raw_output or "").strip()
+        prompt_text = (prompt or "").strip()
+        if prompt_text and output.startswith(prompt_text):
+            return output[len(prompt_text) :].strip()
+        return raw_output
 
     def postprocess(self, raw_output: str) -> str:
         return (raw_output or "").strip()

@@ -1,4 +1,6 @@
-from agri_vlm.utils.checkpointing import find_latest_checkpoint, resolve_resume_checkpoint
+import pytest
+
+from agri_vlm.utils.checkpointing import find_latest_checkpoint, resolve_resume_checkpoint, validate_peft_adapter_checkpoint
 
 
 def _write_standard_checkpoint(path) -> None:
@@ -54,3 +56,30 @@ def test_resolve_resume_checkpoint_auto_uses_numeric_latest(tmp_path) -> None:
     _write_standard_checkpoint(tmp_path / "checkpoint-1100")
 
     assert resolve_resume_checkpoint(tmp_path, "auto") == tmp_path / "checkpoint-1100"
+
+
+def test_validate_peft_adapter_checkpoint_rejects_empty_tensor_file(tmp_path) -> None:
+    adapter_dir = tmp_path / "adapter"
+    adapter_dir.mkdir()
+    (adapter_dir / "adapter_config.json").write_text('{"peft_type": "LORA"}', encoding="utf-8")
+    (adapter_dir / "adapter_model.safetensors").write_bytes(b"")
+
+    with pytest.raises(ValueError, match="empty"):
+        validate_peft_adapter_checkpoint(adapter_dir)
+
+
+def test_validate_peft_adapter_checkpoint_accepts_lora_tensors(tmp_path) -> None:
+    torch = pytest.importorskip("torch")
+    safetensors_torch = pytest.importorskip("safetensors.torch")
+    adapter_dir = tmp_path / "adapter"
+    adapter_dir.mkdir()
+    (adapter_dir / "adapter_config.json").write_text('{"peft_type": "LORA"}', encoding="utf-8")
+    safetensors_torch.save_file(
+        {"base_model.model.layers.0.self_attn.qkv_proj.lora_A.weight": torch.zeros(2, 2)},
+        str(adapter_dir / "adapter_model.safetensors"),
+    )
+
+    summary = validate_peft_adapter_checkpoint(adapter_dir)
+
+    assert summary["num_tensors"] == 1
+    assert summary["non_empty_tensors"] == 1

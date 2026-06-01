@@ -341,3 +341,21 @@ def test_peft_adapter_save_passes_raw_lora_state_dict(monkeypatch, tmp_path) -> 
     assert list(saved_state_dict) == [lora_name]
     assert captured["kwargs"]["safe_serialization"] is True
     assert captured["kwargs"]["is_main_process"] is True
+
+
+def test_processor_save_adds_optional_transformers_attributes(tmp_path) -> None:
+    from agri_vlm.training.sft_trainer import _save_processor
+
+    class FakeProcessor:
+        def save_pretrained(self, output_dir):
+            assert hasattr(self, "chat_template")
+            assert hasattr(self, "audio_tokenizer")
+            self.output_dir = output_dir
+
+    processor = FakeProcessor()
+
+    _save_processor(processor, tmp_path)
+
+    assert processor.chat_template is None
+    assert processor.audio_tokenizer is None
+    assert processor.output_dir == tmp_path

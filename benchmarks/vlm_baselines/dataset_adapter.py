@@ -112,7 +112,28 @@ def accepted_references(row: dict[str, Any]) -> list[str]:
     return deduped
 
 
-def output_instruction(row: dict[str, Any]) -> str:
+def _dedupe_labels(labels: Iterable[str]) -> list[str]:
+    output: list[str] = []
+    seen: set[str] = set()
+    for label in labels:
+        value = str(label or "").strip()
+        key = normalize_text(value)
+        if not key or key in seen:
+            continue
+        seen.add(key)
+        output.append(value)
+    return output
+
+
+def _classification_label_space(row: dict[str, Any], label_space: list[str] | None = None) -> list[str]:
+    metadata = row.get("metadata") or {}
+    metadata_labels = metadata.get("classification_label_space") or metadata.get("allowed_classification_labels") or []
+    if isinstance(metadata_labels, list) and len(metadata_labels) > 1:
+        return _dedupe_labels(str(label) for label in metadata_labels)
+    return _dedupe_labels(label_space or [])
+
+
+def output_instruction(row: dict[str, Any], label_space: list[str] | None = None) -> str:
     task_type = str(row.get("task_type") or "")
     mode = str(_verifier(row).get("mode") or "")
     reward_meta = row.get("reward_meta") or {}
@@ -131,7 +152,22 @@ def output_instruction(row: dict[str, Any]) -> str:
             "Respond in this format:\nDecision: <clarify or respond>\nAnswer: <short answer or clarifying question>"
         )
     if mode == "label" or target.get("canonical_label"):
-        return "Respond in this format:\nAnswer: <most specific crop issue, disease, pest, or label>"
+        allowed_labels = _classification_label_space(row, label_space)
+        label_instruction = ""
+        answer_placeholder = "<canonical agricultural label>"
+        if len(allowed_labels) > 1:
+            label_instruction = (
+                "Choose exactly one label from this allowed label set:\n"
+                f"Allowed labels: {'; '.join(allowed_labels)}\n"
+            )
+            answer_placeholder = "<one allowed label>"
+        return (
+            f"{label_instruction}"
+            "Respond in this format:\n"
+            f"Answer: {answer_placeholder}\n"
+            "Evidence: <brief visible symptom evidence>\n"
+            "Do not leave Answer blank, invent labels, or copy the placeholder text."
+        )
     if yes_no_refs and yes_no_refs.issubset({"yes", "no"}):
         return "Respond in this format:\nAnswer: <Yes or No>"
     if task_type == "vqa" or mode == "exact_match":
@@ -170,7 +206,7 @@ def user_prompt(row: dict[str, Any]) -> str:
     return "\n".join(texts).strip()
 
 
-def semantic_prompt(row: dict[str, Any]) -> str:
+def semantic_prompt(row: dict[str, Any], label_space: list[str] | None = None) -> str:
     base = user_prompt(row)
     normalized_base = normalize_text(base)
     output_contract_markers = [
@@ -181,7 +217,7 @@ def semantic_prompt(row: dict[str, Any]) -> str:
     ]
     if any(marker in normalized_base for marker in output_contract_markers):
         return base
-    instruction = output_instruction(row)
+    instruction = output_instruction(row, label_space=label_space)
     if base:
         return "%s\n\n%s" % (base, instruction)
     return instruction
@@ -191,6 +227,7 @@ def build_chat_messages(
     row: dict[str, Any],
     *,
     image_paths: list[str],
+    label_space: list[str] | None = None,
     include_image_paths: bool = False,
     include_system: bool = True,
 ) -> list[dict[str, Any]]:
@@ -203,14 +240,14 @@ def build_chat_messages(
             content.append({"type": "image", "image": str(resolve_repo_path(image_path).as_uri())})
         else:
             content.append({"type": "image"})
-    content.append({"type": "text", "text": semantic_prompt(row)})
+    content.append({"type": "text", "text": semantic_prompt(row, label_space=label_space)})
     messages.append({"role": "user", "content": content})
     return messages
 
 
-def build_plain_prompt(row: dict[str, Any], image_count: int = 1) -> str:
+def build_plain_prompt(row: dict[str, Any], image_count: int = 1, label_space: list[str] | None = None) -> str:
     image_tokens = "".join("<|image_%s|>" % (index + 1) for index in range(image_count))
-    return "<|user|>%s%s<|end|><|assistant|>" % (image_tokens, semantic_prompt(row))
+    return "<|user|>%s%s<|end|><|assistant|>" % (image_tokens, semantic_prompt(row, label_space=label_space))
 
 
 def label_space(rows: Iterable[dict[str, Any]]) -> list[str]:
@@ -234,7 +271,7 @@ def load_benchmark_samples(manifest_path: Path, benchmark_split: str) -> list[Be
             BenchmarkSample(
                 row=row,
                 benchmark_split=benchmark_split,
-                prompt=semantic_prompt(row),
+                prompt=semantic_prompt(row, label_space=labels),
                 system_prompt=system_prompt(row),
                 expected_answer=expected_answer(row),
                 references=accepted_references(row),

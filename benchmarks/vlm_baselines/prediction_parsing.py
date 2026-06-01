@@ -168,13 +168,15 @@ def extract_label_from_answer(raw_output: str | None, label_space: list[str]) ->
             "parse_status": "ambiguous",
             "invalid_prediction": True,
             "label_mentions": matched,
+            "out_of_label_space": False,
         }
     return {
         "parsed_prediction": answer.strip(),
         "normalized_prediction": answer_norm,
-        "parse_status": "failed" if answer_status == "failed" else "inferred",
-        "invalid_prediction": True,
+        "parse_status": "failed" if answer_status == "failed" else "out_of_label_space",
+        "invalid_prediction": answer_status == "failed",
         "label_mentions": [],
+        "out_of_label_space": answer_status != "failed",
     }
 
 
@@ -284,7 +286,10 @@ def parse_prediction_output(
     label_space = label_space or []
     if verifier_mode == "label":
         result = extract_label_from_answer(raw_output, label_space)
-        extra = {"label_mentions": result.get("label_mentions", [])}
+        extra = {
+            "label_mentions": result.get("label_mentions", []),
+            "out_of_label_space": bool(result.get("out_of_label_space")),
+        }
         return ParsedOutput(
             parsed_prediction=str(result["parsed_prediction"]),
             normalized_prediction=str(result["normalized_prediction"]),

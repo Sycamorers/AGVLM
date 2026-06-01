@@ -26,6 +26,8 @@ def test_placeholder_checkpoint_path_fails_when_selected():
 def test_completed_checkpoint_path_passes(tmp_path):
     checkpoint_dir = tmp_path / "checkpoint"
     checkpoint_dir.mkdir()
+    (checkpoint_dir / "config.json").write_text("{}", encoding="utf-8")
+    (checkpoint_dir / "model.safetensors").write_bytes(b"model")
     entry = {
         "model_key": "agvlm_phi4_sft_completed",
         "model_name": "agvlm_phi4_sft_completed",
@@ -37,6 +39,25 @@ def test_completed_checkpoint_path_passes(tmp_path):
     }
     result = validate_model_entry(entry, phase="sft", require_runnable=True)
     assert result.ok
+
+
+def test_empty_adapter_path_fails_when_selected(tmp_path):
+    checkpoint_dir = tmp_path / "adapter"
+    checkpoint_dir.mkdir()
+    (checkpoint_dir / "adapter_config.json").write_text('{"peft_type": "LORA"}', encoding="utf-8")
+    (checkpoint_dir / "adapter_model.safetensors").write_bytes(b"")
+    entry = {
+        "model_key": "agvlm_phi4_sft_completed",
+        "model_name": "agvlm_phi4_sft_completed",
+        "adapter_type": "agvlm_sft",
+        "checkpoint_type": "sft",
+        "base_model_name_or_path": "microsoft/Phi-4-reasoning-vision-15B",
+        "checkpoint_path": str(checkpoint_dir),
+        "adapter_path": "",
+    }
+    result = validate_model_entry(entry, phase="sft", require_runnable=True)
+    assert not result.ok
+    assert any("empty" in error for error in result.errors)
 
 
 def test_raw_base_model_is_not_accepted_as_rl_checkpoint(tmp_path):

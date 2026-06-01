@@ -18,7 +18,7 @@ from agri_vlm.modeling.processor_factory import load_processor
 from agri_vlm.rewards.composite import make_trl_reward_function
 from agri_vlm.training.callbacks import JsonlMetricsCallback
 from agri_vlm.training.run_artifacts import prepare_run_artifacts, write_training_artifact_manifest
-from agri_vlm.utils.checkpointing import resolve_resume_checkpoint
+from agri_vlm.utils.checkpointing import checkpoint_has_valid_model_artifacts, resolve_resume_checkpoint
 from agri_vlm.utils.distributed import configure_torch_runtime, get_distributed_context
 from agri_vlm.utils.image import open_image
 from agri_vlm.utils.io import ensure_dir
@@ -279,22 +279,7 @@ def _is_base_model_checkpoint_path(checkpoint_path: str, model_config: Any) -> b
 
 
 def _checkpoint_has_model_artifacts(path: Path) -> bool:
-    if path.is_file():
-        return True
-    if not path.is_dir():
-        return False
-    if (path / "adapter_config.json").exists() and any(
-        (path / name).exists() for name in ["adapter_model.safetensors", "adapter_model.bin"]
-    ):
-        return True
-    if (path / "config.json").exists() and any(
-        next(path.glob(pattern), None) is not None
-        for pattern in ["model.safetensors", "pytorch_model.bin", "model-*.safetensors", "pytorch_model-*.bin"]
-    ):
-        return True
-    if (path / "model.safetensors.index.json").exists() or (path / "pytorch_model.bin.index.json").exists():
-        return True
-    return False
+    return checkpoint_has_valid_model_artifacts(path)
 
 
 def validate_rl_sft_checkpoint_path(model_config: Any, train_config: Any) -> Path:

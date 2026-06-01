@@ -20,7 +20,7 @@ from agri_vlm.modeling.processor_factory import load_processor
 from agri_vlm.training.callbacks import JsonlMetricsCallback
 from agri_vlm.training.collators import build_sft_data_collator
 from agri_vlm.training.run_artifacts import prepare_run_artifacts, write_training_artifact_manifest
-from agri_vlm.utils.checkpointing import resolve_resume_checkpoint
+from agri_vlm.utils.checkpointing import resolve_resume_checkpoint, validate_peft_adapter_checkpoint
 from agri_vlm.utils.distributed import (
     configure_torch_runtime,
     destroy_distributed_process_group,
@@ -486,6 +486,24 @@ def _save_trained_model(trainer: Any, train_config: Any, output_dir: Path) -> No
     trainer.save_model()
 
 
+def _validate_saved_model_artifacts(train_config: Any, output_dir: Path) -> Dict[str, Any]:
+    if train_config.use_peft:
+        return validate_peft_adapter_checkpoint(output_dir)
+    if not any(
+        next(output_dir.glob(pattern), None) is not None
+        for pattern in ["model.safetensors", "pytorch_model.bin", "model-*.safetensors", "pytorch_model-*.bin"]
+    ):
+        raise RuntimeError("Final SFT save produced no model weight files in %s." % output_dir)
+    return {"checkpoint_dir": str(output_dir), "format": "full_model"}
+
+
+def _save_processor(processor: Any, output_dir: Path) -> None:
+    for optional_attribute in ("chat_template", "audio_tokenizer"):
+        if not hasattr(processor, optional_attribute):
+            setattr(processor, optional_attribute, None)
+    processor.save_pretrained(output_dir)
+
+
 def run_sft(model_config: Any, train_config: Any) -> Dict[str, Any]:
     """Run SFT or validate the setup in dry-run mode."""
     distributed_context = get_distributed_context(set_device=True)
@@ -662,7 +680,12 @@ def run_sft(model_config: Any, train_config: Any) -> Dict[str, Any]:
             logger.info("Saving final SFT model to %s", checkpoint_output_dir)
             _save_trained_model(trainer, train_config=train_config, output_dir=checkpoint_output_dir)
             if trainer.is_world_process_zero():
-                processor.save_pretrained(checkpoint_output_dir)
+                save_validation = _validate_saved_model_artifacts(train_config, checkpoint_output_dir)
+                (checkpoint_output_dir / "adapter_validation.json").write_text(
+                    json.dumps(save_validation, indent=2, sort_keys=True) + "\n",
+                    encoding="utf-8",
+                )
+                _save_processor(processor, checkpoint_output_dir)
         else:
             logger.info("Skipping final SFT model save because save_final_model=false.")
         summary = _build_dry_run_summary(train_rows, eval_rows, output_dir)

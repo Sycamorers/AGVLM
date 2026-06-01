@@ -46,6 +46,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--manifest-path", default=None)
     parser.add_argument("--batch-size", type=int, default=1)
     parser.add_argument("--max-new-tokens", type=int, default=0, help="0 uses task-aware defaults.")
+    parser.add_argument("--min-new-tokens", type=int, default=0)
     parser.add_argument("--dtype", choices=["auto", "bf16", "fp16", "fp32"], default="bf16")
     parser.add_argument("--output-dir", default=str(BENCHMARK_ROOT / "results"))
     parser.add_argument("--split-dir", default=str(BENCHMARK_ROOT / "splits"))
@@ -96,7 +97,7 @@ def _max_new_tokens_for_sample(sample: BenchmarkSample, requested: int) -> int:
 
 
 def _generation_config(args: argparse.Namespace, sample: BenchmarkSample) -> dict[str, Any]:
-    return {
+    config = {
         "max_new_tokens": _max_new_tokens_for_sample(sample, args.max_new_tokens),
         "do_sample": False,
         "temperature": 0.0,
@@ -105,6 +106,9 @@ def _generation_config(args: argparse.Namespace, sample: BenchmarkSample) -> dic
         "batch_size": args.batch_size,
         "seed": args.seed,
     }
+    if args.min_new_tokens:
+        config["min_new_tokens"] = args.min_new_tokens
+    return config
 
 
 def _base_record(
@@ -216,6 +220,9 @@ def _prediction_record(
             "invalid_prediction": bool(parsed.get("invalid_prediction")),
             "sections": parsed.get("sections"),
             "label_mentions": parsed.get("label_mentions"),
+            "out_of_label_space": bool(parsed.get("out_of_label_space")),
+            "format_retry_used": bool(result.get("format_retry_used")),
+            "raw_output_before_format_retry": result.get("raw_output_before_format_retry"),
             "model_revision": model_revision,
             "runtime_seconds": runtime_seconds,
             "images_used": result.get("images_used"),
