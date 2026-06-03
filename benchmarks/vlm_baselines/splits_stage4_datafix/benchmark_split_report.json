@@ -1,0 +1,385 @@
+{
+  "allow_fallback_split": false,
+  "combined": {
+    "examples_by_phase_task_type": {
+      "sft_benchmark": {
+        "clarify_or_respond": [
+          {
+            "benchmark_split": "test",
+            "images": [
+              "data/raw/mirage/full/images/MMMT_Direct/dev/MMMT_Direct-dev-000527-01.png"
+            ],
+            "sample_id": "mirage-#841042",
+            "source_dataset": "mirage",
+            "target_preview": "{'acceptable_answers': [\"Could you provide more details about the moth's size, any distinct markings, or patterns? Additionally, knowing your location could help determine if this moth is native to yo"
+          },
+          {
+            "benchmark_split": "test",
+            "images": [
+              "data/raw/mirage/full/images/MMMT_Direct/dev/MMMT_Direct-dev-000849-01.png",
+              "data/raw/mirage/full/images/MMMT_Direct/dev/MMMT_Direct-dev-000849-02.png"
+            ],
+            "sample_id": "mirage-#878521",
+            "source_dataset": "mirage",
+            "target_preview": "{'acceptable_answers': ['Can you confirm if the black dots in the images appear to be frass (caterpillar droppings) or something else? Additionally, do you notice any insects or larvae on the plants, "
+          },
+          {
+            "benchmark_split": "test",
+            "images": [
+              "data/raw/mirage/full/images/MMMT_Direct/dev/MMMT_Direct-dev-000242-01.png",
+              "data/raw/mirage/full/images/MMMT_Direct/dev/MMMT_Direct-dev-000242-02.png",
+              "data/raw/mirage/full/images/MMMT_Direct/dev/MMMT_Direct-dev-000242-03.png"
+            ],
+            "sample_id": "mirage-#837063",
+            "source_dataset": "mirage",
+            "target_preview": "{'acceptable_answers': ['Based on the information provided and the opinion from the Natorp expert, it seems likely that your boxwoods are suffering from winter damage. This can occur when plants are e"
+          }
+        ],
+        "classification": [
+          {
+            "benchmark_split": "val",
+            "images": [
+              "data/raw/ip102/full/ip102_v1.1/images/04223.jpg"
+            ],
+            "sample_id": "ip102-ip102-v1-1-images-04223-jpg",
+            "source_dataset": "ip102",
+            "target_preview": "{'acceptable_answers': [], 'answer_text': 'Rice Stemfly', 'canonical_label': 'Rice Stemfly', 'canonical_labels': [], 'decision': None, 'structured': {}}"
+          },
+          {
+            "benchmark_split": "val",
+            "images": [
+              "data/raw/ip102/full/ip102_v1.1/images/41018.jpg"
+            ],
+            "sample_id": "ip102-ip102-v1-1-images-41018-jpg",
+            "source_dataset": "ip102",
+            "target_preview": "{'acceptable_answers': [], 'answer_text': 'Apolygus lucorum', 'canonical_label': 'Apolygus lucorum', 'canonical_labels': [], 'decision': None, 'structured': {}}"
+          },
+          {
+            "benchmark_split": "val",
+            "images": [
+              "data/raw/ip102/full/ip102_v1.1/images/01381.jpg"
+            ],
+            "sample_id": "ip102-ip102-v1-1-images-01381-jpg",
+            "source_dataset": "ip102",
+            "target_preview": "{'acceptable_answers': [], 'answer_text': 'rice leaf caterpillar', 'canonical_label': 'rice leaf caterpillar', 'canonical_labels': [], 'decision': None, 'structured': {}}"
+          }
+        ],
+        "vqa": [
+          {
+            "benchmark_split": "test",
+            "images": [
+              "data/raw/plantvillage_vqa/full/images/train/image_031224.JPG"
+            ],
+            "sample_id": "plantvillage_vqa-image_031224.JPG-091888",
+            "source_dataset": "plantvillage_vqa",
+            "target_preview": "{'acceptable_answers': ['Yes'], 'answer_text': 'Yes', 'canonical_label': None, 'canonical_labels': [], 'decision': None, 'structured': {}}"
+          },
+          {
+            "benchmark_split": "test",
+            "images": [
+              "data/raw/plantvillage_vqa/full/images/train/image_044189.JPG"
+            ],
+            "sample_id": "plantvillage_vqa-image_044189.JPG-129982",
+            "source_dataset": "plantvillage_vqa",
+            "target_preview": "{'acceptable_answers': ['Yes'], 'answer_text': 'Yes', 'canonical_label': None, 'canonical_labels': [], 'decision': None, 'structured': {}}"
+          },
+          {
+            "benchmark_split": "test",
+            "images": [
+              "data/raw/plantvillage_vqa/full/images/train/image_018736.JPG"
+            ],
+            "sample_id": "plantvillage_vqa-image_018736.JPG-054814",
+            "source_dataset": "plantvillage_vqa",
+            "target_preview": "{'acceptable_answers': ['The numerous small, angular spots are characteristic of Bacterial Spot.'], 'answer_text': 'The numerous small, angular spots are characteristic of Bacterial Spot.', 'canonical"
+          }
+        ]
+      }
+    },
+    "rows_by_phase_split": {
+      "sft_benchmark": {
+        "test": 616,
+        "val": 152
+      }
+    },
+    "rows_by_source_dataset": {
+      "ip102": 273,
+      "mirage": 32,
+      "plantdoc": 21,
+      "plantvillage": 105,
+      "plantvillage_vqa": 337
+    },
+    "rows_by_task_type": {
+      "clarify_or_respond": 32,
+      "classification": 399,
+      "vqa": 337
+    }
+  },
+  "max_samples": 0,
+  "output_dir": "benchmarks/vlm_baselines/splits_stage4_datafix",
+  "phases": {
+    "sft_benchmark": {
+      "contains_public_test_data": false,
+      "duplicate_sample_id_count": 0,
+      "duplicate_sample_id_examples": [],
+      "examples_by_task_type": {
+        "clarify_or_respond": [
+          {
+            "benchmark_split": "test",
+            "images": [
+              "data/raw/mirage/full/images/MMMT_Direct/dev/MMMT_Direct-dev-000527-01.png"
+            ],
+            "sample_id": "mirage-#841042",
+            "source_dataset": "mirage",
+            "target_preview": "{'acceptable_answers': [\"Could you provide more details about the moth's size, any distinct markings, or patterns? Additionally, knowing your location could help determine if this moth is native to yo"
+          },
+          {
+            "benchmark_split": "test",
+            "images": [
+              "data/raw/mirage/full/images/MMMT_Direct/dev/MMMT_Direct-dev-000849-01.png",
+              "data/raw/mirage/full/images/MMMT_Direct/dev/MMMT_Direct-dev-000849-02.png"
+            ],
+            "sample_id": "mirage-#878521",
+            "source_dataset": "mirage",
+            "target_preview": "{'acceptable_answers': ['Can you confirm if the black dots in the images appear to be frass (caterpillar droppings) or something else? Additionally, do you notice any insects or larvae on the plants, "
+          },
+          {
+            "benchmark_split": "test",
+            "images": [
+              "data/raw/mirage/full/images/MMMT_Direct/dev/MMMT_Direct-dev-000242-01.png",
+              "data/raw/mirage/full/images/MMMT_Direct/dev/MMMT_Direct-dev-000242-02.png",
+              "data/raw/mirage/full/images/MMMT_Direct/dev/MMMT_Direct-dev-000242-03.png"
+            ],
+            "sample_id": "mirage-#837063",
+            "source_dataset": "mirage",
+            "target_preview": "{'acceptable_answers': ['Based on the information provided and the opinion from the Natorp expert, it seems likely that your boxwoods are suffering from winter damage. This can occur when plants are e"
+          }
+        ],
+        "classification": [
+          {
+            "benchmark_split": "val",
+            "images": [
+              "data/raw/ip102/full/ip102_v1.1/images/04223.jpg"
+            ],
+            "sample_id": "ip102-ip102-v1-1-images-04223-jpg",
+            "source_dataset": "ip102",
+            "target_preview": "{'acceptable_answers': [], 'answer_text': 'Rice Stemfly', 'canonical_label': 'Rice Stemfly', 'canonical_labels': [], 'decision': None, 'structured': {}}"
+          },
+          {
+            "benchmark_split": "val",
+            "images": [
+              "data/raw/ip102/full/ip102_v1.1/images/41018.jpg"
+            ],
+            "sample_id": "ip102-ip102-v1-1-images-41018-jpg",
+            "source_dataset": "ip102",
+            "target_preview": "{'acceptable_answers': [], 'answer_text': 'Apolygus lucorum', 'canonical_label': 'Apolygus lucorum', 'canonical_labels': [], 'decision': None, 'structured': {}}"
+          },
+          {
+            "benchmark_split": "val",
+            "images": [
+              "data/raw/ip102/full/ip102_v1.1/images/01381.jpg"
+            ],
+            "sample_id": "ip102-ip102-v1-1-images-01381-jpg",
+            "source_dataset": "ip102",
+            "target_preview": "{'acceptable_answers': [], 'answer_text': 'rice leaf caterpillar', 'canonical_label': 'rice leaf caterpillar', 'canonical_labels': [], 'decision': None, 'structured': {}}"
+          }
+        ],
+        "vqa": [
+          {
+            "benchmark_split": "test",
+            "images": [
+              "data/raw/plantvillage_vqa/full/images/train/image_031224.JPG"
+            ],
+            "sample_id": "plantvillage_vqa-image_031224.JPG-091888",
+            "source_dataset": "plantvillage_vqa",
+            "target_preview": "{'acceptable_answers': ['Yes'], 'answer_text': 'Yes', 'canonical_label': None, 'canonical_labels': [], 'decision': None, 'structured': {}}"
+          },
+          {
+            "benchmark_split": "test",
+            "images": [
+              "data/raw/plantvillage_vqa/full/images/train/image_044189.JPG"
+            ],
+            "sample_id": "plantvillage_vqa-image_044189.JPG-129982",
+            "source_dataset": "plantvillage_vqa",
+            "target_preview": "{'acceptable_answers': ['Yes'], 'answer_text': 'Yes', 'canonical_label': None, 'canonical_labels': [], 'decision': None, 'structured': {}}"
+          },
+          {
+            "benchmark_split": "test",
+            "images": [
+              "data/raw/plantvillage_vqa/full/images/train/image_018736.JPG"
+            ],
+            "sample_id": "plantvillage_vqa-image_018736.JPG-054814",
+            "source_dataset": "plantvillage_vqa",
+            "target_preview": "{'acceptable_answers': ['The numerous small, angular spots are characteristic of Bacterial Spot.'], 'answer_text': 'The numerous small, angular spots are characteristic of Bacterial Spot.', 'canonical"
+          }
+        ]
+      },
+      "missing_image_examples": [],
+      "missing_image_file_count": 0,
+      "missing_image_sample_count": 0,
+      "multi_image_distribution": {
+        "1": 741,
+        "2": 11,
+        "3": 16
+      },
+      "phase": "sft_benchmark",
+      "prompt_leakage": {
+        "ground_truth_leakage_count": 0,
+        "ground_truth_leakage_examples": [],
+        "notes": "Prompt hits are heuristic. Yes/no questions may contain candidate labels without leaking the yes/no answer.",
+        "prompt_leakage_count": 1,
+        "prompt_leakage_examples": [
+          {
+            "reference": "respond",
+            "sample_id": "mirage-#873528",
+            "task_type": "clarify_or_respond"
+          }
+        ]
+      },
+      "public_test_examples": [],
+      "rows_by_crop_disease": {
+        "crop": {
+          "Apple": 5,
+          "Blueberry": 4,
+          "Cherry (including sour)": 3,
+          "Corn (maize)": 3,
+          "Grape": 11,
+          "Orange": 10,
+          "Peach": 10,
+          "Pepper, bell": 6,
+          "Potato": 4,
+          "Raspberry": 3,
+          "Soybean": 8,
+          "Squash": 4,
+          "Strawberry": 2,
+          "Tomato": 32,
+          "missing": 663
+        },
+        "disease": {
+          "Apple rust leaf": 1,
+          "Apple scab": 1,
+          "Bacterial spot": 20,
+          "Black rot": 6,
+          "Blueberry leaf": 2,
+          "Cercospora leaf spot Gray leaf spot": 1,
+          "Cherry leaf": 1,
+          "Corn leaf blight": 3,
+          "Corn rust leaf": 2,
+          "Early blight": 4,
+          "Esca (Black Measles)": 2,
+          "Haunglongbing (Citrus greening)": 10,
+          "Late blight": 6,
+          "Leaf Mold": 3,
+          "Leaf blight (Isariopsis Leaf Spot)": 4,
+          "Leaf scorch": 1,
+          "Northern Leaf Blight": 2,
+          "Peach leaf": 1,
+          "Powdery mildew": 6,
+          "Raspberry leaf": 1,
+          "Septoria leaf spot": 1,
+          "Soyabean leaf": 2,
+          "Spider mites Two-spotted spider mite": 5,
+          "Squash Powdery mildew leaf": 2,
+          "Target Spot": 3,
+          "Tomato Early blight leaf": 2,
+          "Tomato Septoria leaf spot": 1,
+          "Tomato Yellow Leaf Curl Virus": 7,
+          "Tomato leaf bacterial spot": 3,
+          "healthy": 23,
+          "missing": 642
+        }
+      },
+      "rows_by_source_dataset": {
+        "ip102": 273,
+        "mirage": 32,
+        "plantdoc": 21,
+        "plantvillage": 105,
+        "plantvillage_vqa": 337
+      },
+      "rows_by_split": {
+        "test": 616,
+        "val": 152
+      },
+      "rows_by_task_type": {
+        "clarify_or_respond": 32,
+        "classification": 399,
+        "vqa": 337
+      },
+      "train_eval_overlap": {
+        "exact_sample_id_count": 0,
+        "exact_sample_id_examples": [],
+        "group_key_count": 0,
+        "group_key_examples": []
+      },
+      "unique_image_groups": 744
+    }
+  },
+  "rl_sources": {
+    "holdout_manifest": "data/manifests/full/rl_local_holdout_eval.jsonl",
+    "train_manifest": "data/manifests/full/rl_manifest.jsonl"
+  },
+  "seed": 42,
+  "sft_sources": {
+    "eval_manifest": "data/manifests/full/sft_eval_phi4_max3_stage4_closed_label_stratified768.jsonl",
+    "summary": {
+      "eval_by_dataset": {
+        "ip102": 273,
+        "mirage": 32,
+        "plantdoc": 21,
+        "plantvillage": 105,
+        "plantvillage_vqa": 337
+      },
+      "eval_by_split": {
+        "dev": 32,
+        "holdout": 584,
+        "validation": 152
+      },
+      "eval_by_task_type": {
+        "clarify_or_respond": 32,
+        "classification": 399,
+        "vqa": 337
+      },
+      "eval_output_path": "/blue/hmedeiros/qinruoyao/agvlm/data/manifests/full/sft_eval_phi4_max3_stage4_raw_stratified768.jsonl",
+      "eval_pool_rows": 33191,
+      "eval_rows": 768,
+      "eval_sample_size": 768,
+      "eval_splits": [
+        "validation",
+        "dev"
+      ],
+      "excluded": {
+        "eval_overlap": 26164,
+        "max_images": 2599,
+        "split": 9264
+      },
+      "holdout_manifest_path": "/blue/hmedeiros/qinruoyao/agvlm/data/manifests/full/local_holdout_eval_stage4_datafix.decode_valid_images.jsonl",
+      "max_images_per_sample": 3,
+      "min_eval_samples_per_stratum": 16,
+      "overlap": {
+        "exact_sample_id": 0,
+        "group_key": 0
+      },
+      "source_manifest_path": "/blue/hmedeiros/qinruoyao/agvlm/data/manifests/full/sft_manifest.decode_aspect_valid_images.jsonl",
+      "train_by_dataset": {
+        "agbase": 40738,
+        "agrillava": 1839,
+        "ip102": 40673,
+        "mirage": 24019,
+        "plantdoc": 2098,
+        "plantvillage": 39084,
+        "plantvillage_vqa": 139168
+      },
+      "train_by_task_type": {
+        "clarify_or_respond": 6482,
+        "classification": 81855,
+        "consultation": 60114,
+        "vqa": 139168
+      },
+      "train_output_path": "/blue/hmedeiros/qinruoyao/agvlm/data/manifests/full/sft_train_phi4_max3_stage4_no_eval_overlap.jsonl",
+      "train_rows": 287619,
+      "train_splits": [
+        "train"
+      ]
+    },
+    "train_manifest": "data/manifests/full/sft_train_phi4_max3_stage4_closed_label_datafix.jsonl"
+  }
+}

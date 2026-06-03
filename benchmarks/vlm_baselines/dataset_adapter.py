@@ -8,15 +8,22 @@ from __future__ import annotations
 
 from collections import Counter, defaultdict
 from dataclasses import dataclass
+import os
 from pathlib import Path
 from typing import Any, Iterable
 
 from utils import REPO_ROOT, normalize_text, read_jsonl, resolve_repo_path
 
 
-ACTIVE_EVAL_MANIFEST = Path("data/manifests/full/sft_eval_phi4_max3_stratified512.jsonl")
-ACTIVE_TRAIN_MANIFEST = Path("data/manifests/full/sft_train_phi4_max3_no_eval_overlap.jsonl")
-ACTIVE_SPLIT_SUMMARY = Path("data/manifests/full/sft_train_eval_phi4_max3_summary.json")
+ACTIVE_EVAL_MANIFEST = Path(
+    os.environ.get("AGRI_VLM_SFT_EVAL_MANIFEST", "data/manifests/full/sft_eval_phi4_max3_stratified512.jsonl")
+)
+ACTIVE_TRAIN_MANIFEST = Path(
+    os.environ.get("AGRI_VLM_SFT_TRAIN_MANIFEST", "data/manifests/full/sft_train_phi4_max3_no_eval_overlap.jsonl")
+)
+ACTIVE_SPLIT_SUMMARY = Path(
+    os.environ.get("AGRI_VLM_SFT_SPLIT_SUMMARY", "data/manifests/full/sft_train_eval_phi4_max3_summary.json")
+)
 FALLBACK_SOURCE_MANIFESTS = [
     Path("data/manifests/full/sft_manifest.decode_aspect_valid_images.jsonl"),
     Path("data/manifests/full/sft_manifest.valid_images.jsonl"),
@@ -267,15 +274,16 @@ def load_benchmark_samples(manifest_path: Path, benchmark_split: str) -> list[Be
     labels = label_space(rows)
     samples = []
     for row in rows:
+        row_label_space = _classification_label_space(row, labels)
         samples.append(
             BenchmarkSample(
                 row=row,
                 benchmark_split=benchmark_split,
-                prompt=semantic_prompt(row, label_space=labels),
+                prompt=semantic_prompt(row, label_space=row_label_space),
                 system_prompt=system_prompt(row),
                 expected_answer=expected_answer(row),
                 references=accepted_references(row),
-                label_space=labels,
+                label_space=row_label_space,
             )
         )
     return samples

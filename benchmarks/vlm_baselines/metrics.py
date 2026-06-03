@@ -138,6 +138,13 @@ def classification_metrics(records: list[dict[str, Any]]) -> dict[str, Any]:
         aliases.update(normalize_label(value) for value in _references(record) if normalize_label(value))
         accepted_refs.append(aliases)
     known_labels = sorted({label for aliases in accepted_refs for label in aliases if label})
+    known_label_set = set(known_labels)
+    for record in records:
+        metadata = record.get("metadata") or {}
+        label_space = metadata.get("classification_label_space") or metadata.get("allowed_classification_labels") or []
+        if isinstance(label_space, list):
+            known_label_set.update(normalize_label(value) for value in label_space if normalize_label(value))
+    known_labels = sorted(known_label_set)
     ref_labels = sorted(label for label in set(refs) if label)
     pred_labels = sorted(label for label in set(preds) if label)
     all_labels = sorted(set(ref_labels) | set(pred_labels) | {"<invalid>"})

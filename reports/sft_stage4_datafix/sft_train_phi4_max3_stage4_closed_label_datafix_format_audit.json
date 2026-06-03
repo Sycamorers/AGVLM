@@ -1,0 +1,461 @@
+{
+  "config_path": "configs/data/sft_format_audit_stage4_closed_label_datafix_phi4_max3.yaml",
+  "examples": [
+    {
+      "images": [
+        "data/raw/mirage/full/images/MMMT_Decomp/train/MMMT_Decomp-train-000334-01.png"
+      ],
+      "prompt": "user: Can you tell me what this insect is? I sprayed my tree just before budding and a few weeks later, which delayed the arrival of them. I've had them for several years now.\n\nRespond using exactly one of these formats:\nDecision: clarify\nClarifying question: <one question needed before diagnosis or management>\n\nDecision: respond\nAnswer: <concise agricultural answer>",
+      "sample_id": "mirage-#838611",
+      "source_dataset": "mirage",
+      "split": "train",
+      "target": "Decision: clarify\nClarifying question: Could you please provide more details about the type of tree affected and any other symptoms you might have observed? Additionally, if you could describe or confirm the contents of the attached image, that would be helpful.",
+      "task_type": "clarify_or_respond",
+      "validation_failures": [],
+      "verifier_mode": "clarify"
+    },
+    {
+      "images": [
+        "data/raw/mirage/full/images/MMMT_Decomp/train/MMMT_Decomp-train-000968-01.png",
+        "data/raw/mirage/full/images/MMMT_Decomp/train/MMMT_Decomp-train-000968-02.png",
+        "data/raw/mirage/full/images/MMMT_Decomp/train/MMMT_Decomp-train-000968-03.png"
+      ],
+      "prompt": "user: Almost all my indoor and outdoor plants are infected with some kind of fungal disease. I’m sending photos of a miniature garden in a whiskey barrel that are most severely infected. The plants are( in the order of pics): thymus ‘Elfin’, dianthus gratianopolitanus ‘Tiny Rubies’, miniature daisies (Bellium Minutum). At the end of last September, I noticed that underneath the thyme it was severely black but the top layer of thyme was green, flowery and healthy looking. I also noticed a sludge looking layer underneath the Tiny Rubies but again the top was flowering profusely and otherwise healthy looking. Now this fall it’s the same with otherwise healthy flowers on top but the layer of the plant above the dirt is black or sludge-like. I sprinkled sulfur powder on this layer hoping to kill the fungi Al disease but now I see orange, yellow and black spots on all my other plants. I’ve been praying all my plants with fungicide to stop the spread but the chemical burnt many of my succulents that were healthy and all the rest are infected. I cannot cut the top layer of all my plants off or it will kill them all and I’m talking about thousands of dollars of plants. Even my grass has brown circles and vines growing on my trees are severely black and orange and yellow. I feel like it’s everywhere. Please help! I can’t tell what disease it is as it appears different on every different plant.\nexpert: It's unlikely a single disease is affecting such a wide variety of plants (a few pathogens have a wide host plant range, but many don't), but we'd need to see the symptoms on the other plants in order to try to diagnose the issue. You can send additional photos in your replies, and if the system limits you to three image files per reply, just reply more than once in order to share additional photos.  For the plants pictured, this type of mushy, dark foliage layer underneath the uppermost stems is fairly typical. (Not ideal, granted, but common enough it's not an unexpected issue.) Low-growing plants that require excellent drainage (as these three species do) and air circulation, both of which might be affected by the barrel planting where its rim reduces air circulation and the large soil volume is slower to drain excess moisture. Depending on their ingredients, some potting mixes drain better than others, though adjustments can be made in some cases by adding drainage-boosting ingredients like perlite, horticultural charcoal, and small expanded slate stones (sold as vole-discouraging amendments, often). Watering should only be done when the soil around several inches down is becoming dry to the touch, as over-watering is a common cause of decline that looks like this. As these lower leaves become covered-up by younger growth it's normal for them (especially on flattened creeping/sprawling plants) to shed by dying and turning brown, and their degradation by soil microbes and such occurs more rapidly when they stay damp, as appears to be the case here. Root rot, which happens when roots don't have enough access to oxygen in the soil due to wetness and succumb to opportunistic infection, and crown rot, when similar decay occurs on stems at the soil surface, is not treatable.  The only preventative measures that work well are using very well-drained soil or potting mix, giving plants good air circulation by avoiding crowding, and (in some cases) trying a grit-like stone mulch around the plant's root zone so the branches lying on the soil surface aren't in direct contact with the ground. (This kind of setup is used in rock gardens, for instance, which is what many of these dainty mini-groundcover-type species are used for. They also are often best grown in climates cooler and drier than ours, thought not exclusively.)  Sulfur is sometimes an effective fungicide but in this case it's not a useful treatment approach and might (over time) also alter the soil acidity to a level too low for these plants to thrive. Very few chemical fungicides are labeled for use in suppressing root and crown rot, but they are more expensive than most other fungicides, require reapplication to continually suppress fungal growth, and cannot cure existing infection (which may have already taken hold before symptoms manifested). As such, and because fungicides sometimes risk harming other organisms, we generally do not recommend their use. If certain plant species tend to contract recurring problems like crown rot, other species more tolerant of the site conditions (usually wetter) should replace them.  Since they share similar conditions conducive to infection, and since the symptoms of each of these diseases look very much alike, here are several web pages that will overlap a bit regarding the types of root and crown rot typically seen:Root, Crown, and Stem Rots on FlowersRhizoctonia Web Blight on FlowersOvergrown GroundcoversRoot Rots of Indoor Plants For now, you can try to trim away or comb out with your fingers any mushy growth under the live ends of the stems. Otherwise, you can focus more on monitoring the plants for water to make sure they're only watered when necessary and, for the future, consider amending the potting mix for improved drainage if growing species with greater moisture sensitivity.  Regarding the black, orange, or yellow spots on other garden plants, lawn, houseplants, and vines that you mention, these could be any number of infections, insect activity, normal leaf shed depending on the specific plant type and where on the foliage it's appearing. Please share photos of these so we can attempt a diagnosis. Fungicides cannot cure existing infections but might be warranted in a few cases to protect healthy growth from becoming infected. Sometimes, though, the fungal damage is only an eyesore and doesn't threaten the health of the plant enough to warrant treatment. (Or the opportunity for treatment has passed by the time symptoms appear.) If you have information about how some of those other plants are cared for (for example, is the lawn or garden irrigated using an automatic sprinkler system?), that can help us narrow-down possible causes of damage.  Miri\nuser: ﻿Thank you so m uh for the thorough response. In the barrel, I have lava stone, perilite, and a number of added measures to try and increase airflow but I’ll try and salvage what I can.   Here’s more pictures of elsewhere in the yard and inside the home. I’m really concerned about the pitch black stems in several of my plants. I’m pretty sure there’s mold in my grass (big white spots) then the trees are covered in vines and the vines have a ton of yellow, brown and black spots. Inside plants are also showing similar patterns (yellow spots that keep spreading). After I used fungicides I feel my plants look worse and now the healthy ones are covered in burns. I’ll add more pictures in next email.   Sent from my iPhone  On May 16, 2023, at 1:18 PM, Ask Extension <<personal data hidden>> wrote:    ﻿\n\nRespond using exactly one of these formats:\nDecision: clarify\nClarifying question: <one question needed before diagnosis or management>\n\nDecision: respond\nAnswer: <concise agricultural answer>",
+      "sample_id": "mirage-#830124",
+      "source_dataset": "mirage",
+      "split": "train",
+      "target": "Decision: clarify\nClarifying question: Could you provide close-up images of the symptoms on each type of plant, and share more details about the environmental conditions in your garden and home, such as humidity and temperature? Additionally, information on your watering and fertilization schedule would be helpful.",
+      "task_type": "clarify_or_respond",
+      "validation_failures": [],
+      "verifier_mode": "clarify"
+    },
+    {
+      "images": [
+        "data/raw/mirage/full/images/MMMT_Decomp/train/MMMT_Decomp-train-002036-01.png",
+        "data/raw/mirage/full/images/MMMT_Decomp/train/MMMT_Decomp-train-002036-02.png",
+        "data/raw/mirage/full/images/MMMT_Decomp/train/MMMT_Decomp-train-002036-03.png"
+      ],
+      "prompt": "user: I have some purple coneflowers that either have mites or yellow asters.  There’s a lot of information online and it just confuses me.  I will include a few pics in case there’s anyone that can help.  I realized I didn’t take pictures of the plant itself, but they appear to be pretty healthy.  Thank you\n\nRespond using exactly one of these formats:\nDecision: clarify\nClarifying question: <one question needed before diagnosis or management>\n\nDecision: respond\nAnswer: <concise agricultural answer>",
+      "sample_id": "mirage-#876931",
+      "source_dataset": "mirage",
+      "split": "train",
+      "target": "Decision: clarify\nClarifying question: Could you describe any other symptoms you have observed on the coneflowers, such as leaf discoloration or stunted growth? Additionally, have there been any recent changes in environmental conditions, like weather or soil quality, that might be affecting the plants?",
+      "task_type": "clarify_or_respond",
+      "validation_failures": [],
+      "verifier_mode": "clarify"
+    },
+    {
+      "images": [
+        "data/raw/mirage/full/images/MMMT_Direct/train/MMMT_Direct-train-003621-01.png",
+        "data/raw/mirage/full/images/MMMT_Direct/train/MMMT_Direct-train-003621-02.png",
+        "data/raw/mirage/full/images/MMMT_Direct/train/MMMT_Direct-train-003621-03.png"
+      ],
+      "prompt": "user: It appears that some of my maple tree leaves are deteriorating.  The range of the leaves go from healthy  to a few white spots along the spines to a lot to dying. The backside of a small number of leaves have white bugs.  The leaves are almost completely dead on three lower branches of the tree.  We have two additional maple trees with one having a similar problem on a much smaller scale, no dead leaves. \r\n\r\nThank you for helping me!!!\n\nRespond using exactly one of these formats:\nDecision: clarify\nClarifying question: <one question needed before diagnosis or management>\n\nDecision: respond\nAnswer: <concise agricultural answer>",
+      "sample_id": "mirage-#837616",
+      "source_dataset": "mirage",
+      "split": "train",
+      "target": "Decision: clarify\nClarifying question: Could you provide more details about the type of white bugs you are seeing on the leaves? Additionally, have you tried any treatments or noticed similar symptoms in other nearby plants or trees?",
+      "task_type": "clarify_or_respond",
+      "validation_failures": [],
+      "verifier_mode": "clarify"
+    },
+    {
+      "images": [
+        "data/raw/mirage/full/images/MMMT_Direct/train/MMMT_Direct-train-000312-01.png"
+      ],
+      "prompt": "user: Hi, I have an old fashioned single peony plant that I moved from Iowa to Cleveland and now it is covered in a white film. Trying to avoid bad chemicals.\n\nRespond using exactly one of these formats:\nDecision: clarify\nClarifying question: <one question needed before diagnosis or management>\n\nDecision: respond\nAnswer: <concise agricultural answer>",
+      "sample_id": "mirage-#840279",
+      "source_dataset": "mirage",
+      "split": "train",
+      "target": "Decision: clarify\nClarifying question: Could you describe the texture and spread pattern of the white film on your peony? Additionally, can you provide details about the environmental conditions such as humidity and sunlight exposure, and let me know if you've tried any treatments so far?",
+      "task_type": "clarify_or_respond",
+      "validation_failures": [],
+      "verifier_mode": "clarify"
+    },
+    {
+      "images": [
+        "data/raw/mirage/full/images/MMMT_Decomp/train/MMMT_Decomp-train-001862-01.png"
+      ],
+      "prompt": "user: Every year about this time this weed appears in my yard. With the lack of rain there are lots more of them this summer.  Would like to know what the name is and what I can spray them with to kill them but not harm my grass.\nexpert: Thank you for writing. I have lots of spotted spurge. It seems easy to pull out but leaves root fragments that regrow.  https://www.minnesotawildflowers.info/flower/prostrate-spurge#:~:text=The%20only%20other%20hairy%2C%20mat,surface%2C%20and%20seed%20lacks%20conspicuous\nuser: Thanks for your quick reply. Please confirm I can spray these pesky weeds with a typical post emergent herbicide. I have some Spectracide Weed Stop for lawns concentrate on hand and I think this will do the trick. On Wed, Jul 19, 2023 at 1:21 PM Ask Extension <<personal data hidden>> wrote:\n\nRespond using exactly one of these formats:\nDecision: clarify\nClarifying question: <one question needed before diagnosis or management>\n\nDecision: respond\nAnswer: <concise agricultural answer>",
+      "sample_id": "mirage-#841507",
+      "source_dataset": "mirage",
+      "split": "train",
+      "target": "Decision: respond\nAnswer: Spectracide Weed Stop for Lawns is a selective post-emergent herbicide that is generally effective against broadleaf weeds like spotted spurge. It should be safe for your grass if applied according to the label instructions. However, given the poor soil conditions and the fact that your grass goes dormant quickly, ensure that you apply it when the grass is actively growing to minimize stress. Also, consider spot-treating the spurge to reduce the risk of overspray. Since you plan to replace the soil and grass eventually, this approach should help manage the spurge in the meantime.",
+      "task_type": "clarify_or_respond",
+      "validation_failures": [],
+      "verifier_mode": "clarify"
+    },
+    {
+      "images": [
+        "data/raw/mirage/full/images/MMMT_Decomp/train/MMMT_Decomp-train-000778-01.png",
+        "data/raw/mirage/full/images/MMMT_Decomp/train/MMMT_Decomp-train-000778-02.png",
+        "data/raw/mirage/full/images/MMMT_Decomp/train/MMMT_Decomp-train-000778-03.png"
+      ],
+      "prompt": "user: Please tell me what to do with the dead, curling leaves and spots on leaves?\n\nRespond using exactly one of these formats:\nDecision: clarify\nClarifying question: <one question needed before diagnosis or management>\n\nDecision: respond\nAnswer: <concise agricultural answer>",
+      "sample_id": "mirage-#877669",
+      "source_dataset": "mirage",
+      "split": "train",
+      "target": "Decision: clarify\nClarifying question: Could you please provide more details about the type of plant affected and any recent changes in its environment or care? Additionally, have you noticed any pests or other signs of disease?",
+      "task_type": "clarify_or_respond",
+      "validation_failures": [],
+      "verifier_mode": "clarify"
+    },
+    {
+      "images": [
+        "data/raw/mirage/full/images/MMMT_Direct/train/MMMT_Direct-train-001248-01.png",
+        "data/raw/mirage/full/images/MMMT_Direct/train/MMMT_Direct-train-001248-02.png",
+        "data/raw/mirage/full/images/MMMT_Direct/train/MMMT_Direct-train-001248-03.png"
+      ],
+      "prompt": "user: We took in an emaciated blue heeler abandoned in the woods on the Big Island of Hawaii’i. I started getting 1x2 inch oval patterns of red dots on my arms and legs with 1/4' hairs sticking out at a 45 degree angle. They turned into deep oval wounds with white worms around the edges that I couldn't remove. Eventually I pooped out hundreds of creatures that looked like 2\" long shrimp with long snouts. What could this be and did I get it from our dog?\n\nRespond using exactly one of these formats:\nDecision: clarify\nClarifying question: <one question needed before diagnosis or management>\n\nDecision: respond\nAnswer: <concise agricultural answer>",
+      "sample_id": "mirage-#827760",
+      "source_dataset": "mirage",
+      "split": "train",
+      "target": "Decision: clarify\nClarifying question: Can you provide more information about the dog's health and any symptoms it might be showing? Additionally, has the dog been examined by a veterinarian since you took it in?",
+      "task_type": "clarify_or_respond",
+      "validation_failures": [],
+      "verifier_mode": "clarify"
+    },
+    {
+      "images": [
+        "data/raw/ip102/full/ip102_v1.1/images/42900.jpg"
+      ],
+      "prompt": "Identify the insect or pest shown in this agricultural image.\n\nChoose exactly one label from this allowed label set:\nAllowed labels: Adristyrannus; Aleurocanthus spiniferus; alfalfa plant bug; alfalfa seed chalcid; alfalfa weevil; Ampelophaga; aphids; Aphis citricola Vander Goot; Apolygus lucorum; army worm; asiatic rice borer; Bactrocera tsuneonis; beet army worm; beet fly; Beet spot flies; beet weevil; bird cherry oataphid; black cutworm; blister beetle; Brevipoalpus lewisi McGregor; brown plant hopper; cabbage army worm; cerodonta denticornis; Ceroplastes rubens; Chlumetia transversa; Chrysomphalus aonidum; Cicadella viridis; Cicadellidae; Colomerus vitis; corn borer; Dacus dorsalis(Hendel); Dasineura sp; Deporaus marginatus Pascoe; english grain aphid; Erythroneura apicalis; flax budworm; flea beetle; grain spreader thrips; green bug; grub; Icerya purchasi Maskell; large cutworm; Lawana imitata Melichar; legume blister beetle; Limacodidae; Locustoidea; longlegged spider mite; Lycorma delicatula; lytta polita; Mango flat beak leafhopper; meadow moth; Miridae; mole cricket; Nipaecoccus vastalor; odontothrips loti; oides decempunctata; paddy stem maggot; Panonchus citri McGregor; Papilio xuthus; parathrene regalis; Parlatoria zizyphus Lucus; peach borer; penthaleus major; Phyllocnistis citrella Stainton; Phyllocoptes oleiverus ashmead; Pieris canidia; Polyphagotars onemus latus; Potosiabre vitarsis; Prodenia litura; Pseudococcus comstocki Kuwana; red spider; Rhytidodera bowrinii white; rice gall midge; rice leaf caterpillar; rice leaf roller; rice leafhopper; rice shell pest; Rice Stemfly; rice water weevil; Salurnis marginella Guerr; Scirtothrips dorsalis Hood; sericaorient alismots chulsky; small brown plant hopper; Sternochetus frigidus; tarnished plant bug; Tetradacus c Bactrocera minax; therioaphis maculata Buckton; Thrips; Toxoptera aurantii; Toxoptera citricidus; Trialeurodes vaporariorum; Unaspis yanonensis; Viteus vitifoliae; wheat blossom midge; wheat phloeothrips; wheat sawfly; white backed plant hopper; white margined moth; wireworm; Xylotrechus; yellow cutworm; yellow rice borer\nRespond in this format:\nAnswer: <one allowed label>\nEvidence: <brief visible symptom evidence>\nDo not leave Answer blank, invent labels, or copy the placeholder text.",
+      "sample_id": "ip102-ip102-v1-1-images-42900-jpg",
+      "source_dataset": "ip102",
+      "split": "train",
+      "target": "Answer: Colomerus vitis\nEvidence: Visible agricultural symptoms or pest features support this label.",
+      "task_type": "classification",
+      "validation_failures": [],
+      "verifier_mode": "label"
+    },
+    {
+      "images": [
+        "data/raw/plantvillage/full/images/train/030480.png"
+      ],
+      "prompt": "Identify the crop issue or pest in this agricultural image.\n\nChoose exactly one label from this allowed label set:\nAllowed labels: apple apple scab; apple black rot; apple cedar apple rust; apple healthy; blueberry healthy; cherry including sour healthy; cherry including sour powdery mildew; corn maize cercospora leaf spot gray leaf spot; corn maize common rust; corn maize healthy; corn maize northern leaf blight; grape black rot; grape esca black measles; grape healthy; grape leaf blight isariopsis leaf spot; orange haunglongbing citrus greening; peach bacterial spot; peach healthy; pepper bell bacterial spot; pepper bell healthy; potato early blight; potato healthy; potato late blight; raspberry healthy; soybean healthy; squash powdery mildew; strawberry healthy; strawberry leaf scorch; tomato bacterial spot; tomato early blight; tomato healthy; tomato late blight; tomato leaf mold; tomato septoria leaf spot; tomato spider mites two spotted spider mite; tomato target spot; tomato tomato mosaic virus; tomato tomato yellow leaf curl virus\nRespond in this format:\nAnswer: <one allowed label>\nEvidence: <brief visible symptom evidence>\nDo not leave Answer blank, invent labels, or copy the placeholder text.",
+      "sample_id": "plantvillage-train-030480",
+      "source_dataset": "plantvillage",
+      "split": "train",
+      "target": "Answer: tomato bacterial spot\nEvidence: Visible Tomato symptoms support the Bacterial spot label.",
+      "task_type": "classification",
+      "validation_failures": [],
+      "verifier_mode": "label"
+    },
+    {
+      "images": [
+        "data/raw/plantdoc/full/images/train/001764.png"
+      ],
+      "prompt": "Identify the crop issue or pest in this agricultural image.\n\nChoose exactly one label from this allowed label set:\nAllowed labels: apple leaf; apple rust leaf; apple scab leaf; bell pepper leaf; bell pepper leaf spot; blueberry leaf; cherry leaf; corn gray leaf spot; corn leaf blight; corn rust leaf; grape leaf; grape leaf black rot; peach leaf; potato leaf early blight; potato leaf late blight; raspberry leaf; soyabean leaf; squash powdery mildew leaf; strawberry leaf; tomato early blight leaf; tomato leaf; tomato leaf bacterial spot; tomato leaf late blight; tomato leaf mosaic virus; tomato leaf yellow virus; tomato mold leaf; tomato septoria leaf spot; tomato two spotted spider mites leaf\nRespond in this format:\nAnswer: <one allowed label>\nEvidence: <brief visible symptom evidence>\nDo not leave Answer blank, invent labels, or copy the placeholder text.",
+      "sample_id": "plantdoc-6390",
+      "source_dataset": "plantdoc",
+      "split": "train",
+      "target": "Answer: blueberry leaf\nEvidence: Visible agricultural symptoms or pest features support this label.",
+      "task_type": "classification",
+      "validation_failures": [],
+      "verifier_mode": "label"
+    },
+    {
+      "images": [
+        "data/raw/plantvillage/full/images/train/008180.png"
+      ],
+      "prompt": "Identify the crop issue or pest in this agricultural image.\n\nChoose exactly one label from this allowed label set:\nAllowed labels: apple apple scab; apple black rot; apple cedar apple rust; apple healthy; blueberry healthy; cherry including sour healthy; cherry including sour powdery mildew; corn maize cercospora leaf spot gray leaf spot; corn maize common rust; corn maize healthy; corn maize northern leaf blight; grape black rot; grape esca black measles; grape healthy; grape leaf blight isariopsis leaf spot; orange haunglongbing citrus greening; peach bacterial spot; peach healthy; pepper bell bacterial spot; pepper bell healthy; potato early blight; potato healthy; potato late blight; raspberry healthy; soybean healthy; squash powdery mildew; strawberry healthy; strawberry leaf scorch; tomato bacterial spot; tomato early blight; tomato healthy; tomato late blight; tomato leaf mold; tomato septoria leaf spot; tomato spider mites two spotted spider mite; tomato target spot; tomato tomato mosaic virus; tomato tomato yellow leaf curl virus\nRespond in this format:\nAnswer: <one allowed label>\nEvidence: <brief visible symptom evidence>\nDo not leave Answer blank, invent labels, or copy the placeholder text.",
+      "sample_id": "plantvillage-train-008180",
+      "source_dataset": "plantvillage",
+      "split": "train",
+      "target": "Answer: corn maize healthy\nEvidence: Visible Corn (maize) symptoms support the healthy label.",
+      "task_type": "classification",
+      "validation_failures": [],
+      "verifier_mode": "label"
+    },
+    {
+      "images": [
+        "data/raw/plantvillage/full/images/train/003394.png"
+      ],
+      "prompt": "Identify the crop issue or pest in this agricultural image.\n\nChoose exactly one label from this allowed label set:\nAllowed labels: apple apple scab; apple black rot; apple cedar apple rust; apple healthy; blueberry healthy; cherry including sour healthy; cherry including sour powdery mildew; corn maize cercospora leaf spot gray leaf spot; corn maize common rust; corn maize healthy; corn maize northern leaf blight; grape black rot; grape esca black measles; grape healthy; grape leaf blight isariopsis leaf spot; orange haunglongbing citrus greening; peach bacterial spot; peach healthy; pepper bell bacterial spot; pepper bell healthy; potato early blight; potato healthy; potato late blight; raspberry healthy; soybean healthy; squash powdery mildew; strawberry healthy; strawberry leaf scorch; tomato bacterial spot; tomato early blight; tomato healthy; tomato late blight; tomato leaf mold; tomato septoria leaf spot; tomato spider mites two spotted spider mite; tomato target spot; tomato tomato mosaic virus; tomato tomato yellow leaf curl virus\nRespond in this format:\nAnswer: <one allowed label>\nEvidence: <brief visible symptom evidence>\nDo not leave Answer blank, invent labels, or copy the placeholder text.",
+      "sample_id": "plantvillage-train-003394",
+      "source_dataset": "plantvillage",
+      "split": "train",
+      "target": "Answer: blueberry healthy\nEvidence: Visible Blueberry symptoms support the healthy label.",
+      "task_type": "classification",
+      "validation_failures": [],
+      "verifier_mode": "label"
+    },
+    {
+      "images": [
+        "data/raw/ip102/full/ip102_v1.1/images/01693.jpg"
+      ],
+      "prompt": "Identify the insect or pest shown in this agricultural image.\n\nChoose exactly one label from this allowed label set:\nAllowed labels: Adristyrannus; Aleurocanthus spiniferus; alfalfa plant bug; alfalfa seed chalcid; alfalfa weevil; Ampelophaga; aphids; Aphis citricola Vander Goot; Apolygus lucorum; army worm; asiatic rice borer; Bactrocera tsuneonis; beet army worm; beet fly; Beet spot flies; beet weevil; bird cherry oataphid; black cutworm; blister beetle; Brevipoalpus lewisi McGregor; brown plant hopper; cabbage army worm; cerodonta denticornis; Ceroplastes rubens; Chlumetia transversa; Chrysomphalus aonidum; Cicadella viridis; Cicadellidae; Colomerus vitis; corn borer; Dacus dorsalis(Hendel); Dasineura sp; Deporaus marginatus Pascoe; english grain aphid; Erythroneura apicalis; flax budworm; flea beetle; grain spreader thrips; green bug; grub; Icerya purchasi Maskell; large cutworm; Lawana imitata Melichar; legume blister beetle; Limacodidae; Locustoidea; longlegged spider mite; Lycorma delicatula; lytta polita; Mango flat beak leafhopper; meadow moth; Miridae; mole cricket; Nipaecoccus vastalor; odontothrips loti; oides decempunctata; paddy stem maggot; Panonchus citri McGregor; Papilio xuthus; parathrene regalis; Parlatoria zizyphus Lucus; peach borer; penthaleus major; Phyllocnistis citrella Stainton; Phyllocoptes oleiverus ashmead; Pieris canidia; Polyphagotars onemus latus; Potosiabre vitarsis; Prodenia litura; Pseudococcus comstocki Kuwana; red spider; Rhytidodera bowrinii white; rice gall midge; rice leaf caterpillar; rice leaf roller; rice leafhopper; rice shell pest; Rice Stemfly; rice water weevil; Salurnis marginella Guerr; Scirtothrips dorsalis Hood; sericaorient alismots chulsky; small brown plant hopper; Sternochetus frigidus; tarnished plant bug; Tetradacus c Bactrocera minax; therioaphis maculata Buckton; Thrips; Toxoptera aurantii; Toxoptera citricidus; Trialeurodes vaporariorum; Unaspis yanonensis; Viteus vitifoliae; wheat blossom midge; wheat phloeothrips; wheat sawfly; white backed plant hopper; white margined moth; wireworm; Xylotrechus; yellow cutworm; yellow rice borer\nRespond in this format:\nAnswer: <one allowed label>\nEvidence: <brief visible symptom evidence>\nDo not leave Answer blank, invent labels, or copy the placeholder text.",
+      "sample_id": "ip102-ip102-v1-1-images-01693-jpg",
+      "source_dataset": "ip102",
+      "split": "train",
+      "target": "Answer: paddy stem maggot\nEvidence: Visible agricultural symptoms or pest features support this label.",
+      "task_type": "classification",
+      "validation_failures": [],
+      "verifier_mode": "label"
+    },
+    {
+      "images": [
+        "data/raw/ip102/full/ip102_v1.1/images/23159.jpg"
+      ],
+      "prompt": "Identify the insect or pest shown in this agricultural image.\n\nChoose exactly one label from this allowed label set:\nAllowed labels: Adristyrannus; Aleurocanthus spiniferus; alfalfa plant bug; alfalfa seed chalcid; alfalfa weevil; Ampelophaga; aphids; Aphis citricola Vander Goot; Apolygus lucorum; army worm; asiatic rice borer; Bactrocera tsuneonis; beet army worm; beet fly; Beet spot flies; beet weevil; bird cherry oataphid; black cutworm; blister beetle; Brevipoalpus lewisi McGregor; brown plant hopper; cabbage army worm; cerodonta denticornis; Ceroplastes rubens; Chlumetia transversa; Chrysomphalus aonidum; Cicadella viridis; Cicadellidae; Colomerus vitis; corn borer; Dacus dorsalis(Hendel); Dasineura sp; Deporaus marginatus Pascoe; english grain aphid; Erythroneura apicalis; flax budworm; flea beetle; grain spreader thrips; green bug; grub; Icerya purchasi Maskell; large cutworm; Lawana imitata Melichar; legume blister beetle; Limacodidae; Locustoidea; longlegged spider mite; Lycorma delicatula; lytta polita; Mango flat beak leafhopper; meadow moth; Miridae; mole cricket; Nipaecoccus vastalor; odontothrips loti; oides decempunctata; paddy stem maggot; Panonchus citri McGregor; Papilio xuthus; parathrene regalis; Parlatoria zizyphus Lucus; peach borer; penthaleus major; Phyllocnistis citrella Stainton; Phyllocoptes oleiverus ashmead; Pieris canidia; Polyphagotars onemus latus; Potosiabre vitarsis; Prodenia litura; Pseudococcus comstocki Kuwana; red spider; Rhytidodera bowrinii white; rice gall midge; rice leaf caterpillar; rice leaf roller; rice leafhopper; rice shell pest; Rice Stemfly; rice water weevil; Salurnis marginella Guerr; Scirtothrips dorsalis Hood; sericaorient alismots chulsky; small brown plant hopper; Sternochetus frigidus; tarnished plant bug; Tetradacus c Bactrocera minax; therioaphis maculata Buckton; Thrips; Toxoptera aurantii; Toxoptera citricidus; Trialeurodes vaporariorum; Unaspis yanonensis; Viteus vitifoliae; wheat blossom midge; wheat phloeothrips; wheat sawfly; white backed plant hopper; white margined moth; wireworm; Xylotrechus; yellow cutworm; yellow rice borer\nRespond in this format:\nAnswer: <one allowed label>\nEvidence: <brief visible symptom evidence>\nDo not leave Answer blank, invent labels, or copy the placeholder text.",
+      "sample_id": "ip102-ip102-v1-1-images-23159-jpg",
+      "source_dataset": "ip102",
+      "split": "train",
+      "target": "Answer: green bug\nEvidence: Visible agricultural symptoms or pest features support this label.",
+      "task_type": "classification",
+      "validation_failures": [],
+      "verifier_mode": "label"
+    },
+    {
+      "images": [
+        "data/raw/ip102/full/ip102_v1.1/images/16971.jpg"
+      ],
+      "prompt": "Identify the insect or pest shown in this agricultural image.\n\nChoose exactly one label from this allowed label set:\nAllowed labels: Adristyrannus; Aleurocanthus spiniferus; alfalfa plant bug; alfalfa seed chalcid; alfalfa weevil; Ampelophaga; aphids; Aphis citricola Vander Goot; Apolygus lucorum; army worm; asiatic rice borer; Bactrocera tsuneonis; beet army worm; beet fly; Beet spot flies; beet weevil; bird cherry oataphid; black cutworm; blister beetle; Brevipoalpus lewisi McGregor; brown plant hopper; cabbage army worm; cerodonta denticornis; Ceroplastes rubens; Chlumetia transversa; Chrysomphalus aonidum; Cicadella viridis; Cicadellidae; Colomerus vitis; corn borer; Dacus dorsalis(Hendel); Dasineura sp; Deporaus marginatus Pascoe; english grain aphid; Erythroneura apicalis; flax budworm; flea beetle; grain spreader thrips; green bug; grub; Icerya purchasi Maskell; large cutworm; Lawana imitata Melichar; legume blister beetle; Limacodidae; Locustoidea; longlegged spider mite; Lycorma delicatula; lytta polita; Mango flat beak leafhopper; meadow moth; Miridae; mole cricket; Nipaecoccus vastalor; odontothrips loti; oides decempunctata; paddy stem maggot; Panonchus citri McGregor; Papilio xuthus; parathrene regalis; Parlatoria zizyphus Lucus; peach borer; penthaleus major; Phyllocnistis citrella Stainton; Phyllocoptes oleiverus ashmead; Pieris canidia; Polyphagotars onemus latus; Potosiabre vitarsis; Prodenia litura; Pseudococcus comstocki Kuwana; red spider; Rhytidodera bowrinii white; rice gall midge; rice leaf caterpillar; rice leaf roller; rice leafhopper; rice shell pest; Rice Stemfly; rice water weevil; Salurnis marginella Guerr; Scirtothrips dorsalis Hood; sericaorient alismots chulsky; small brown plant hopper; Sternochetus frigidus; tarnished plant bug; Tetradacus c Bactrocera minax; therioaphis maculata Buckton; Thrips; Toxoptera aurantii; Toxoptera citricidus; Trialeurodes vaporariorum; Unaspis yanonensis; Viteus vitifoliae; wheat blossom midge; wheat phloeothrips; wheat sawfly; white backed plant hopper; white margined moth; wireworm; Xylotrechus; yellow cutworm; yellow rice borer\nRespond in this format:\nAnswer: <one allowed label>\nEvidence: <brief visible symptom evidence>\nDo not leave Answer blank, invent labels, or copy the placeholder text.",
+      "sample_id": "ip102-ip102-v1-1-images-16971-jpg",
+      "source_dataset": "ip102",
+      "split": "train",
+      "target": "Answer: army worm\nEvidence: Visible agricultural symptoms or pest features support this label.",
+      "task_type": "classification",
+      "validation_failures": [],
+      "verifier_mode": "label"
+    },
+    {
+      "images": [
+        "data/raw/agbase/full/634428/634428_3.jpg",
+        "data/raw/agbase/full/634428/634428_2.jpg",
+        "data/raw/agbase/full/634428/634428_1.jpg"
+      ],
+      "prompt": "Provide an expert agricultural diagnosis and management plan for the issue shown.\n\nRespond using these line-start section headers exactly once:\nDiagnosis:\nEvidence:\nUncertainty:\nManagement:\nFollow-up:",
+      "sample_id": "agbase-agbase-634428",
+      "source_dataset": "agbase",
+      "split": "train",
+      "target": "Diagnosis: frost damage\nEvidence: turning brown at edges and crumbling\nUncertainty: Image-only assessment; confirm with field context before treatment.\nManagement: keep an eye on the plants to see if new symptoms develop in healthy foliage as the weather gets warmer\nFollow-up: Share close-up images and crop history if symptoms progress or the diagnosis is uncertain.",
+      "task_type": "consultation",
+      "validation_failures": [],
+      "verifier_mode": "structured"
+    },
+    {
+      "images": [
+        "data/raw/agbase/full/610071/610071_1.jpg"
+      ],
+      "prompt": "Provide an expert agricultural diagnosis and management plan for the issue shown.\n\nRespond using these line-start section headers exactly once:\nDiagnosis:\nEvidence:\nUncertainty:\nManagement:\nFollow-up:",
+      "sample_id": "agbase-agbase-610071",
+      "source_dataset": "agbase",
+      "split": "train",
+      "target": "Diagnosis: tree, perennial plants\nEvidence: Visible symptoms should be checked against the image and crop context.\nUncertainty: Image-only assessment; confirm with field context before treatment.\nManagement: No source-specific management step was provided; recommend local extension follow-up.\nFollow-up: Share close-up images and crop history if symptoms progress or the diagnosis is uncertain.",
+      "task_type": "consultation",
+      "validation_failures": [],
+      "verifier_mode": "structured"
+    },
+    {
+      "images": [
+        "data/raw/agbase/full/630480/630480_2.jpg",
+        "data/raw/agbase/full/630480/630480_1.jpg"
+      ],
+      "prompt": "Provide an expert agricultural diagnosis and management plan for the issue shown.\n\nRespond using these line-start section headers exactly once:\nDiagnosis:\nEvidence:\nUncertainty:\nManagement:\nFollow-up:",
+      "sample_id": "agbase-agbase-630480",
+      "source_dataset": "agbase",
+      "split": "train",
+      "target": "Diagnosis: northern watersnake\nEvidence: Visible symptoms should be checked against the image and crop context.\nUncertainty: Image-only assessment; confirm with field context before treatment.\nManagement: No source-specific management step was provided; recommend local extension follow-up.\nFollow-up: Share close-up images and crop history if symptoms progress or the diagnosis is uncertain.",
+      "task_type": "consultation",
+      "validation_failures": [],
+      "verifier_mode": "structured"
+    },
+    {
+      "images": [
+        "data/raw/agbase/full/656350/656350_1.jpg"
+      ],
+      "prompt": "Provide an expert agricultural diagnosis and management plan for the issue shown.\n\nRespond using these line-start section headers exactly once:\nDiagnosis:\nEvidence:\nUncertainty:\nManagement:\nFollow-up:",
+      "sample_id": "agbase-agbase-656350",
+      "source_dataset": "agbase",
+      "split": "train",
+      "target": "Diagnosis: rose\nEvidence: Visible symptoms should be checked against the image and crop context.\nUncertainty: Image-only assessment; confirm with field context before treatment.\nManagement: spray them if there are lots feeding on your roses\nFollow-up: Share close-up images and crop history if symptoms progress or the diagnosis is uncertain.",
+      "task_type": "consultation",
+      "validation_failures": [],
+      "verifier_mode": "structured"
+    },
+    {
+      "images": [
+        "data/raw/agbase/full/655689/655689_1.jpg"
+      ],
+      "prompt": "Provide an expert agricultural diagnosis and management plan for the issue shown.\n\nRespond using these line-start section headers exactly once:\nDiagnosis:\nEvidence:\nUncertainty:\nManagement:\nFollow-up:",
+      "sample_id": "agbase-agbase-655689",
+      "source_dataset": "agbase",
+      "split": "train",
+      "target": "Diagnosis: herbicide damage, likely 2,4-d\nEvidence: Visible symptoms should be checked against the image and crop context.\nUncertainty: Image-only assessment; confirm with field context before treatment.\nManagement: No source-specific management step was provided; recommend local extension follow-up.\nFollow-up: Share close-up images and crop history if symptoms progress or the diagnosis is uncertain.",
+      "task_type": "consultation",
+      "validation_failures": [],
+      "verifier_mode": "structured"
+    },
+    {
+      "images": [
+        "data/raw/agbase/full/870690/870690_1.jpg",
+        "data/raw/agbase/full/870690/870690_2.jpg"
+      ],
+      "prompt": "Provide an expert agricultural diagnosis and management plan for the issue shown.\n\nRespond using these line-start section headers exactly once:\nDiagnosis:\nEvidence:\nUncertainty:\nManagement:\nFollow-up:",
+      "sample_id": "agbase-agbase-870690",
+      "source_dataset": "agbase",
+      "split": "train",
+      "target": "Diagnosis: ely pear tree\nEvidence: Visible symptoms should be checked against the image and crop context.\nUncertainty: Image-only assessment; confirm with field context before treatment.\nManagement: No source-specific management step was provided; recommend local extension follow-up.\nFollow-up: Share close-up images and crop history if symptoms progress or the diagnosis is uncertain.",
+      "task_type": "consultation",
+      "validation_failures": [],
+      "verifier_mode": "structured"
+    },
+    {
+      "images": [
+        "data/raw/agbase/full/656558/656558_1.jpg",
+        "data/raw/agbase/full/656558/656558_3.jpg"
+      ],
+      "prompt": "Provide an expert agricultural diagnosis and management plan for the issue shown.\n\nRespond using these line-start section headers exactly once:\nDiagnosis:\nEvidence:\nUncertainty:\nManagement:\nFollow-up:",
+      "sample_id": "agbase-agbase-656558",
+      "source_dataset": "agbase",
+      "split": "train",
+      "target": "Diagnosis: pepper plant, tomato plant\nEvidence: Visible symptoms should be checked against the image and crop context.\nUncertainty: Image-only assessment; confirm with field context before treatment.\nManagement: enclose plants in row cover material to prevent further damage\nFollow-up: Share close-up images and crop history if symptoms progress or the diagnosis is uncertain.",
+      "task_type": "consultation",
+      "validation_failures": [],
+      "verifier_mode": "structured"
+    },
+    {
+      "images": [
+        "data/raw/agbase/full/796740/796740_2.jpg",
+        "data/raw/agbase/full/796740/796740_3.jpg",
+        "data/raw/agbase/full/796740/796740_1.jpg"
+      ],
+      "prompt": "Provide an expert agricultural diagnosis and management plan for the issue shown.\n\nRespond using these line-start section headers exactly once:\nDiagnosis:\nEvidence:\nUncertainty:\nManagement:\nFollow-up:",
+      "sample_id": "agbase-agbase-796740",
+      "source_dataset": "agbase",
+      "split": "train",
+      "target": "Diagnosis: red ringspot virus\nEvidence: reddish brown on the leaves\nUncertainty: Image-only assessment; confirm with field context before treatment.\nManagement: no treatments available, consider removing and replanting if plants are performing poorly, otherwise wait to see how the plants do in the next year or so\nFollow-up: Share close-up images and crop history if symptoms progress or the diagnosis is uncertain.",
+      "task_type": "consultation",
+      "validation_failures": [],
+      "verifier_mode": "structured"
+    },
+    {
+      "images": [
+        "data/raw/plantvillage_vqa/full/images/train/image_016499.JPG"
+      ],
+      "prompt": "What is the medical/botanical diagnosis for these manifestations?\n\nRespond in this format:\nAnswer: <short answer>",
+      "sample_id": "plantvillage_vqa-image_016499.JPG-048325",
+      "source_dataset": "plantvillage_vqa",
+      "split": "train",
+      "target": "Answer: The leaf shows blotchy, asymmetrical yellowing, a classic symptom of HLB.",
+      "task_type": "vqa",
+      "validation_failures": [],
+      "verifier_mode": "exact_match"
+    },
+    {
+      "images": [
+        "data/raw/plantvillage_vqa/full/images/train/image_017823.JPG"
+      ],
+      "prompt": "Assess this picture and provide a summarized botanical evaluation.\n\nRespond in this format:\nAnswer: <short answer>",
+      "sample_id": "plantvillage_vqa-image_017823.JPG-052137",
+      "source_dataset": "plantvillage_vqa",
+      "split": "train",
+      "target": "Answer: The cause is the bacterium Candidatus Liberibacter asiaticus, leading to Huanglongbing.",
+      "task_type": "vqa",
+      "validation_failures": [],
+      "verifier_mode": "exact_match"
+    },
+    {
+      "images": [
+        "data/raw/plantvillage_vqa/full/images/train/image_010779.JPG"
+      ],
+      "prompt": "Can you find the source of this plant's poor condition?\n\nRespond in this format:\nAnswer: <short answer>",
+      "sample_id": "plantvillage_vqa-image_010779.JPG-031422",
+      "source_dataset": "plantvillage_vqa",
+      "split": "train",
+      "target": "Answer: Diagnosis: Leaf Mold.",
+      "task_type": "vqa",
+      "validation_failures": [],
+      "verifier_mode": "exact_match"
+    },
+    {
+      "images": [
+        "data/raw/plantvillage_vqa/full/images/train/image_043904.JPG"
+      ],
+      "prompt": "Which disease-causing factor is behind these signs?\n\nRespond in this format:\nAnswer: <short answer>",
+      "sample_id": "plantvillage_vqa-image_043904.JPG-129095",
+      "source_dataset": "plantvillage_vqa",
+      "split": "train",
+      "target": "Answer: This is Bacterial Spot. Note the small, dark, water-soaked lesions.",
+      "task_type": "vqa",
+      "validation_failures": [],
+      "verifier_mode": "exact_match"
+    },
+    {
+      "images": [
+        "data/raw/plantvillage_vqa/full/images/train/image_033205.JPG"
+      ],
+      "prompt": "What is the scientific identification of this plant sample?\n\nRespond in this format:\nAnswer: <short answer>",
+      "sample_id": "plantvillage_vqa-image_033205.JPG-097741",
+      "source_dataset": "plantvillage_vqa",
+      "split": "train",
+      "target": "Answer: Tomato",
+      "task_type": "vqa",
+      "validation_failures": [],
+      "verifier_mode": "exact_match"
+    },
+    {
+      "images": [
+        "data/raw/plantvillage_vqa/full/images/train/image_012346.JPG"
+      ],
+      "prompt": "How would you evaluate the comprehensive wellness condition of this botanical sample?\n\nRespond in this format:\nAnswer: <short answer>",
+      "sample_id": "plantvillage_vqa-image_012346.JPG-036057",
+      "source_dataset": "plantvillage_vqa",
+      "split": "train",
+      "target": "Answer: This is a viral infection: TYLCV.",
+      "task_type": "vqa",
+      "validation_failures": [],
+      "verifier_mode": "exact_match"
+    },
+    {
+      "images": [
+        "data/raw/plantvillage_vqa/full/images/train/image_028777.JPG"
+      ],
+      "prompt": "What accounts for the abnormalities in this leaf?\n\nRespond in this format:\nAnswer: <short answer>",
+      "sample_id": "plantvillage_vqa-image_028777.JPG-084568",
+      "source_dataset": "plantvillage_vqa",
+      "split": "train",
+      "target": "Answer: The plant is affected by Bacterial Spot disease.",
+      "task_type": "vqa",
+      "validation_failures": [],
+      "verifier_mode": "exact_match"
+    },
+    {
+      "images": [
+        "data/raw/plantvillage_vqa/full/images/train/image_018127.JPG"
+      ],
+      "prompt": "What infectious agent, if any, is causing symptoms on this tomato leaf?\n\nRespond in this format:\nAnswer: <short answer>",
+      "sample_id": "plantvillage_vqa-image_018127.JPG-053022",
+      "source_dataset": "plantvillage_vqa",
+      "split": "train",
+      "target": "Answer: The causal agent is the Tomato Yellow Leaf Curl Virus.",
+      "task_type": "vqa",
+      "validation_failures": [],
+      "verifier_mode": "exact_match"
+    }
+  ],
+  "json_output_path": "/blue/hmedeiros/qinruoyao/agvlm/reports/sft_stage4_datafix/sft_train_phi4_max3_stage4_closed_label_datafix_format_audit.json",
+  "manifest_by_task": {
+    "clarify_or_respond": 6482,
+    "classification": 46848,
+    "consultation": 25000,
+    "vqa": 50000
+  },
+  "manifest_path": "/blue/hmedeiros/qinruoyao/agvlm/data/manifests/full/sft_train_phi4_max3_stage4_closed_label_datafix.jsonl",
+  "manifest_rows": 128330,
+  "markdown_output_path": "/blue/hmedeiros/qinruoyao/agvlm/reports/sft_stage4_datafix/sft_train_phi4_max3_stage4_closed_label_datafix_format_audit.md",
+  "prompt_format": "instructional",
+  "rendered_by_task": {
+    "clarify_or_respond": 8,
+    "classification": 8,
+    "consultation": 8,
+    "vqa": 8
+  },
+  "rendered_examples": 32,
+  "samples_per_task": 8,
+  "seed": 47,
+  "target_format": "instructional",
+  "validation_failure_count": 0,
+  "validation_failures": {}
+}

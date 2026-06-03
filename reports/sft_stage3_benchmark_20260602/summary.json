@@ -1,0 +1,353 @@
+{
+  "adapter_validation": {
+    "adapter_config_path": "/orange/hmedeiros/qinruoyao/agvlm/outputs/sft/phi4-reasoning-vision-15b-closed-label-classification-repair-stage3-b200-4gpu/adapter_config.json",
+    "adapter_dir": "/orange/hmedeiros/qinruoyao/agvlm/outputs/sft/phi4-reasoning-vision-15b-closed-label-classification-repair-stage3-b200-4gpu",
+    "adapter_model_path": "/orange/hmedeiros/qinruoyao/agvlm/outputs/sft/phi4-reasoning-vision-15b-closed-label-classification-repair-stage3-b200-4gpu/adapter_model.safetensors",
+    "base_model_name_or_path": "microsoft/Phi-4-reasoning-vision-15B",
+    "first_tensor": "base_model.model.model.layers.0.mlp.down_proj.lora_A.weight",
+    "first_tensor_dtype": "torch.bfloat16",
+    "first_tensor_shape": [
+      256,
+      17920
+    ],
+    "format": "safetensors",
+    "non_empty_tensors": 320,
+    "num_tensors": 320,
+    "path": "/orange/hmedeiros/qinruoyao/agvlm/outputs/sft/phi4-reasoning-vision-15b-closed-label-classification-repair-stage3-b200-4gpu/adapter_model.safetensors",
+    "peft_type": "LORA"
+  },
+  "benchmark_metadata": {
+    "device": "cuda:0",
+    "dtype": "bf16",
+    "metadata_path": "benchmarks/vlm_baselines/results/agvlm_stage3_closed_label_classification_repair_benchmark_20260601/metadata/sft-benchmark-agvlm-phi4-sft-closed-label-classification-repair-stage3-b200-candidate-test_run.json",
+    "num_samples": 392,
+    "oom_fallback_used": false,
+    "output_dir": "benchmarks/vlm_baselines/results/agvlm_stage3_closed_label_classification_repair_benchmark_20260601",
+    "quantization": "4bit",
+    "split_manifest": "/blue/hmedeiros/qinruoyao/agvlm/benchmarks/vlm_baselines/splits/sft_test_manifest.jsonl"
+  },
+  "benchmark_status": "completed",
+  "benchmark_status_report": {
+    "error_count": 0,
+    "ok": true,
+    "path": "reports/benchmark_status_sft_20260602.json",
+    "warning_count": 2
+  },
+  "created_at_utc": "2026-06-02T15:18:46.895231+00:00",
+  "decision": "PASS_ACTIVE_BASELINE_BUT_DO_NOT_AUTO_PROMOTE_OVER_STAGE2",
+  "deltas": {
+    "stage3_minus_active_previous_sft": {
+      "clarify_decision_accuracy": 0.1428571428571429,
+      "clarify_macro_f1": 0.14451612903225797,
+      "clarify_over_clarification_rate": -0.2222222222222222,
+      "clarify_under_clarification_rate": -0.10526315789473684,
+      "classification_accepted_label_accuracy": 0.008771929824561403,
+      "classification_balanced_accuracy": 0.01639344262295082,
+      "classification_macro_f1": 0.00034153005464480874,
+      "classification_out_of_label_space_rate": -1.0,
+      "classification_top1_accuracy": 0.008771929824561403,
+      "classification_weighted_f1": 0.0001827485380116959,
+      "invalid_prediction_rate": -0.30357142857142855,
+      "num_invalid_predictions": -119,
+      "task_macro_average": 0.07761921969563423,
+      "vqa_exact_match": 0.172,
+      "vqa_relaxed_accuracy": 0.088,
+      "vqa_token_f1": 0.18572901855088603,
+      "vqa_yes_no_accuracy": 0.2
+    },
+    "stage3_minus_stage2_b200_retry_full": {
+      "clarify_decision_accuracy": -0.0714285714285714,
+      "clarify_macro_f1": -0.006462103330710844,
+      "clarify_over_clarification_rate": -0.4444444444444445,
+      "clarify_under_clarification_rate": 0.3157894736842105,
+      "classification_accepted_label_accuracy": -0.02631578947368421,
+      "classification_balanced_accuracy": 0.0,
+      "classification_macro_f1": -0.0009831925815532376,
+      "classification_out_of_label_space_rate": -0.16666666666666666,
+      "classification_top1_accuracy": -0.02631578947368421,
+      "classification_weighted_f1": -0.0026526227184121925,
+      "invalid_prediction_rate": 0.0,
+      "num_invalid_predictions": 0,
+      "task_macro_average": 0.004184901362578597,
+      "vqa_exact_match": 0.01999999999999999,
+      "vqa_relaxed_accuracy": 0.01999999999999999,
+      "vqa_token_f1": 0.02547432065458974,
+      "vqa_yes_no_accuracy": 0.045454545454545525
+    }
+  },
+  "gates": {
+    "stage3_vs_active_previous_sft": {
+      "checks": [
+        {
+          "baseline": 0.22877419354838713,
+          "candidate": 0.30639341324402136,
+          "direction": "higher",
+          "metric": "task_macro_average",
+          "passed": true,
+          "preferred_delta": 0.07761921969563423
+        },
+        {
+          "baseline": 0.156,
+          "candidate": 0.244,
+          "direction": "higher",
+          "metric": "vqa_relaxed_accuracy",
+          "passed": true,
+          "preferred_delta": 0.088
+        },
+        {
+          "baseline": 0.5303225806451614,
+          "candidate": 0.6748387096774193,
+          "direction": "higher",
+          "metric": "clarify_macro_f1",
+          "passed": true,
+          "preferred_delta": 0.14451612903225797
+        },
+        {
+          "baseline": 119,
+          "candidate": 0,
+          "direction": "lower",
+          "metric": "num_invalid_predictions",
+          "passed": true,
+          "preferred_delta": 119
+        }
+      ],
+      "passed": true
+    },
+    "stage3_vs_stage2_b200_retry_full": {
+      "checks": [
+        {
+          "baseline": 0.30220851188144277,
+          "candidate": 0.30639341324402136,
+          "direction": "higher",
+          "metric": "task_macro_average",
+          "passed": true,
+          "preferred_delta": 0.004184901362578597
+        },
+        {
+          "baseline": 0.224,
+          "candidate": 0.244,
+          "direction": "higher",
+          "metric": "vqa_relaxed_accuracy",
+          "passed": true,
+          "preferred_delta": 0.01999999999999999
+        },
+        {
+          "baseline": 0.6813008130081302,
+          "candidate": 0.6748387096774193,
+          "direction": "higher",
+          "metric": "clarify_macro_f1",
+          "passed": false,
+          "preferred_delta": -0.006462103330710844
+        },
+        {
+          "baseline": 0,
+          "candidate": 0,
+          "direction": "lower",
+          "metric": "num_invalid_predictions",
+          "passed": true,
+          "preferred_delta": 0
+        }
+      ],
+      "passed": false
+    }
+  },
+  "models": {
+    "active_previous_sft": {
+      "clarify_decision_accuracy": 0.5357142857142857,
+      "clarify_macro_f1": 0.5303225806451614,
+      "clarify_over_clarification_rate": 0.3333333333333333,
+      "clarify_under_clarification_rate": 0.5263157894736842,
+      "classification_accepted_label_accuracy": 0.0,
+      "classification_balanced_accuracy": 0.0,
+      "classification_macro_f1": 0.0,
+      "classification_out_of_label_space_rate": 1.0,
+      "classification_top1_accuracy": 0.0,
+      "classification_weighted_f1": 0.0,
+      "invalid_prediction_rate": 0.30357142857142855,
+      "num_invalid_predictions": 119,
+      "task_macro_average": 0.22877419354838713,
+      "vqa_exact_match": 0.0,
+      "vqa_relaxed_accuracy": 0.156,
+      "vqa_token_f1": 0.04289567489567973,
+      "vqa_yes_no_accuracy": 0.35454545454545455
+    },
+    "stage2_b200_closed_label_prompt": {
+      "clarify_decision_accuracy": 0.75,
+      "clarify_macro_f1": 0.6813008130081302,
+      "clarify_over_clarification_rate": 0.5555555555555556,
+      "clarify_under_clarification_rate": 0.10526315789473684,
+      "classification_accepted_label_accuracy": 0.008771929824561403,
+      "classification_balanced_accuracy": 0.01639344262295082,
+      "classification_macro_f1": 0.0002851033499643621,
+      "classification_out_of_label_space_rate": 0.0,
+      "classification_top1_accuracy": 0.008771929824561403,
+      "classification_weighted_f1": 0.00015255530129672007,
+      "invalid_prediction_rate": 0.0,
+      "num_invalid_predictions": 0,
+      "task_macro_average": 0.30186197211936483,
+      "vqa_exact_match": 0.152,
+      "vqa_relaxed_accuracy": 0.224,
+      "vqa_token_f1": 0.20315037279197604,
+      "vqa_yes_no_accuracy": 0.509090909090909
+    },
+    "stage2_b200_retry_full": {
+      "clarify_decision_accuracy": 0.75,
+      "clarify_macro_f1": 0.6813008130081302,
+      "clarify_over_clarification_rate": 0.5555555555555556,
+      "clarify_under_clarification_rate": 0.10526315789473684,
+      "classification_accepted_label_accuracy": 0.03508771929824561,
+      "classification_balanced_accuracy": 0.01639344262295082,
+      "classification_macro_f1": 0.0013247226361980462,
+      "classification_out_of_label_space_rate": 0.16666666666666666,
+      "classification_top1_accuracy": 0.03508771929824561,
+      "classification_weighted_f1": 0.0028353712564238884,
+      "invalid_prediction_rate": 0.0,
+      "num_invalid_predictions": 0,
+      "task_macro_average": 0.30220851188144277,
+      "vqa_exact_match": 0.152,
+      "vqa_relaxed_accuracy": 0.224,
+      "vqa_token_f1": 0.20315037279197604,
+      "vqa_yes_no_accuracy": 0.509090909090909
+    },
+    "stage3_closed_label_candidate": {
+      "clarify_decision_accuracy": 0.6785714285714286,
+      "clarify_macro_f1": 0.6748387096774193,
+      "clarify_over_clarification_rate": 0.1111111111111111,
+      "clarify_under_clarification_rate": 0.42105263157894735,
+      "classification_accepted_label_accuracy": 0.008771929824561403,
+      "classification_balanced_accuracy": 0.01639344262295082,
+      "classification_macro_f1": 0.00034153005464480874,
+      "classification_out_of_label_space_rate": 0.0,
+      "classification_top1_accuracy": 0.008771929824561403,
+      "classification_weighted_f1": 0.0001827485380116959,
+      "invalid_prediction_rate": 0.0,
+      "num_invalid_predictions": 0,
+      "task_macro_average": 0.30639341324402136,
+      "vqa_exact_match": 0.172,
+      "vqa_relaxed_accuracy": 0.244,
+      "vqa_token_f1": 0.22862469344656577,
+      "vqa_yes_no_accuracy": 0.5545454545454546
+    }
+  },
+  "recommendation": "Keep the Stage2 B200 candidate as the safer promotion candidate for now; Stage3 improved VQA and aggregate macro but regressed clarify/respond versus Stage2 and collapsed classification outputs to two labels.",
+  "source_paths": {
+    "adapter_validation": "/orange/hmedeiros/qinruoyao/agvlm/outputs/sft/phi4-reasoning-vision-15b-closed-label-classification-repair-stage3-b200-4gpu/adapter_validation.json",
+    "stage2_closed_prompt_metrics": "benchmarks/vlm_baselines/results/agvlm_stage2_b200_closed_label_prompt_benchmark_20260601/metrics/sft-benchmark_agvlm-phi4-sft-classification-repair-instructional-stage2-b200-candidate_test_metrics.json",
+    "stage2_decision_summary": "reports/sft_stage_decision_retry_full_20260601/summary.json",
+    "stage3_metadata": "benchmarks/vlm_baselines/results/agvlm_stage3_closed_label_classification_repair_benchmark_20260601/metadata/sft-benchmark-agvlm-phi4-sft-closed-label-classification-repair-stage3-b200-candidate-test_run.json",
+    "stage3_metrics": "benchmarks/vlm_baselines/results/agvlm_stage3_closed_label_classification_repair_benchmark_20260601/metrics/sft-benchmark_agvlm-phi4-sft-closed-label-classification-repair-stage3-b200-candidate_test_metrics.json",
+    "stage3_predictions": "benchmarks/vlm_baselines/results/agvlm_stage3_closed_label_classification_repair_benchmark_20260601/predictions/sft-benchmark-agvlm-phi4-sft-closed-label-classification-repair-stage3-b200-candidate-test.jsonl"
+  },
+  "stage3_prediction_diagnostics": {
+    "by_task": {
+      "clarify_or_respond": {
+        "decision_counts": {
+          "clarify": 12,
+          "respond": 16
+        },
+        "invalid_count": 0,
+        "num_examples": 28,
+        "parse_status_counts": {
+          "exact": 12,
+          "inferred": 16
+        }
+      },
+      "classification": {
+        "invalid_count": 0,
+        "normalized_prediction_counts": {
+          "rice gall midge": 95,
+          "rice stemfly": 19
+        },
+        "num_examples": 114,
+        "parse_status_counts": {
+          "exact": 114
+        },
+        "raw_output_prefix_counts": {
+          "answer: 6 rice gall midge": 95,
+          "answer: 7 rice stemfly evidence:": 19
+        }
+      },
+      "vqa": {
+        "invalid_count": 0,
+        "num_examples": 250,
+        "parse_status_counts": {
+          "exact": 212,
+          "raw": 38
+        }
+      }
+    },
+    "classification_collapse_note": "All 114 classification examples were parsed as exact, but 95 predicted rice gall midge and 19 predicted rice stemfly.",
+    "prediction_path": "benchmarks/vlm_baselines/results/agvlm_stage3_closed_label_classification_repair_benchmark_20260601/predictions/sft-benchmark-agvlm-phi4-sft-closed-label-classification-repair-stage3-b200-candidate-test.jsonl"
+  },
+  "training_summary": {
+    "eval_loss_first": 3.6656081676483154,
+    "eval_loss_last": 3.969759702682495,
+    "eval_losses": [
+      {
+        "epoch": 0.07641973539666619,
+        "eval_loss": 3.6656081676483154,
+        "eval_runtime": 82.2274,
+        "eval_samples_per_second": 6.227,
+        "eval_steps_per_second": 1.557,
+        "global_step": 200
+      },
+      {
+        "epoch": 0.15283947079333238,
+        "eval_loss": 3.800503730773926,
+        "eval_runtime": 82.8976,
+        "eval_samples_per_second": 6.176,
+        "eval_steps_per_second": 1.544,
+        "global_step": 400
+      },
+      {
+        "epoch": 0.22925920618999857,
+        "eval_loss": 3.8712806701660156,
+        "eval_runtime": 81.8858,
+        "eval_samples_per_second": 6.253,
+        "eval_steps_per_second": 1.563,
+        "global_step": 600
+      },
+      {
+        "epoch": 0.30567894158666475,
+        "eval_loss": 3.924314022064209,
+        "eval_runtime": 82.4024,
+        "eval_samples_per_second": 6.213,
+        "eval_steps_per_second": 1.553,
+        "global_step": 800
+      },
+      {
+        "epoch": 0.38209867698333094,
+        "eval_loss": 3.9211273193359375,
+        "eval_runtime": 83.2417,
+        "eval_samples_per_second": 6.151,
+        "eval_steps_per_second": 1.538,
+        "global_step": 1000
+      },
+      {
+        "epoch": 0.45851841237999713,
+        "eval_loss": 3.969759702682495,
+        "eval_runtime": 83.3383,
+        "eval_samples_per_second": 6.144,
+        "eval_steps_per_second": 1.536,
+        "global_step": 1200
+      }
+    ],
+    "loss_first": 6.2027,
+    "loss_last": 2.5926,
+    "loss_mean": 3.2554048333333334,
+    "loss_min": 2.1795,
+    "loss_rows": 1200,
+    "max_global_step": 1200,
+    "metric_rows": 1207,
+    "metrics_path": "outputs/sft/phi4-reasoning-vision-15b-closed-label-classification-repair-stage3-b200-4gpu/metrics/train_metrics.jsonl",
+    "train_summary": {
+      "epoch": 0.45851841237999713,
+      "global_step": 1200,
+      "total_flos": 288467796246528.0,
+      "train_loss": 3.2554044969876608,
+      "train_runtime": 32756.1775,
+      "train_samples_per_second": 2.345,
+      "train_steps_per_second": 0.037
+    }
+  }
+}

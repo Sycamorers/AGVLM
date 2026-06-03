@@ -84,11 +84,15 @@ def test_data_prep_pipeline_generates_report(tmp_path: Path) -> None:
     assert report["subset_tag"] == "partial_10pct"
     assert report["datasets"]["ip102"]["normalized_rows"] >= 1
     assert set(report["datasets"]) == {
-        "agbase",
-        "agrillava",
-        "ip102",
-        "mirage",
-        "plantdoc",
-        "plantvillage",
-        "plantvillage_vqa",
-    }
+            "agbase",
+            "agrillava",
+            "banana_disease",
+            "digigreen_crop_disease",
+            "ip102",
+            "mirage",
+            "plantdoc",
+            "plantvillage",
+            "plantvillage_vqa",
+            "rice_disease",
+            "tea_sickness",
+        }

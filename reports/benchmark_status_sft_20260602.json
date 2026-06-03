@@ -1,0 +1,666 @@
+{
+  "checks": [
+    {
+      "details": {
+        "exact_sample_id_count": 0,
+        "exact_sample_id_examples": [],
+        "group_key_count": 0,
+        "group_key_examples": []
+      },
+      "message": "rl_benchmark has no train/eval sample-id or group overlap.",
+      "ok": true,
+      "severity": "error"
+    },
+    {
+      "details": [],
+      "message": "rl_benchmark split manifests have no duplicate sample IDs.",
+      "ok": true,
+      "severity": "error"
+    },
+    {
+      "details": {
+        "exact_sample_id_count": 0,
+        "exact_sample_id_examples": [],
+        "group_key_count": 0,
+        "group_key_examples": []
+      },
+      "message": "sft_benchmark has no train/eval sample-id or group overlap.",
+      "ok": true,
+      "severity": "error"
+    },
+    {
+      "details": [],
+      "message": "sft_benchmark split manifests have no duplicate sample IDs.",
+      "ok": true,
+      "severity": "error"
+    },
+    {
+      "details": [
+        "allenai-molmo2-4b",
+        "google-paligemma2-3b-mix-448",
+        "huggingfacetb-smolvlm2-2-2b-instruct",
+        "llava-hf-llava-onevision-qwen2-7b-ov-hf",
+        "microsoft-phi-4-multimodal-instruct",
+        "qwen-qwen2-5-vl-3b-instruct"
+      ],
+      "message": "External baseline model config parses.",
+      "ok": true,
+      "severity": "error"
+    },
+    {
+      "details": {
+        "entries": {
+          "agvlm_phi4_base": {
+            "adapter_path": "",
+            "adapter_type": "hf_base",
+            "base_model_name_or_path": "microsoft/Phi-4-reasoning-vision-15B",
+            "checkpoint_path": "",
+            "checkpoint_type": "base",
+            "errors": [],
+            "warnings": []
+          },
+          "agvlm_phi4_rl_completed": {
+            "adapter_path": "CHANGE_ME_COMPLETED_RL_ADAPTER_IF_LORA",
+            "adapter_type": "agvlm_rl",
+            "base_model_name_or_path": "microsoft/Phi-4-reasoning-vision-15B",
+            "checkpoint_path": "CHANGE_ME_COMPLETED_RL_CHECKPOINT_OR_MERGED_MODEL",
+            "checkpoint_type": "rl",
+            "errors": [],
+            "warnings": [
+              "Model agvlm_phi4_rl_completed has a placeholder or empty checkpoint/adapter path. Replace it with a completed checkpoint before running.",
+              "RL model agvlm_phi4_rl_completed must record initialized_from_sft_checkpoint."
+            ]
+          },
+          "agvlm_phi4_sft_balanced_v2_instructional_completed": {
+            "adapter_path": "/orange/hmedeiros/qinruoyao/agvlm/outputs/sft/phi4-reasoning-vision-15b-balanced-v2-instructional-full-turin16-batch1",
+            "adapter_type": "agvlm_sft",
+            "base_model_name_or_path": "microsoft/Phi-4-reasoning-vision-15B",
+            "checkpoint_path": "",
+            "checkpoint_type": "sft",
+            "errors": [],
+            "warnings": []
+          },
+          "agvlm_phi4_sft_classification_repair_instructional_pilot_completed": {
+            "adapter_path": "/orange/hmedeiros/qinruoyao/agvlm/outputs/sft/phi4-reasoning-vision-15b-classification-repair-instructional-pilot-turin16-batch1",
+            "adapter_type": "agvlm_sft",
+            "base_model_name_or_path": "microsoft/Phi-4-reasoning-vision-15B",
+            "checkpoint_path": "",
+            "checkpoint_type": "sft",
+            "errors": [],
+            "warnings": []
+          },
+          "agvlm_phi4_sft_classification_repair_instructional_stage2_b200_candidate": {
+            "adapter_path": "/orange/hmedeiros/qinruoyao/agvlm/outputs/sft/phi4-reasoning-vision-15b-classification-repair-instructional-stage2-b200-4gpu",
+            "adapter_type": "agvlm_sft",
+            "base_model_name_or_path": "microsoft/Phi-4-reasoning-vision-15B",
+            "checkpoint_path": "",
+            "checkpoint_type": "sft",
+            "errors": [],
+            "warnings": []
+          },
+          "agvlm_phi4_sft_closed_label_classification_repair_stage3_b200_candidate": {
+            "adapter_path": "/orange/hmedeiros/qinruoyao/agvlm/outputs/sft/phi4-reasoning-vision-15b-closed-label-classification-repair-stage3-b200-4gpu",
+            "adapter_type": "agvlm_sft",
+            "base_model_name_or_path": "microsoft/Phi-4-reasoning-vision-15B",
+            "checkpoint_path": "",
+            "checkpoint_type": "sft",
+            "errors": [],
+            "warnings": []
+          },
+          "agvlm_phi4_sft_completed": {
+            "adapter_path": "/orange/hmedeiros/qinruoyao/agvlm/outputs/sft/phi4-reasoning-vision-15b-full-max3-turin-16gpu-batch1",
+            "adapter_type": "agvlm_sft",
+            "base_model_name_or_path": "microsoft/Phi-4-reasoning-vision-15B",
+            "checkpoint_path": "",
+            "checkpoint_type": "sft",
+            "errors": [],
+            "warnings": []
+          }
+        },
+        "errors": [],
+        "exists": true,
+        "warnings": [
+          "Model agvlm_phi4_rl_completed has a placeholder or empty checkpoint/adapter path. Replace it with a completed checkpoint before running.",
+          "RL model agvlm_phi4_rl_completed must record initialized_from_sft_checkpoint."
+        ]
+      },
+      "message": "AGVLM checkpoint config parses; placeholder paths are warnings until selected for a run.",
+      "ok": true,
+      "severity": "warning"
+    },
+    {
+      "details": null,
+      "message": "Prediction parser handles Answer, Decision, and structured sections.",
+      "ok": true,
+      "severity": "error"
+    },
+    {
+      "details": {
+        "by_crop_disease": {
+          "crop": {
+            "missing": 4
+          },
+          "disease": {
+            "missing": 4
+          }
+        },
+        "by_phase": {
+          "rl_benchmark": 2,
+          "sft_benchmark": 2
+        },
+        "by_source_dataset": {
+          "synthetic": 4
+        },
+        "by_split": {
+          "val": 4
+        },
+        "by_task_type": {
+          "clarify_or_respond": 1,
+          "classification": 1,
+          "consultation": 1,
+          "vqa": 1
+        },
+        "by_verifier_mode": {
+          "clarify": 1,
+          "exact_match": 1,
+          "label": 1,
+          "structured": 1
+        },
+        "clarify_or_respond": {
+          "clarify_f1": 1.0,
+          "clarify_precision": 1.0,
+          "clarify_recall": 1.0,
+          "confusion_matrix": {
+            "clarify": {
+              "clarify": 1
+            }
+          },
+          "decision_accuracy": 1.0,
+          "empty_answer_rate": 0.0,
+          "empty_clarifying_question_rate": 0.0,
+          "invalid_decision_rate": 0.0,
+          "macro_f1": 0.5,
+          "num_examples": 1,
+          "over_clarification_rate": 0.0,
+          "per_decision": {
+            "clarify": {
+              "f1": 1.0,
+              "precision": 1.0,
+              "recall": 1.0,
+              "support": 1
+            },
+            "respond": {
+              "f1": 0.0,
+              "precision": 0.0,
+              "recall": 0.0,
+              "support": 0
+            }
+          },
+          "respond_f1": 0.0,
+          "respond_precision": 0.0,
+          "respond_recall": 0.0,
+          "under_clarification_rate": 0.0
+        },
+        "classification": {
+          "accepted_label_accuracy": 1.0,
+          "accuracy": 1.0,
+          "balanced_accuracy": 1.0,
+          "confusion_matrix": {
+            "tomato late blight": {
+              "tomato late blight": 1
+            }
+          },
+          "invalid_output_rate": 0.0,
+          "labels": [
+            "<invalid>",
+            "tomato late blight"
+          ],
+          "macro_f1": 1.0,
+          "missing_answer_rate": 0.0,
+          "num_examples": 1,
+          "out_of_label_space_rate": 0.0,
+          "parse_status_counts": {
+            "exact": 1
+          },
+          "per_class": {
+            "tomato late blight": {
+              "f1": 1.0,
+              "precision": 1.0,
+              "recall": 1.0,
+              "support": 1
+            }
+          },
+          "per_class_f1": {
+            "tomato late blight": 1.0
+          },
+          "per_class_precision": {
+            "tomato late blight": 1.0
+          },
+          "per_class_recall": {
+            "tomato late blight": 1.0
+          },
+          "semantic_alias_accuracy": 1.0,
+          "support_per_class": {
+            "tomato late blight": 1
+          },
+          "top1_accuracy": 1.0,
+          "weighted_f1": 1.0
+        },
+        "consultation": {
+          "answer_length_stats": {
+            "max": 15,
+            "mean": 15,
+            "min": 15
+          },
+          "followup_question_presence": 1.0,
+          "forbidden_claim_rate": 0.0,
+          "limitations": "Deterministic consultation metrics check format, keyword coverage, uncertainty, and safety proxies; they do not fully verify agronomic correctness.",
+          "management_keyword_coverage": 1.0,
+          "max_trigram_count_mean": 1,
+          "num_examples": 1,
+          "repetition_rate": 0.0,
+          "required_section_compliance": 1.0,
+          "required_section_compliance_by_section": {
+            "Diagnosis": 1.0,
+            "Evidence": 1.0,
+            "Follow-up": 1.0,
+            "Management": 1.0,
+            "Uncertainty": 1.0
+          },
+          "section_presence_rate": {
+            "diagnosis": 1.0,
+            "evidence": 1.0,
+            "follow-up": 1.0,
+            "management": 1.0,
+            "uncertainty": 1.0
+          },
+          "structured_section_compliance": 1.0,
+          "token_f1_diagnostic": 0.23529411764705882,
+          "uncertainty_compliance": 1.0,
+          "uncertainty_required_count": 1,
+          "unsafe_or_overconfident_claim_rate": 0.0
+        },
+        "failure_rate": 0.0,
+        "invalid_prediction_rate": 0.0,
+        "num_examples": 4,
+        "num_failed": 0,
+        "num_invalid_predictions": 0,
+        "overall_num_examples": 4,
+        "per_phase": {
+          "rl_benchmark": {
+            "failure_rate": 0.0,
+            "invalid_prediction_rate": 0.0,
+            "num_examples": 2,
+            "task_macro_average": 0.75
+          },
+          "sft_benchmark": {
+            "failure_rate": 0.0,
+            "invalid_prediction_rate": 0.0,
+            "num_examples": 2,
+            "task_macro_average": 1.0
+          }
+        },
+        "per_source_dataset": {
+          "synthetic": {
+            "by_task_type": {
+              "clarify_or_respond": 1,
+              "classification": 1,
+              "consultation": 1,
+              "vqa": 1
+            },
+            "failure_rate": 0.0,
+            "invalid_prediction_rate": 0.0,
+            "num_examples": 4,
+            "task_macro_average": 0.875,
+            "tasks": {
+              "clarify_or_respond": {
+                "clarify_f1": 1.0,
+                "clarify_precision": 1.0,
+                "clarify_recall": 1.0,
+                "confusion_matrix": {
+                  "clarify": {
+                    "clarify": 1
+                  }
+                },
+                "decision_accuracy": 1.0,
+                "empty_answer_rate": 0.0,
+                "empty_clarifying_question_rate": 0.0,
+                "invalid_decision_rate": 0.0,
+                "macro_f1": 0.5,
+                "num_examples": 1,
+                "over_clarification_rate": 0.0,
+                "per_decision": {
+                  "clarify": {
+                    "f1": 1.0,
+                    "precision": 1.0,
+                    "recall": 1.0,
+                    "support": 1
+                  },
+                  "respond": {
+                    "f1": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0
+                  }
+                },
+                "respond_f1": 0.0,
+                "respond_precision": 0.0,
+                "respond_recall": 0.0,
+                "under_clarification_rate": 0.0
+              },
+              "classification": {
+                "accepted_label_accuracy": 1.0,
+                "accuracy": 1.0,
+                "balanced_accuracy": 1.0,
+                "confusion_matrix": {
+                  "tomato late blight": {
+                    "tomato late blight": 1
+                  }
+                },
+                "invalid_output_rate": 0.0,
+                "labels": [
+                  "<invalid>",
+                  "tomato late blight"
+                ],
+                "macro_f1": 1.0,
+                "missing_answer_rate": 0.0,
+                "num_examples": 1,
+                "out_of_label_space_rate": 0.0,
+                "parse_status_counts": {
+                  "exact": 1
+                },
+                "per_class": {
+                  "tomato late blight": {
+                    "f1": 1.0,
+                    "precision": 1.0,
+                    "recall": 1.0,
+                    "support": 1
+                  }
+                },
+                "per_class_f1": {
+                  "tomato late blight": 1.0
+                },
+                "per_class_precision": {
+                  "tomato late blight": 1.0
+                },
+                "per_class_recall": {
+                  "tomato late blight": 1.0
+                },
+                "semantic_alias_accuracy": 1.0,
+                "support_per_class": {
+                  "tomato late blight": 1
+                },
+                "top1_accuracy": 1.0,
+                "weighted_f1": 1.0
+              },
+              "consultation": {
+                "answer_length_stats": {
+                  "max": 15,
+                  "mean": 15,
+                  "min": 15
+                },
+                "followup_question_presence": 1.0,
+                "forbidden_claim_rate": 0.0,
+                "limitations": "Deterministic consultation metrics check format, keyword coverage, uncertainty, and safety proxies; they do not fully verify agronomic correctness.",
+                "management_keyword_coverage": 1.0,
+                "max_trigram_count_mean": 1,
+                "num_examples": 1,
+                "repetition_rate": 0.0,
+                "required_section_compliance": 1.0,
+                "required_section_compliance_by_section": {
+                  "Diagnosis": 1.0,
+                  "Evidence": 1.0,
+                  "Follow-up": 1.0,
+                  "Management": 1.0,
+                  "Uncertainty": 1.0
+                },
+                "section_presence_rate": {
+                  "diagnosis": 1.0,
+                  "evidence": 1.0,
+                  "follow-up": 1.0,
+                  "management": 1.0,
+                  "uncertainty": 1.0
+                },
+                "structured_section_compliance": 1.0,
+                "token_f1_diagnostic": 0.23529411764705882,
+                "uncertainty_compliance": 1.0,
+                "uncertainty_required_count": 1,
+                "unsafe_or_overconfident_claim_rate": 0.0
+              },
+              "short_vqa": {
+                "answer_containment_score": 1.0,
+                "exact_match": 1.0,
+                "invalid_output_rate": 0.0,
+                "missing_answer_rate": 0.0,
+                "normalized_exact_match": 1.0,
+                "num_examples": 1,
+                "numeric_count": 0,
+                "numeric_relaxed_accuracy": null,
+                "relaxed_accuracy": 1.0,
+                "token_f1": 1.0,
+                "yes_no_accuracy": 1.0,
+                "yes_no_count": 1
+              }
+            }
+          }
+        },
+        "per_task": {
+          "clarify_or_respond": {
+            "clarify_f1": 1.0,
+            "clarify_precision": 1.0,
+            "clarify_recall": 1.0,
+            "confusion_matrix": {
+              "clarify": {
+                "clarify": 1
+              }
+            },
+            "decision_accuracy": 1.0,
+            "empty_answer_rate": 0.0,
+            "empty_clarifying_question_rate": 0.0,
+            "invalid_decision_rate": 0.0,
+            "macro_f1": 0.5,
+            "num_examples": 1,
+            "over_clarification_rate": 0.0,
+            "per_decision": {
+              "clarify": {
+                "f1": 1.0,
+                "precision": 1.0,
+                "recall": 1.0,
+                "support": 1
+              },
+              "respond": {
+                "f1": 0.0,
+                "precision": 0.0,
+                "recall": 0.0,
+                "support": 0
+              }
+            },
+            "respond_f1": 0.0,
+            "respond_precision": 0.0,
+            "respond_recall": 0.0,
+            "under_clarification_rate": 0.0
+          },
+          "classification": {
+            "accepted_label_accuracy": 1.0,
+            "accuracy": 1.0,
+            "balanced_accuracy": 1.0,
+            "confusion_matrix": {
+              "tomato late blight": {
+                "tomato late blight": 1
+              }
+            },
+            "invalid_output_rate": 0.0,
+            "labels": [
+              "<invalid>",
+              "tomato late blight"
+            ],
+            "macro_f1": 1.0,
+            "missing_answer_rate": 0.0,
+            "num_examples": 1,
+            "out_of_label_space_rate": 0.0,
+            "parse_status_counts": {
+              "exact": 1
+            },
+            "per_class": {
+              "tomato late blight": {
+                "f1": 1.0,
+                "precision": 1.0,
+                "recall": 1.0,
+                "support": 1
+              }
+            },
+            "per_class_f1": {
+              "tomato late blight": 1.0
+            },
+            "per_class_precision": {
+              "tomato late blight": 1.0
+            },
+            "per_class_recall": {
+              "tomato late blight": 1.0
+            },
+            "semantic_alias_accuracy": 1.0,
+            "support_per_class": {
+              "tomato late blight": 1
+            },
+            "top1_accuracy": 1.0,
+            "weighted_f1": 1.0
+          },
+          "consultation": {
+            "answer_length_stats": {
+              "max": 15,
+              "mean": 15,
+              "min": 15
+            },
+            "followup_question_presence": 1.0,
+            "forbidden_claim_rate": 0.0,
+            "limitations": "Deterministic consultation metrics check format, keyword coverage, uncertainty, and safety proxies; they do not fully verify agronomic correctness.",
+            "management_keyword_coverage": 1.0,
+            "max_trigram_count_mean": 1,
+            "num_examples": 1,
+            "repetition_rate": 0.0,
+            "required_section_compliance": 1.0,
+            "required_section_compliance_by_section": {
+              "Diagnosis": 1.0,
+              "Evidence": 1.0,
+              "Follow-up": 1.0,
+              "Management": 1.0,
+              "Uncertainty": 1.0
+            },
+            "section_presence_rate": {
+              "diagnosis": 1.0,
+              "evidence": 1.0,
+              "follow-up": 1.0,
+              "management": 1.0,
+              "uncertainty": 1.0
+            },
+            "structured_section_compliance": 1.0,
+            "token_f1_diagnostic": 0.23529411764705882,
+            "uncertainty_compliance": 1.0,
+            "uncertainty_required_count": 1,
+            "unsafe_or_overconfident_claim_rate": 0.0
+          },
+          "short_vqa": {
+            "answer_containment_score": 1.0,
+            "exact_match": 1.0,
+            "invalid_output_rate": 0.0,
+            "missing_answer_rate": 0.0,
+            "normalized_exact_match": 1.0,
+            "num_examples": 1,
+            "numeric_count": 0,
+            "numeric_relaxed_accuracy": null,
+            "relaxed_accuracy": 1.0,
+            "token_f1": 1.0,
+            "yes_no_accuracy": 1.0,
+            "yes_no_count": 1
+          },
+          "vqa": {
+            "answer_containment_score": 1.0,
+            "exact_match": 1.0,
+            "invalid_output_rate": 0.0,
+            "missing_answer_rate": 0.0,
+            "normalized_exact_match": 1.0,
+            "num_examples": 1,
+            "numeric_count": 0,
+            "numeric_relaxed_accuracy": null,
+            "relaxed_accuracy": 1.0,
+            "token_f1": 1.0,
+            "yes_no_accuracy": 1.0,
+            "yes_no_count": 1
+          }
+        },
+        "short_vqa": {
+          "answer_containment_score": 1.0,
+          "exact_match": 1.0,
+          "invalid_output_rate": 0.0,
+          "missing_answer_rate": 0.0,
+          "normalized_exact_match": 1.0,
+          "num_examples": 1,
+          "numeric_count": 0,
+          "numeric_relaxed_accuracy": null,
+          "relaxed_accuracy": 1.0,
+          "token_f1": 1.0,
+          "yes_no_accuracy": 1.0,
+          "yes_no_count": 1
+        },
+        "task_macro_average": 0.875,
+        "task_micro_average_note": "Micro metrics are reported inside each task family; the aggregate macro average prevents majority tasks from dominating.",
+        "vqa": {
+          "answer_containment_score": 1.0,
+          "exact_match": 1.0,
+          "invalid_output_rate": 0.0,
+          "missing_answer_rate": 0.0,
+          "normalized_exact_match": 1.0,
+          "num_examples": 1,
+          "numeric_count": 0,
+          "numeric_relaxed_accuracy": null,
+          "relaxed_accuracy": 1.0,
+          "token_f1": 1.0,
+          "yes_no_accuracy": 1.0,
+          "yes_no_count": 1
+        }
+      },
+      "message": "Metrics module can score synthetic benchmark predictions.",
+      "ok": true,
+      "severity": "error"
+    },
+    {
+      "details": {
+        "path": "/blue/hmedeiros/qinruoyao/agvlm/benchmarks/vlm_baselines/results/metrics/summary_table.csv",
+        "rows": 5
+      },
+      "message": "Summary table can be refreshed.",
+      "ok": true,
+      "severity": "error"
+    },
+    {
+      "details": {
+        "missing": []
+      },
+      "message": "Required benchmark Slurm scripts exist.",
+      "ok": true,
+      "severity": "error"
+    },
+    {
+      "details": {
+        "missing": [
+          "reports/benchmark_framework_audit.md"
+        ]
+      },
+      "message": "Required benchmark/project docs exist.",
+      "ok": false,
+      "severity": "warning"
+    },
+    {
+      "details": [],
+      "message": "No SFT training files/configs/Slurm scripts are dirty.",
+      "ok": true,
+      "severity": "info"
+    }
+  ],
+  "dirty_paths": [],
+  "error_count": 0,
+  "ok": true,
+  "phase": "sft",
+  "split_report_path": "/blue/hmedeiros/qinruoyao/agvlm/benchmarks/vlm_baselines/splits/benchmark_split_report.json",
+  "warning_count": 2
+}

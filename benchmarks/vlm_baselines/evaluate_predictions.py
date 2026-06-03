@@ -54,6 +54,14 @@ def _label_space_from_records(rows: list[dict[str, Any]]) -> list[str]:
     return [labels[key] for key in sorted(labels)]
 
 
+def _label_space_for_record(row: dict[str, Any], fallback_label_space: list[str]) -> list[str]:
+    metadata = row.get("metadata") or {}
+    labels = metadata.get("classification_label_space") or metadata.get("allowed_classification_labels") or []
+    if isinstance(labels, list) and len(labels) > 1:
+        return [str(label) for label in labels]
+    return fallback_label_space
+
+
 def refresh_parse_fields(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """Refresh parser-derived fields from raw output before scoring.
 
@@ -69,7 +77,7 @@ def refresh_parse_fields(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
             raw_output=str(row.get("raw_output") or ""),
             task_type=str(row.get("task_type") or ""),
             verifier_mode=str(row.get("verifier_mode") or ""),
-            label_space=label_space,
+            label_space=_label_space_for_record(row, label_space),
         )
         updated.update(
             {

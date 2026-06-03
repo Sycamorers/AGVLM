@@ -60,6 +60,7 @@ class DatasetSpec:
     hf_config_names: tuple[str, ...] = ()
     hf_split_names: tuple[str, ...] = ()
     default_task_type: str = ""
+    default_crop: str = ""
     license_name: str = ""
     eval_only: bool = False
     include_in_sft: bool = True
@@ -152,6 +153,7 @@ def load_dataset_registry(config_path: Path) -> DatasetRegistry:
             hf_config_names=_tupled(row.get("hf_config_names")),
             hf_split_names=_tupled(row.get("hf_split_names")),
             default_task_type=row.get("default_task_type", ""),
+            default_crop=row.get("default_crop", ""),
             license_name=row.get("license_name", ""),
             eval_only=bool(row.get("eval_only", False)),
             include_in_sft=bool(row.get("include_in_sft", True)),

@@ -45,19 +45,31 @@ DTYPE="${DTYPE:-bf16}"
 QUANTIZATION="${QUANTIZATION:-none}"
 DEVICE="${DEVICE:-cuda:0}"
 OUTPUT_DIR="${OUTPUT_DIR:-benchmarks/vlm_baselines/results}"
+SPLIT_DIR="${SPLIT_DIR:-benchmarks/vlm_baselines/splits}"
+FORCE_SPLITS="${FORCE_SPLITS:-0}"
 DRY_RUN="${DRY_RUN:-0}"
 
 echo "git_commit=$(git rev-parse HEAD)"
-echo "phase=sft split=${SPLIT} model_name=${MODEL_NAME} model_key=${MODEL_KEY} output_dir=${OUTPUT_DIR} max_samples=${MAX_SAMPLES} min_new_tokens=${MIN_NEW_TOKENS}"
+echo "phase=sft split=${SPLIT} model_name=${MODEL_NAME} model_key=${MODEL_KEY} output_dir=${OUTPUT_DIR} split_dir=${SPLIT_DIR} max_samples=${MAX_SAMPLES} min_new_tokens=${MIN_NEW_TOKENS}"
 nvidia-smi || true
 
-"${PYTHON_BIN}" benchmarks/vlm_baselines/build_phase_splits.py --phase sft --write-report
-test -s "benchmarks/vlm_baselines/splits/sft_${SPLIT}_manifest.jsonl"
+split_args=(
+  benchmarks/vlm_baselines/build_phase_splits.py
+  --phase sft
+  --output-dir "$SPLIT_DIR"
+  --write-report
+)
+if [[ "$FORCE_SPLITS" == "1" ]]; then
+  split_args+=(--force)
+fi
+"${PYTHON_BIN}" "${split_args[@]}"
+test -s "$SPLIT_DIR/sft_${SPLIT}_manifest.jsonl"
 
 args=(
   benchmarks/vlm_baselines/run_baselines.py
   --phase sft
   --split "$SPLIT"
+  --split-dir "$SPLIT_DIR"
   --batch-size 1
   --max-new-tokens "$MAX_NEW_TOKENS"
   --min-new-tokens "$MIN_NEW_TOKENS"

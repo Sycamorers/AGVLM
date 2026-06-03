@@ -1,0 +1,21 @@
+datasets:
+  - plantvillage
+  - plantdoc
+  - ip102
+  - rice_disease
+  - digigreen_crop_disease
+  - banana_disease
+  - tea_sickness
+  - plantvillage_vqa
+  - agbase
+  - mirage
+  - agrillava
+output_path: "{data_root}/manifests/{subset_tag}/sft_manifest_stage5_datafix.jsonl"
+allowed_task_types:
+  - classification
+  - vqa
+  - consultation
+  - symptom_explanation
+  - clarify_or_respond
+exclude_splits:
+  - test

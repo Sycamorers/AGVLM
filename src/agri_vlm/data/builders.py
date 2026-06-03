@@ -768,6 +768,88 @@ def build_closed_label_sft_manifest(
     return summary
 
 
+def build_closed_label_eval_manifest(
+    *,
+    input_manifest_path: Path,
+    label_space_manifest_path: Path,
+    output_manifest_path: Path,
+    strip_leading_numeric_prefix_sources: Sequence[str] = (),
+    summary_output_path: Path = None,
+) -> Dict[str, Any]:
+    """Attach closed-label classification metadata to an evaluation manifest."""
+    rows = list(read_jsonl(input_manifest_path))
+    label_space_rows = list(read_jsonl(label_space_manifest_path))
+    if not rows:
+        raise ValueError("Input eval manifest is empty: %s" % input_manifest_path)
+    if not label_space_rows:
+        raise ValueError("Label-space manifest is empty: %s" % label_space_manifest_path)
+
+    strip_sources = {str(source) for source in strip_leading_numeric_prefix_sources}
+    repaired_label_space_rows = [
+        _repair_classification_label(row, strip_leading_numeric_prefix_sources=strip_sources)[0]
+        for row in label_space_rows
+    ]
+    label_spaces_by_source = _classification_label_spaces_by_source(repaired_label_space_rows)
+
+    output_rows: List[Dict[str, Any]] = []
+    repaired_by_source: Counter[str] = Counter()
+    for row in rows:
+        repaired, changed = _repair_classification_label(
+            row,
+            strip_leading_numeric_prefix_sources=strip_sources,
+        )
+        if changed:
+            repaired_by_source[str(row.get("source_dataset") or "")] += 1
+        output_rows.append(
+            _attach_classification_label_space(repaired, label_spaces_by_source=label_spaces_by_source)
+        )
+
+    classification_sources = sorted(
+        {
+            str(row.get("source_dataset") or "")
+            for row in output_rows
+            if row.get("task_type") == "classification"
+        }
+    )
+    missing_label_space_sources = [
+        source for source in classification_sources if not label_spaces_by_source.get(source)
+    ]
+    if missing_label_space_sources:
+        raise ValueError(
+            "Missing classification label spaces for eval sources: %s"
+            % missing_label_space_sources
+        )
+
+    validated = write_manifest(output_manifest_path, output_rows)
+    validated_rows = [sample.model_dump(mode="json") for sample in validated]
+    summary = {
+        "input_manifest_path": str(input_manifest_path),
+        "label_space_manifest_path": str(label_space_manifest_path),
+        "output_manifest_path": str(output_manifest_path),
+        "input_rows": len(rows),
+        "label_space_input_rows": len(label_space_rows),
+        "output_rows": len(validated_rows),
+        "strip_leading_numeric_prefix_sources": sorted(strip_sources),
+        "repaired_rows_by_source": dict(sorted(repaired_by_source.items())),
+        "classification_sources": classification_sources,
+        "classification_label_space_sizes_by_source": {
+            source: len(labels) for source, labels in sorted(label_spaces_by_source.items())
+        },
+        "output_by_task_type": _counter_dict(validated_rows, "task_type"),
+        "output_by_source_task": _nested_counter(validated_rows, "source_dataset", "task_type"),
+        "output_classification_labels_top100": dict(
+            Counter(
+                "%s::%s" % (row.get("source_dataset"), _classification_target_label(row))
+                for row in validated_rows
+                if row.get("task_type") == "classification"
+            ).most_common(100)
+        ),
+    }
+    if summary_output_path:
+        write_json(summary_output_path, summary)
+    return summary
+
+
 def _sample_stratified(
     rows: Sequence[Dict[str, Any]],
     *,

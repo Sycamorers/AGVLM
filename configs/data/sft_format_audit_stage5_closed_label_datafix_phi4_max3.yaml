@@ -1,0 +1,5 @@
+manifest_path: data/manifests/full/sft_train_phi4_max3_stage5_closed_label_datafix.jsonl
+json_output_path: reports/sft_stage5_datafix/sft_train_phi4_max3_stage5_closed_label_datafix_format_audit.json
+markdown_output_path: reports/sft_stage5_datafix/sft_train_phi4_max3_stage5_closed_label_datafix_format_audit.md
+samples_per_task: 32
+seed: 49

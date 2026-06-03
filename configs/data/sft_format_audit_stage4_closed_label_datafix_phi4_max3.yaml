@@ -1,0 +1,7 @@
+manifest_path: data/manifests/full/sft_train_phi4_max3_stage4_closed_label_datafix.jsonl
+markdown_output_path: reports/sft_stage4_datafix/sft_train_phi4_max3_stage4_closed_label_datafix_format_audit.md
+json_output_path: reports/sft_stage4_datafix/sft_train_phi4_max3_stage4_closed_label_datafix_format_audit.json
+prompt_format: instructional
+target_format: instructional
+samples_per_task: 8
+seed: 47
