@@ -7,42 +7,57 @@ tasks.
 
 ## Active Training Path
 
-As of May 8, 2026, the active SFT model is
-`microsoft/Phi-4-reasoning-vision-15B` on the full max-3-image agricultural SFT
-split using 16 Turin L4 GPUs and about 800 GB aggregate node RAM.
+As of June 3, 2026, the active SFT path is Stage5 data-fix training for
+`microsoft/Phi-4-reasoning-vision-15B` on 4 B200 GPUs. Stage4 completed but was
+not promoted because benchmark classification collapsed to one dominant label
+per source despite lower eval loss. Stage5 therefore starts from the Stage2
+adapter and uses an expanded, closed-label classification mix.
 
 Active files:
 
-- data split config: `configs/data/sft_train_eval_phi4_max3.yaml`
-- model config: `configs/model/phi4_reasoning_vision_15b_turin_24g.yaml`
-- full train config: `configs/train/sft_phi4_reasoning_vision_15b_turin_16gpu_full_max3.yaml`
-- preflight train config: `configs/train/sft_phi4_reasoning_vision_15b_turin_16gpu_full_max3_preflight.yaml`
-- Slurm wrapper: `scripts/hpc/run_sft_turin_16gpu_phi4_reasoning_vision_15b_full_max3.slurm`
+- dataset registry: `configs/data/datasets.yaml`
+- SFT source merge config: `configs/data/sft_build_stage5_datafix.yaml`
+- eval/holdout config: `configs/data/eval_build_stage5_datafix.yaml`
+- train/eval split config: `configs/data/sft_train_eval_phi4_max3_stage5_datafix.yaml`
+- closed-label train config: `configs/data/sft_stage5_closed_label_datafix_phi4_max3.yaml`
+- closed-label eval config: `configs/data/sft_eval_stage5_closed_label_datafix_phi4_max3.yaml`
+- format audit config: `configs/data/sft_format_audit_stage5_closed_label_datafix_phi4_max3.yaml`
+- model config: `configs/model/phi4_reasoning_vision_15b_b200.yaml`
+- preflight train config: `configs/train/sft_phi4_reasoning_vision_15b_b200_4gpu_stage5_datafix_preflight.yaml`
+- full train config: `configs/train/sft_phi4_reasoning_vision_15b_b200_4gpu_stage5_datafix.yaml`
+- Slurm wrapper: `scripts/hpc/run_sft_b200_4gpu_phi4_reasoning_vision_15b_full_max3.slurm`
 
-Generated max3 manifests:
+Generated Stage5 manifests:
 
-- `data/manifests/full/sft_train_phi4_max3_no_eval_overlap.jsonl`
-- `data/manifests/full/sft_eval_phi4_max3_stratified512.jsonl`
-- `data/manifests/full/sft_train_eval_phi4_max3_summary.json`
+- `data/manifests/full/sft_manifest_stage5_datafix.jsonl`
+- `data/manifests/full/sft_manifest_stage5_datafix.decode_valid_images.jsonl`
+- `data/manifests/full/local_holdout_eval_stage5_datafix.decode_valid_images.jsonl`
+- `data/manifests/full/sft_train_phi4_max3_stage5_no_eval_overlap.jsonl`
+- `data/manifests/full/sft_eval_phi4_max3_stage5_raw_stratified1024.jsonl`
+- `data/manifests/full/sft_train_phi4_max3_stage5_closed_label_datafix.jsonl`
+- `data/manifests/full/sft_eval_phi4_max3_stage5_closed_label_stratified1024.jsonl`
 
-The Slurm wrapper runs a short batch-size preflight over
-`PHI4_BATCH_CANDIDATES` before the full run. The default candidate list is `1`,
-which keeps the per-rank image fan-in bounded while gradient accumulation
-preserves the intended effective global batch. Preflight diagnostics write under
-`outputs/preflight/`; full training artifacts must write under `outputs/sft/`.
+The Stage5 closed-label train manifest has `143,114` rows:
+`61,632` classification, `50,000` VQA, `25,000` consultation, and `6,482`
+clarify-or-respond. The training dry-run passed with `1,024` eval rows.
+Detailed counts, validation notes, and audit outputs are in
+`reports/sft_stage5_datafix/progress_20260603.md`.
 
 ## Launch
 
 ```bash
-sbatch scripts/hpc/run_sft_turin_16gpu_phi4_reasoning_vision_15b_full_max3.slurm
+sbatch \
+  --job-name=agri-vlm-sft-stage5-datafix \
+  --export=ALL,DATA_CONFIG=configs/data/sft_stage5_closed_label_datafix_phi4_max3.yaml,PREFLIGHT_CONFIG=configs/train/sft_phi4_reasoning_vision_15b_b200_4gpu_stage5_datafix_preflight.yaml,TRAIN_CONFIG=configs/train/sft_phi4_reasoning_vision_15b_b200_4gpu_stage5_datafix.yaml,TENSORBOARD_PORT=6015 \
+  scripts/hpc/run_sft_b200_4gpu_phi4_reasoning_vision_15b_full_max3.slurm
 ```
 
-Useful overrides:
+The current submitted Stage5 job is:
 
-```bash
-sbatch \
-  --export=ALL,PHI4_BATCH_CANDIDATES="2 1" \
-  scripts/hpc/run_sft_turin_16gpu_phi4_reasoning_vision_15b_full_max3.slurm
+```text
+job_id: 33840540
+job_name: agri-vlm-sft-stage5-datafix
+partition: hpg-b200
 ```
 
 The full run writes local artifacts under `outputs/sft/` and checkpoint
@@ -136,10 +151,25 @@ validation gates, commands, limitations, and the post-RL evaluation plan.
 
 ## Data
 
-The active split is built from decode/aspect-valid source manifests and removes
-train/eval image-group overlap. Full public datasets and manual datasets remain
-gated by their existing documented staging steps; smoke tests must not download
-full datasets or model weights.
+The active Stage5 split is built from decode-valid source manifests and removes
+train/eval image-group overlap. Stage5 adds four public, scoped agricultural
+classification datasets:
+
+- `rice_disease`: `37,978` normalized rows
+- `digigreen_crop_disease`: `1,092` normalized rows
+- `banana_disease`: `777` normalized rows
+- `tea_sickness`: `885` normalized rows
+
+All four new datasets decoded cleanly. Existing `agbase` contributed `1,475`
+invalid image rows during full SFT decode validation; those rows are excluded
+from `sft_manifest_stage5_datafix.decode_valid_images.jsonl`.
+
+Rice source labels `N`, `P`, and `K` are normalized to `nitrogen deficiency`,
+`phosphorus deficiency`, and `potassium deficiency`. Do not train on the raw
+one-letter nutrient labels.
+
+Full public datasets and manual datasets remain gated by their documented
+staging steps; smoke tests must not download full datasets or model weights.
 
 ## Tests
 
@@ -151,7 +181,7 @@ For a config-only SFT dry run:
 
 ```bash
 PYTHONPATH=src python scripts/train/train_sft.py \
-  --model-config configs/model/phi4_reasoning_vision_15b_turin_24g.yaml \
-  --train-config configs/train/sft_phi4_reasoning_vision_15b_turin_16gpu_full_max3_preflight.yaml \
+  --model-config configs/model/phi4_reasoning_vision_15b_b200.yaml \
+  --train-config configs/train/sft_phi4_reasoning_vision_15b_b200_4gpu_stage5_datafix.yaml \
   --dry-run
 ```

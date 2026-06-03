@@ -7,8 +7,12 @@ import csv
 import io
 import json
 from pathlib import Path
+import re
 import shutil
+import sys
 from typing import Any, Dict, Iterable, List, Optional, Tuple
+from urllib.error import URLError
+from urllib.request import Request, urlopen
 import zipfile
 
 from PIL import Image
@@ -16,6 +20,7 @@ from PIL import Image
 from agri_vlm.data.paths import normalize_download_mode, normalize_sample_fraction
 from agri_vlm.data.registry import DatasetRegistry, DatasetSpec, create_manual_slot, write_download_info
 from agri_vlm.data.transforms import parse_plant_label
+from agri_vlm.utils.text import normalize_label
 from agri_vlm.utils.io import ensure_dir
 
 
@@ -113,6 +118,16 @@ def _decode_label_value(feature: Any, value: Any) -> Any:
     if names and isinstance(value, int):
         return names[value]
     return value
+
+
+def _prefer_parenthetical_english_label(value: str) -> str:
+    """Use English parenthetical labels when source labels include translations."""
+    text = str(value or "").strip()
+    matches = [match.strip() for match in re.findall(r"\(([^()]*)\)", text) if match.strip()]
+    ascii_matches = [match for match in matches if re.search(r"[A-Za-z]", match)]
+    if ascii_matches:
+        return ascii_matches[-1]
+    return text
 
 
 def _resolve_feature(features: Any, key_path: Tuple[str, ...]) -> Any:
@@ -269,6 +284,291 @@ def _download_plantdoc(
             )
             saved += 1
     _write_jsonl_rows(raw_dir / "records.jsonl", rows)
+    return {"saved_rows": saved, "split_sizes": split_sizes}
+
+
+def _download_generic_image_classification(
+    spec: DatasetSpec,
+    raw_dir: Path,
+    download_mode: str,
+    sample_fraction: float,
+    token: Optional[str],
+) -> Dict[str, Any]:
+    _, load_dataset_builder = _require_hf_datasets()
+    config_name = spec.hf_config_names[0] if spec.hf_config_names else None
+    builder = load_dataset_builder(spec.hf_repo_id, name=config_name, token=token)
+    split_names = spec.hf_split_names or tuple(builder.info.splits.keys())
+    split_sizes = _load_builder_split_sizes(builder, split_names)
+    label_feature = _resolve_feature(builder.info.features, ("label",))
+    saved = 0
+    records_path = raw_dir / "records.jsonl"
+    records_tmp_path = raw_dir / "records.jsonl.tmp"
+    ensure_dir(records_path.parent)
+
+    with records_tmp_path.open("w", encoding="utf-8") as handle:
+        for split_name in split_names:
+            target_count = _split_target_count(split_sizes.get(split_name), download_mode, sample_fraction)
+            split_saved = 0
+            for index, row in enumerate(_iter_dataset_rows(spec.hf_repo_id, config_name, split_name, target_count, token)):
+                if "image" not in row or row["image"] is None:
+                    raise ValueError("%s row is missing an image field for split %s index %s" % (spec.name, split_name, index))
+                if "label" not in row or row["label"] is None:
+                    raise ValueError("%s row is missing a label field for split %s index %s" % (spec.name, split_name, index))
+                label_name = _prefer_parenthetical_english_label(_decode_label_value(label_feature, row["label"]))
+                if not label_name:
+                    raise ValueError("%s row has an empty label for split %s index %s" % (spec.name, split_name, index))
+                image_path = raw_dir / "images" / split_name / ("%06d.jpg" % index)
+                _save_image_value(row["image"], image_path)
+                crop_name, disease_name = parse_plant_label(label_name)
+                if crop_name is None and spec.default_crop:
+                    crop_name = spec.default_crop
+                record = {
+                    "id": "%s-%06d" % (split_name, index),
+                    "image": str(image_path.relative_to(raw_dir)).replace("\\", "/"),
+                    "label": label_name,
+                    "split": _canonical_split(split_name),
+                    "crop": crop_name,
+                    "disease": disease_name,
+                    "template_origin": "source_authored",
+                }
+                handle.write(json.dumps(record, ensure_ascii=False, sort_keys=True) + "\n")
+                saved += 1
+                split_saved += 1
+                if saved % 1000 == 0:
+                    handle.flush()
+            expected_count = target_count if target_count is not None else split_sizes.get(split_name)
+            if expected_count is not None and split_saved != expected_count:
+                raise ValueError(
+                    "%s materialized %s rows for split %s, expected %s."
+                    % (spec.name, split_saved, split_name, expected_count)
+                )
+    records_tmp_path.replace(records_path)
+    return {"saved_rows": saved, "split_sizes": split_sizes}
+
+
+def _save_image_url(url: str, path: Path) -> None:
+    if path.exists() and path.stat().st_size > 0:
+        return
+    request = Request(url, headers={"User-Agent": "agri-vlm-data-prep/1.0"})
+    try:
+        with urlopen(request, timeout=30) as response:
+            payload = response.read()
+    except URLError as exc:
+        raise RuntimeError("Failed to download image URL %s: %s" % (url, exc)) from exc
+    if not payload:
+        raise RuntimeError("Image URL returned an empty payload: %s" % url)
+    tmp_path = path.with_suffix(path.suffix + ".tmp")
+    with tmp_path.open("wb") as handle:
+        handle.write(payload)
+    tmp_path.replace(path)
+
+
+def _load_record_split_counts(path: Path, repair_invalid_tail: bool = False) -> Tuple[Counter[str], int]:
+    counts: Counter[str] = Counter()
+    if not path.exists() or path.stat().st_size == 0:
+        return counts, 0
+    total = 0
+    valid_lines: List[str] = []
+    found_invalid_tail = False
+    with path.open("r", encoding="utf-8") as handle:
+        for line_number, line in enumerate(handle, start=1):
+            if not line.strip():
+                continue
+            try:
+                row = json.loads(line)
+            except json.JSONDecodeError as exc:
+                if repair_invalid_tail:
+                    found_invalid_tail = True
+                    break
+                raise ValueError("Invalid JSON in %s line %s: %s" % (path, line_number, exc)) from exc
+            split_name = _canonical_split(str(row.get("split") or "train"))
+            counts[split_name] += 1
+            total += 1
+            valid_lines.append(line if line.endswith("\n") else line + "\n")
+    if found_invalid_tail:
+        with path.open("w", encoding="utf-8") as handle:
+            handle.writelines(valid_lines)
+    return counts, total
+
+
+def _repair_missing_url_record_images(records_path: Path, raw_dir: Path, spec_name: str) -> int:
+    repaired = 0
+    if not records_path.exists() or records_path.stat().st_size == 0:
+        return repaired
+    with records_path.open("r", encoding="utf-8") as handle:
+        for line_number, line in enumerate(handle, start=1):
+            if not line.strip():
+                continue
+            row = json.loads(line)
+            image_rel = str(row.get("image") or "").strip()
+            image_url = str(row.get("image_url") or "").strip()
+            if not image_rel or not image_url:
+                raise ValueError("URL-backed record %s line %s is missing image or image_url." % (records_path, line_number))
+            image_path = raw_dir / image_rel
+            if image_path.exists() and image_path.stat().st_size > 0:
+                continue
+            ensure_dir(image_path.parent)
+            _save_image_url(image_url, image_path)
+            repaired += 1
+            if repaired % 25 == 0:
+                print(
+                    "[download] %s repaired %s missing record images" % (spec_name, repaired),
+                    file=sys.stderr,
+                    flush=True,
+                )
+    return repaired
+
+
+def _url_records_have_contiguous_ids(
+    records_path: Path,
+    split_names: Iterable[str],
+    expected_counts: Dict[str, Optional[int]],
+) -> bool:
+    seen: Dict[str, set[int]] = {split_name: set() for split_name in split_names}
+    with records_path.open("r", encoding="utf-8") as handle:
+        for line in handle:
+            if not line.strip():
+                continue
+            row = json.loads(line)
+            split_name = _canonical_split(str(row.get("split") or "train"))
+            row_id = str(row.get("id") or "")
+            prefix = "%s-" % split_name
+            if not row_id.startswith(prefix):
+                return False
+            try:
+                row_index = int(row_id.rsplit("-", 1)[1])
+            except ValueError:
+                return False
+            if row_index in seen.setdefault(split_name, set()):
+                return False
+            seen[split_name].add(row_index)
+    for split_name in split_names:
+        canonical_split = _canonical_split(split_name)
+        expected_count = expected_counts.get(split_name)
+        if expected_count is None:
+            continue
+        if seen.get(canonical_split, set()) != set(range(expected_count)):
+            return False
+    return True
+
+
+def _download_digigreen_crop_disease(
+    spec: DatasetSpec,
+    raw_dir: Path,
+    download_mode: str,
+    sample_fraction: float,
+    token: Optional[str],
+) -> Dict[str, Any]:
+    _, load_dataset_builder = _require_hf_datasets()
+    builder = load_dataset_builder(spec.hf_repo_id, token=token)
+    split_names = spec.hf_split_names or tuple(builder.info.splits.keys())
+    split_sizes = _load_builder_split_sizes(builder, split_names)
+    saved = 0
+    records_path = raw_dir / "records.jsonl"
+    records_tmp_path = raw_dir / "records.jsonl.tmp"
+    ensure_dir(records_path.parent)
+
+    split_targets = {
+        split_name: _split_target_count(split_sizes.get(split_name), download_mode, sample_fraction)
+        for split_name in split_names
+    }
+    expected_counts = {
+        split_name: split_targets[split_name] if split_targets[split_name] is not None else split_sizes.get(split_name)
+        for split_name in split_names
+    }
+    expected_total = (
+        sum(count for count in expected_counts.values() if count is not None)
+        if all(count is not None for count in expected_counts.values())
+        else None
+    )
+    existing_counts, existing_total = _load_record_split_counts(records_path)
+    if (
+        expected_total is not None
+        and existing_total == expected_total
+        and _url_records_have_contiguous_ids(records_path, split_names, expected_counts)
+    ):
+        repaired = _repair_missing_url_record_images(records_path, raw_dir, spec.name)
+        return {"saved_rows": existing_total, "split_sizes": split_sizes, "repaired_missing_images": repaired}
+    force_rebuild = expected_total is not None and existing_total == expected_total
+    if force_rebuild:
+        print(
+            "[download] %s rebuilding non-contiguous completed records" % spec.name,
+            file=sys.stderr,
+            flush=True,
+        )
+
+    resume_path = (
+        records_tmp_path
+        if not force_rebuild and records_tmp_path.exists() and records_tmp_path.stat().st_size > 0
+        else None
+    )
+    if not force_rebuild and resume_path is None and records_path.exists() and records_path.stat().st_size > 0:
+        shutil.copyfile(records_path, records_tmp_path)
+        resume_path = records_tmp_path
+    resume_counts, saved = (
+        _load_record_split_counts(resume_path, repair_invalid_tail=True) if resume_path else (Counter(), 0)
+    )
+    open_mode = "a" if saved else "w"
+
+    with records_tmp_path.open(open_mode, encoding="utf-8") as handle:
+        for split_name in split_names:
+            image_dir = ensure_dir(raw_dir / "images" / split_name)
+            target_count = split_targets[split_name]
+            expected_count = expected_counts[split_name]
+            canonical_split = _canonical_split(split_name)
+            split_saved = resume_counts.get(canonical_split, 0)
+            if expected_count is not None and split_saved > expected_count:
+                raise ValueError(
+                    "%s has %s resumed rows for split %s, expected at most %s."
+                    % (spec.name, split_saved, split_name, expected_count)
+                )
+            if expected_count is not None and split_saved == expected_count:
+                continue
+            for index, row in enumerate(_iter_dataset_rows(spec.hf_repo_id, None, split_name, target_count, token)):
+                if index < split_saved:
+                    continue
+                image_url = str(row.get("image_url") or "").strip()
+                crop_name = str(row.get("crop") or "").strip()
+                diagnosis = str(row.get("diagnosis") or "").strip()
+                if not image_url or not crop_name or not diagnosis:
+                    raise ValueError("Digital Green row %s is missing image_url, crop, or diagnosis." % index)
+                diagnoses = [item.strip() for item in diagnosis.split(";") if item.strip()]
+                if not diagnoses:
+                    raise ValueError("Digital Green row %s has no usable diagnosis labels." % index)
+                primary_label = normalize_label("%s %s" % (crop_name, diagnoses[0]))
+                all_labels = [normalize_label("%s %s" % (crop_name, item)) for item in diagnoses]
+                image_path = image_dir / ("%06d.jpg" % index)
+                _save_image_url(image_url, image_path)
+                record = {
+                    "id": "%s-%06d" % (split_name, index),
+                    "image": str(image_path.relative_to(raw_dir)).replace("\\", "/"),
+                    "label": primary_label,
+                    "all_labels": all_labels,
+                    "split": _canonical_split(split_name),
+                    "crop": crop_name,
+                    "disease": diagnoses[0],
+                    "diagnoses": diagnoses,
+                    "details": str(row.get("details") or "").strip(),
+                    "image_url": image_url,
+                    "template_origin": "source_authored",
+                }
+                handle.write(json.dumps(record, ensure_ascii=False, sort_keys=True) + "\n")
+                saved += 1
+                split_saved += 1
+                handle.flush()
+                if saved % 25 == 0:
+                    print(
+                        "[download] %s saved %s/%s records"
+                        % (spec.name, saved, expected_total if expected_total is not None else "unknown"),
+                        file=sys.stderr,
+                        flush=True,
+                    )
+            if expected_count is not None and split_saved != expected_count:
+                raise ValueError(
+                    "%s materialized %s rows for split %s, expected %s."
+                    % (spec.name, split_saved, split_name, expected_count)
+                )
+    records_tmp_path.replace(records_path)
     return {"saved_rows": saved, "split_sizes": split_sizes}
 
 
@@ -498,6 +798,10 @@ def _materialize_spec(
         return _download_plantvillage(spec, raw_dir, download_mode, sample_fraction, token)
     if materializer == "plantdoc":
         return _download_plantdoc(spec, raw_dir, download_mode, sample_fraction, token)
+    if materializer == "generic_image_classification":
+        return _download_generic_image_classification(spec, raw_dir, download_mode, sample_fraction, token)
+    if materializer == "digigreen_crop_disease":
+        return _download_digigreen_crop_disease(spec, raw_dir, download_mode, sample_fraction, token)
     if materializer == "plantvillage_vqa":
         return _download_plantvillage_vqa_archive(spec, raw_dir, download_mode, sample_fraction, token)
     if materializer == "mirage":

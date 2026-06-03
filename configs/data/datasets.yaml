@@ -47,6 +47,69 @@ datasets:
     include_in_rl: true
     include_in_eval: true
 
+  - name: rice_disease
+    task_family: sft
+    source_type: hf_dataset
+    access: public
+    normalizer: classification_records
+    materializer: generic_image_classification
+    hf_repo_id: minhhungg/rice-disease-dataset
+    hf_split_names: [train, validation, test]
+    default_crop: Rice
+    manual_url: https://huggingface.co/datasets/minhhungg/rice-disease-dataset
+    license_name: apache-2.0
+    notes: Public Hugging Face RGB rice health, pest, disease, and nutrient-deficiency image classification dataset. Use stratified train/validation/test splits only; aggregate category splits are not materialized to avoid duplicates.
+    include_in_sft: true
+    include_in_rl: true
+    include_in_eval: true
+
+  - name: digigreen_crop_disease
+    task_family: sft
+    source_type: hf_dataset
+    access: public
+    normalizer: classification_records
+    materializer: digigreen_crop_disease
+    hf_repo_id: DigiGreen/Crop_Disease_Images
+    hf_split_names: [train]
+    manual_url: https://huggingface.co/datasets/DigiGreen/Crop_Disease_Images
+    license_name: cc-by-4.0
+    notes: Public Digital Green expert crop diagnosis annotations with image URLs, crop labels, diagnosis labels, and symptom details from Farmer.Chat.
+    include_in_sft: true
+    include_in_rl: true
+    include_in_eval: true
+
+  - name: banana_disease
+    task_family: sft
+    source_type: hf_dataset
+    access: public
+    normalizer: classification_records
+    materializer: generic_image_classification
+    hf_repo_id: as-cle-bert/banana-disease-classification
+    hf_split_names: [train, test]
+    default_crop: Banana
+    manual_url: https://huggingface.co/datasets/as-cle-bert/banana-disease-classification
+    license_name: cc-by-4.0
+    notes: Public Hugging Face banana leaf disease classification dataset with six disease classes plus healthy leaves.
+    include_in_sft: true
+    include_in_rl: true
+    include_in_eval: true
+
+  - name: tea_sickness
+    task_family: sft
+    source_type: hf_dataset
+    access: public
+    normalizer: classification_records
+    materializer: generic_image_classification
+    hf_repo_id: yunusserhat/tea_sickness_dataset
+    hf_split_names: [train, validation, test]
+    default_crop: Tea
+    manual_url: https://huggingface.co/datasets/yunusserhat/tea_sickness_dataset
+    license_name: cc-by-4.0
+    notes: Public RGB tea leaf disease classification dataset with eight classes, including healthy examples.
+    include_in_sft: true
+    include_in_rl: true
+    include_in_eval: true
+
   - name: plantvillage_vqa
     task_family: sft
     source_type: hf_dataset

@@ -2,6 +2,7 @@
 
 from collections import Counter
 from pathlib import Path
+import re
 from typing import Any, Dict, Iterable, List, Optional
 
 from agri_vlm.constants import (
@@ -96,6 +97,25 @@ def load_provenance_metadata(raw_dir: Path) -> Dict[str, Any]:
     return {key: payload[key] for key in keys if payload.get(key) is not None}
 
 
+def _prefer_parenthetical_english_label(value: str) -> str:
+    text = str(value or "").strip()
+    matches = [match.strip() for match in re.findall(r"\(([^()]*)\)", text) if match.strip()]
+    ascii_matches = [match for match in matches if re.search(r"[A-Za-z]", match)]
+    if ascii_matches:
+        return ascii_matches[-1]
+    return text
+
+
+def _canonicalize_rice_label(value: Any) -> str:
+    label = _prefer_parenthetical_english_label(str(value or "").strip())
+    nutrient_aliases = {
+        "k": "potassium deficiency",
+        "n": "nitrogen deficiency",
+        "p": "phosphorus deficiency",
+    }
+    return nutrient_aliases.get(normalize_label(label), label)
+
+
 def normalize_classification_directory_dataset(
     raw_dir: Path,
     repo_root: Path,
@@ -170,24 +190,37 @@ def normalize_classification_records_dataset(
         raw_labels = row.get("all_labels") or row.get("labels") or row.get("categories") or []
         if isinstance(raw_labels, str):
             raw_labels = [raw_labels]
-        label_name = str(row.get("label") or row.get("category") or "").strip()
+        source_label_name = str(row.get("label") or row.get("category") or "").strip()
+        label_name = source_label_name
+        if dataset_name == "rice_disease":
+            label_name = _canonicalize_rice_label(label_name)
         if not label_name:
             if raw_labels:
                 counts = Counter(str(item) for item in raw_labels if str(item).strip())
                 label_name = counts.most_common(1)[0][0]
+                if dataset_name == "rice_disease":
+                    label_name = _canonicalize_rice_label(label_name)
+                if not source_label_name:
+                    source_label_name = label_name
             else:
                 raise ValueError("Classification record is missing a label in %s" % records_path)
         canonical_candidates = [str(item) for item in raw_labels if str(item).strip()] or [label_name]
+        if dataset_name == "rice_disease":
+            canonical_candidates = [_canonicalize_rice_label(item) for item in canonical_candidates]
         canonical_labels = [
             parse_ip102_label(item) if pest_mode else normalize_label(item) for item in canonical_candidates
         ]
         canonical_label = canonical_labels[0]
         crop_name, disease_name = parse_plant_label(label_name)
+        row_disease = row.get("disease")
+        if dataset_name == "rice_disease" and row_disease:
+            row_disease = _canonicalize_rice_label(row_disease)
         metadata = metadata_with_license(
             {
                 "crop": row.get("crop") or crop_name,
-                "disease": row.get("disease") or (disease_name if not pest_mode else None),
+                "disease": row_disease or (disease_name if not pest_mode else None),
                 "pest": row.get("pest") or (canonical_label if pest_mode else None),
+                "source_label": source_label_name if source_label_name and source_label_name != label_name else None,
                 "original_label": label_name,
                 "original_labels": canonical_candidates,
                 "normalized_label": canonical_label,

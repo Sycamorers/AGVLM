@@ -7,6 +7,7 @@ import argparse
 import json
 import os
 from pathlib import Path
+import sys
 
 from agri_vlm.data.hf_download import download_supported_datasets
 from agri_vlm.data.pipeline import resolve_runtime_settings
@@ -64,4 +65,10 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    # The HF datasets/pyarrow stack can leave background state that aborts
+    # during interpreter finalization on the HPC image after successful work.
+    # Flush explicitly and exit without running global teardown hooks.
+    exit_code = main()
+    sys.stdout.flush()
+    sys.stderr.flush()
+    os._exit(exit_code)

@@ -1,7 +1,9 @@
 """Manifest read, write, merge, and filter helpers."""
 
 import json
+import os
 from pathlib import Path
+import sys
 from typing import Dict, Iterable, List, Optional, Sequence
 
 from agri_vlm.schemas.dataset_schema import UnifiedSample
@@ -9,8 +11,22 @@ from agri_vlm.utils.io import ensure_dir, read_jsonl, write_jsonl
 from agri_vlm.utils.text import word_count
 
 
+def _progress_enabled() -> bool:
+    return os.environ.get("AGRI_VLM_MANIFEST_PROGRESS") == "1"
+
+
+def _print_progress(message: str) -> None:
+    if _progress_enabled():
+        print(message, file=sys.stderr, flush=True)
+
+
 def validate_rows(rows: Iterable[dict]) -> List[UnifiedSample]:
-    return [UnifiedSample.model_validate(row) for row in rows]
+    validated = []
+    for index, row in enumerate(rows, start=1):
+        validated.append(UnifiedSample.model_validate(row))
+        if index % 10000 == 0:
+            _print_progress("[manifest] validated %s rows" % index)
+    return validated
 
 
 def write_manifest(path: Path, rows: Iterable[dict]) -> List[UnifiedSample]:
@@ -34,6 +50,7 @@ def merge_manifests(
 ) -> List[UnifiedSample]:
     merged = []
     for source_path in source_paths:
+        _print_progress("[manifest] merging %s" % source_path)
         count = 0
         for row in read_jsonl(source_path):
             sample = UnifiedSample.model_validate(row)
@@ -43,8 +60,11 @@ def merge_manifests(
                 continue
             merged.append(sample)
             count += 1
+            if count % 10000 == 0:
+                _print_progress("[manifest] merged %s rows from %s" % (count, source_path))
             if max_samples_per_source and count >= max_samples_per_source:
                 break
+        _print_progress("[manifest] finished %s rows from %s" % (count, source_path))
     return merged
 
 

@@ -3,6 +3,7 @@ from pathlib import Path
 
 from agri_vlm.data.builders import (
     build_balanced_sft_v2_manifest,
+    build_closed_label_eval_manifest,
     build_closed_label_sft_manifest,
     build_eval_manifests,
     build_rl_manifest,
@@ -275,4 +276,44 @@ def test_build_closed_label_sft_manifest_balances_and_adds_label_space(tmp_path:
     assert ip_row.metadata["classification_label_space_size"] == 2
     assert "23 corn borer" in ip_row.verifier.accepted_labels
     assert summary["classification_label_space_sizes_by_source"]["ip102"] == 2
+    assert summary_path.exists()
+
+
+def test_build_closed_label_eval_manifest_repairs_labels_and_adds_source_label_space(tmp_path: Path) -> None:
+    eval_path = tmp_path / "eval.jsonl"
+    label_space_path = tmp_path / "label_space.jsonl"
+    output_path = tmp_path / "eval_closed.jsonl"
+    summary_path = tmp_path / "summary.json"
+
+    eval_row = sample_row("eval-ip", "ip102", "classification", "validation")
+    eval_row["target"]["canonical_label"] = "23 corn borer"
+    eval_row["target"]["answer_text"] = "23 corn borer"
+    eval_row["verifier"]["accepted_labels"] = ["23 corn borer"]
+    vqa_row = sample_row("eval-vqa", "plantvillage_vqa", "vqa", "validation")
+    write_manifest(eval_path, [eval_row, vqa_row])
+
+    label_rows = []
+    for sample_id, label in [("train-a", "23 corn borer"), ("train-b", "6 rice gall midge")]:
+        row = sample_row(sample_id, "ip102", "classification", "train")
+        row["target"]["canonical_label"] = label
+        row["target"]["answer_text"] = label
+        row["verifier"]["accepted_labels"] = [label]
+        label_rows.append(row)
+    write_manifest(label_space_path, label_rows)
+
+    summary = build_closed_label_eval_manifest(
+        input_manifest_path=eval_path,
+        label_space_manifest_path=label_space_path,
+        output_manifest_path=output_path,
+        summary_output_path=summary_path,
+        strip_leading_numeric_prefix_sources=["ip102"],
+    )
+
+    output_rows = read_manifest(output_path)
+    repaired = next(row for row in output_rows if row.sample_id == "eval-ip")
+    assert repaired.target.canonical_label == "corn borer"
+    assert "23 corn borer" in repaired.verifier.accepted_labels
+    assert repaired.metadata["classification_label_space"] == ["corn borer", "rice gall midge"]
+    assert repaired.metadata["classification_label_space_size"] == 2
+    assert summary["repaired_rows_by_source"]["ip102"] == 1
     assert summary_path.exists()

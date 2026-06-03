@@ -1,0 +1,17 @@
+sources:
+  mirage: mirage
+  plantdoc: plantdoc
+  ip102: ip102
+  plantvillage: plantvillage
+  plantvillage_vqa: plantvillage_vqa
+output_paths:
+  mirage_mmst: "{data_root}/manifests/{subset_tag}/mirage_mmst_eval_stage4_datafix.jsonl"
+  mirage_mmmt: "{data_root}/manifests/{subset_tag}/mirage_mmmt_eval_stage4_datafix.jsonl"
+  local_holdout: "{data_root}/manifests/{subset_tag}/local_holdout_eval_stage4_datafix.jsonl"
+holdout_ratio: 0.1
+holdout_datasets:
+  - plantdoc
+  - ip102
+  - plantvillage
+  - plantvillage_vqa
+salt: agri-vlm-eval-stage4-datafix-v1

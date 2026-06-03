@@ -1,0 +1,10 @@
+input_manifest_path: data/manifests/full/sft_eval_phi4_max3_stage5_raw_stratified1024.jsonl
+label_space_manifest_path: data/manifests/full/sft_train_phi4_max3_stage5_closed_label_datafix.jsonl
+output_manifest_path: data/manifests/full/sft_eval_phi4_max3_stage5_closed_label_stratified1024.jsonl
+summary_output_path: data/manifests/full/sft_eval_phi4_max3_stage5_closed_label_stratified1024_summary.json
+strip_leading_numeric_prefix_sources:
+  - ip102
+required_task_types:
+  - classification
+  - vqa
+  - clarify_or_respond

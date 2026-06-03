@@ -1,0 +1,6 @@
+input_manifest_path: data/manifests/full/sft_eval_phi4_max3_stage4_raw_stratified768.jsonl
+label_space_manifest_path: data/manifests/full/sft_train_phi4_max3_stage4_no_eval_overlap.jsonl
+output_manifest_path: data/manifests/full/sft_eval_phi4_max3_stage4_closed_label_stratified768.jsonl
+summary_output_path: data/manifests/full/sft_eval_phi4_max3_stage4_closed_label_stratified768_summary.json
+strip_leading_numeric_prefix_sources:
+  - ip102
