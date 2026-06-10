@@ -20,6 +20,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--fraction", type=float, default=None)
     parser.add_argument("--subset-tag", default=None)
     parser.add_argument("--data-root", default=None)
+    parser.add_argument(
+        "--fail-on-missing",
+        action="store_true",
+        help="Return a non-zero status when any configured SFT source has no normalized interim file.",
+    )
     return parser.parse_args()
 
 
@@ -64,6 +69,8 @@ def main() -> int:
     print("built_sft_manifest=%s rows=%s" % (output_path, len(rows)))
     if missing:
         print("missing_sft_sources=%s" % ",".join(missing))
+        if args.fail_on_missing:
+            return 1
     return 0
 
 

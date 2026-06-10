@@ -11,7 +11,8 @@
 
 set -euo pipefail
 
-cd /blue/hmedeiros/qinruoyao/agvlm
+REPO_ROOT="${AGRI_VLM_REPO_ROOT:-${SLURM_SUBMIT_DIR:-$PWD}}"
+cd "$REPO_ROOT"
 
 BENCHMARK_JOB_ID="${BENCHMARK_JOB_ID:?Set BENCHMARK_JOB_ID to the Slurm benchmark job id.}"
 BENCHMARK_OUTPUT_DIR="${BENCHMARK_OUTPUT_DIR:?Set BENCHMARK_OUTPUT_DIR to the benchmark result directory.}"

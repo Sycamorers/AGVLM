@@ -42,7 +42,7 @@ MAX_SAMPLES="${MAX_SAMPLES:-0}"
 MAX_NEW_TOKENS="${MAX_NEW_TOKENS:-0}"
 MIN_NEW_TOKENS="${MIN_NEW_TOKENS:-2}"
 DTYPE="${DTYPE:-bf16}"
-QUANTIZATION="${QUANTIZATION:-none}"
+QUANTIZATION="${QUANTIZATION:-}"
 DEVICE="${DEVICE:-cuda:0}"
 OUTPUT_DIR="${OUTPUT_DIR:-benchmarks/vlm_baselines/results}"
 SPLIT_DIR="${SPLIT_DIR:-benchmarks/vlm_baselines/splits}"
@@ -50,7 +50,7 @@ FORCE_SPLITS="${FORCE_SPLITS:-0}"
 DRY_RUN="${DRY_RUN:-0}"
 
 echo "git_commit=$(git rev-parse HEAD)"
-echo "phase=sft split=${SPLIT} model_name=${MODEL_NAME} model_key=${MODEL_KEY} output_dir=${OUTPUT_DIR} split_dir=${SPLIT_DIR} max_samples=${MAX_SAMPLES} min_new_tokens=${MIN_NEW_TOKENS}"
+echo "phase=sft split=${SPLIT} model_name=${MODEL_NAME} model_key=${MODEL_KEY} output_dir=${OUTPUT_DIR} split_dir=${SPLIT_DIR} max_samples=${MAX_SAMPLES} min_new_tokens=${MIN_NEW_TOKENS} quantization_override=${QUANTIZATION:-<model-config>}"
 nvidia-smi || true
 
 split_args=(
@@ -74,11 +74,13 @@ args=(
   --max-new-tokens "$MAX_NEW_TOKENS"
   --min-new-tokens "$MIN_NEW_TOKENS"
   --dtype "$DTYPE"
-  --quantization "$QUANTIZATION"
   --device "$DEVICE"
   --output-dir "$OUTPUT_DIR"
 )
 
+if [[ -n "$QUANTIZATION" ]]; then
+  args+=(--quantization "$QUANTIZATION")
+fi
 if [[ -n "$MODEL_KEY" ]]; then
   args+=(--model-key "$MODEL_KEY")
 else

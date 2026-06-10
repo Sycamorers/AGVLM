@@ -7,6 +7,7 @@ module load cuda/12.9.1
 ENV_NAME="${ENV_NAME:-agri-vlm-v1}"
 DOWNLOAD_MODE="${DOWNLOAD_MODE:-partial}"
 SAMPLE_FRACTION="${SAMPLE_FRACTION:-0.1}"
+FAIL_ON_MISSING="${FAIL_ON_MISSING:-0}"
 export PYTHONPATH="${PYTHONPATH:-src}"
 export AGRI_VLM_DATA_ROOT="${AGRI_VLM_DATA_ROOT:-$PWD/data}"
 export HF_HOME="${HF_HOME:-$PWD/.cache/huggingface}"
@@ -19,9 +20,34 @@ source "$(conda info --base)/etc/profile.d/conda.sh"
 conda activate "${ENV_NAME}"
 
 python scripts/verify_environment.py
+python scripts/data/prepare_manual_dataset_slots.py --download-mode "${DOWNLOAD_MODE}" --fraction "${SAMPLE_FRACTION}"
 python scripts/data/download_public_datasets.py --download-mode "${DOWNLOAD_MODE}" --fraction "${SAMPLE_FRACTION}"
-python scripts/data/normalize_all.py --download-mode "${DOWNLOAD_MODE}" --fraction "${SAMPLE_FRACTION}"
-python scripts/data/build_sft_manifest.py --download-mode "${DOWNLOAD_MODE}" --fraction "${SAMPLE_FRACTION}"
+normalize_args=(
+  scripts/data/normalize_all.py
+  --download-mode "${DOWNLOAD_MODE}"
+  --fraction "${SAMPLE_FRACTION}"
+)
+if [[ "${FAIL_ON_MISSING}" == "1" ]]; then
+  normalize_args+=(--fail-on-missing)
+fi
+python "${normalize_args[@]}"
+sft_args=(
+  scripts/data/build_sft_manifest.py
+  --download-mode "${DOWNLOAD_MODE}"
+  --fraction "${SAMPLE_FRACTION}"
+)
+if [[ "${FAIL_ON_MISSING}" == "1" ]]; then
+  sft_args+=(--fail-on-missing)
+fi
+python "${sft_args[@]}"
 python scripts/data/build_rl_manifest.py --download-mode "${DOWNLOAD_MODE}" --fraction "${SAMPLE_FRACTION}"
-python scripts/data/build_eval_manifest.py --download-mode "${DOWNLOAD_MODE}" --fraction "${SAMPLE_FRACTION}"
+eval_args=(
+  scripts/data/build_eval_manifest.py
+  --download-mode "${DOWNLOAD_MODE}"
+  --fraction "${SAMPLE_FRACTION}"
+)
+if [[ "${FAIL_ON_MISSING}" == "1" ]]; then
+  eval_args+=(--fail-on-missing)
+fi
+python "${eval_args[@]}"
 python scripts/data/dataset_report.py --download-mode "${DOWNLOAD_MODE}" --fraction "${SAMPLE_FRACTION}"

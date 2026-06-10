@@ -11,7 +11,8 @@
 
 set -euo pipefail
 
-cd /blue/hmedeiros/qinruoyao/agvlm
+REPO_ROOT="${AGRI_VLM_REPO_ROOT:-${SLURM_SUBMIT_DIR:-$PWD}}"
+cd "$REPO_ROOT"
 
 POLL_INTERVAL_SECONDS="${POLL_INTERVAL_SECONDS:-60}"
 MAX_GUARD_SECONDS="${MAX_GUARD_SECONDS:-21600}"

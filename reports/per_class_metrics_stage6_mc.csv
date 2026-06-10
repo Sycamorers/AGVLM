@@ -1,0 +1,144 @@
+run,label,support,precision,recall,f1
+stage6_mc,aleurocanthus spiniferus,1,0.0,0.0,0.0
+stage6_mc,alfalfa plant bug,2,0.0,0.0,0.0
+stage6_mc,alfalfa seed chalcid,1,0.0,0.0,0.0
+stage6_mc,algal leaf,2,0.0,0.0,0.0
+stage6_mc,aphids,6,0.0,0.0,0.0
+stage6_mc,apple apple scab,2,0.0,0.0,0.0
+stage6_mc,apple black rot,1,0.0,0.0,0.0
+stage6_mc,apple healthy,4,0.0,0.0,0.0
+stage6_mc,apple scab leaf,1,0.0,0.0,0.0
+stage6_mc,army worm,3,0.0,0.0,0.0
+stage6_mc,bacterial leaf blight,7,0.0,0.0,0.0
+stage6_mc,bactrocera tsuneonis,1,0.0,0.0,0.0
+stage6_mc,banana healthy leaf,3,0.0,0.0,0.0
+stage6_mc,beet army worm,4,0.0,0.0,0.0
+stage6_mc,bird cherry oataphid,3,0.0,0.0,0.0
+stage6_mc,bird eye spot,2,0.0,0.0,0.0
+stage6_mc,black cutworm,2,0.0,0.0,0.0
+stage6_mc,black sigatoka,2,0.11764705882352941,1.0,0.21052631578947367
+stage6_mc,blister beetle,4,0.0,0.0,0.0
+stage6_mc,blueberry healthy,2,0.0,0.0,0.0
+stage6_mc,blueberry leaf,1,0.0,0.0,0.0
+stage6_mc,bract mosaic virus,2,0.0,0.0,0.0
+stage6_mc,brinjal mites,1,0.0,0.0,0.0
+stage6_mc,brown blight,5,0.0,0.0,0.0
+stage6_mc,brown plant hopper,4,0.0,0.0,0.0
+stage6_mc,brown spot,12,0.0,0.0,0.0
+stage6_mc,cherry including sour healthy,3,0.0,0.0,0.0
+stage6_mc,chickpea botrytis gray mold,1,0.0,0.0,0.0
+stage6_mc,chilli leaf curl virus,1,0.0,0.0,0.0
+stage6_mc,chilli thrips,1,0.0,0.0,0.0
+stage6_mc,chilo suppressalis,3,0.0,0.0,0.0
+stage6_mc,chlumetia transversa,2,0.0,0.0,0.0
+stage6_mc,cicadella viridis,1,0.0,0.0,0.0
+stage6_mc,cicadellidae,9,0.0,0.0,0.0
+stage6_mc,coriander healthy,1,0.0,0.0,0.0
+stage6_mc,corn borer,2,0.0,0.0,0.0
+stage6_mc,corn gray leaf spot,1,0.0,0.0,0.0
+stage6_mc,corn leaf blight,2,0.0,0.0,0.0
+stage6_mc,corn maize cercospora leaf spot gray leaf spot,3,0.0,0.0,0.0
+stage6_mc,corn maize common rust,3,0.0,0.0,0.0
+stage6_mc,corn maize healthy,2,0.0,0.0,0.0
+stage6_mc,corn maize northern leaf blight,3,0.028846153846153848,1.0,0.05607476635514019
+stage6_mc,cucumber squash bug,1,0.0,0.0,0.0
+stage6_mc,dacus dorsalis hendel,1,0.0,0.0,0.0
+stage6_mc,dasineura sp,1,0.0,0.0,0.0
+stage6_mc,english grain aphid,1,0.0,0.0,0.0
+stage6_mc,flax budworm,1,0.0,0.0,0.0
+stage6_mc,flea beetle,1,0.0,0.0,0.0
+stage6_mc,grape esca black measles,3,0.0,0.0,0.0
+stage6_mc,grape leaf black rot,1,0.0,0.0,0.0
+stage6_mc,grape leaf blight isariopsis leaf spot,1,0.0,0.0,0.0
+stage6_mc,gray light,1,0.058823529411764705,1.0,0.1111111111111111
+stage6_mc,green bug,2,0.0,0.0,0.0
+stage6_mc,grub,2,0.0,0.0,0.0
+stage6_mc,guava healthy,1,0.0,0.0,0.0
+stage6_mc,healthy,9,0.0,0.0,0.0
+stage6_mc,hispa,4,0.0,0.0,0.0
+stage6_mc,icerya purchasi maskell,1,0.0,0.0,0.0
+stage6_mc,insect pest,3,0.0,0.0,0.0
+stage6_mc,large cutworm,2,0.0,0.0,0.0
+stage6_mc,leaf scald,10,0.0,0.0,0.0
+stage6_mc,limacodidae,1,0.0,0.0,0.0
+stage6_mc,locustoidea,2,0.0,0.0,0.0
+stage6_mc,longlegged spider mite,2,0.0,0.0,0.0
+stage6_mc,lycorma delicatula,10,0.0,0.0,0.0
+stage6_mc,lytta polita,1,0.0,0.0,0.0
+stage6_mc,maize fall armyworm,2,0.0,0.0,0.0
+stage6_mc,maize healthy,1,0.0,0.0,0.0
+stage6_mc,mango powdery mildew,1,0.0,0.0,0.0
+stage6_mc,medicinal plants potassium deficiency,1,0.0,0.0,0.0
+stage6_mc,miridae,7,0.0,0.0,0.0
+stage6_mc,moko disease,5,0.0,0.0,0.0
+stage6_mc,mole cricket,2,0.0,0.0,0.0
+stage6_mc,narrow brown spot,8,0.0,0.0,0.0
+stage6_mc,nitrogen deficiency,3,0.0,0.0,0.0
+stage6_mc,odontothrips loti,1,0.0,0.0,0.0
+stage6_mc,orange haunglongbing citrus greening,12,0.0,0.0,0.0
+stage6_mc,panonchus citri mcgregor,2,0.0,0.0,0.0
+stage6_mc,papaya papaya mealybug,1,0.0,0.0,0.0
+stage6_mc,peach bacterial spot,4,0.0,0.0,0.0
+stage6_mc,peach leaf,1,0.0,0.0,0.0
+stage6_mc,pepper bell bacterial spot,2,0.0,0.0,0.0
+stage6_mc,pepper bell healthy,1,0.0,0.0,0.0
+stage6_mc,phyllocnistis citrella stainton,1,0.0,0.0,0.0
+stage6_mc,polyphagotars onemus latus,1,0.0,0.0,0.0
+stage6_mc,potato aphids,1,0.0,0.0,0.0
+stage6_mc,potato early blight,2,0.0,0.0,0.0
+stage6_mc,potato healthy,1,0.0,0.0,0.0
+stage6_mc,potato late blight,4,0.0,0.0,0.0
+stage6_mc,potato leaf early blight,2,0.0,0.0,0.0
+stage6_mc,potato leaf late blight,1,0.0,0.0,0.0
+stage6_mc,potosiabre vitarsis,1,0.0,0.0,0.0
+stage6_mc,pseudococcus comstocki kuwana,2,0.0,0.0,0.0
+stage6_mc,raspberry healthy,1,0.0,0.0,0.0
+stage6_mc,red leaf spot,2,0.0,0.0,0.0
+stage6_mc,rhytidodera bowrinii white,2,0.0,0.0,0.0
+stage6_mc,rice gall midge,6,0.036585365853658534,0.5,0.06818181818181818
+stage6_mc,rice leaf and neck blast,2,0.0,0.0,0.0
+stage6_mc,rice leaf caterpillar,1,0.0,0.0,0.0
+stage6_mc,rice leaf folder,2,0.0,0.0,0.0
+stage6_mc,rice leaf roller,1,0.0,0.0,0.0
+stage6_mc,rice shell pest,2,0.0,0.0,0.0
+stage6_mc,rice skipper,4,0.0,0.0,0.0
+stage6_mc,rice stemfly,1,0.0,0.0,0.0
+stage6_mc,rice water weevil,1,0.0,0.0,0.0
+stage6_mc,rice yellow stem borer,3,0.0,0.0,0.0
+stage6_mc,sheath blight,5,0.0,0.0,0.0
+stage6_mc,soybean healthy,12,0.0,0.0,0.0
+stage6_mc,squash powdery mildew,2,0.0,0.0,0.0
+stage6_mc,squash powdery mildew leaf,2,0.0,0.0,0.0
+stage6_mc,strawberry healthy,1,0.0,0.0,0.0
+stage6_mc,strawberry leaf scorch,1,0.0,0.0,0.0
+stage6_mc,tarnished plant bug,2,0.0,0.0,0.0
+stage6_mc,tetradacus c bactrocera minax,1,0.0,0.0,0.0
+stage6_mc,therioaphis maculata buckton,2,0.0,0.0,0.0
+stage6_mc,thrips,6,0.0,0.0,0.0
+stage6_mc,tobacco healthy,1,0.0,0.0,0.0
+stage6_mc,tomato bacterial spot,4,0.0,0.0,0.0
+stage6_mc,tomato early blight,4,0.0,0.0,0.0
+stage6_mc,tomato healthy,5,0.0,0.0,0.0
+stage6_mc,tomato late blight,4,0.0,0.0,0.0
+stage6_mc,tomato leaf bacterial spot,3,0.0,0.0,0.0
+stage6_mc,tomato leaf late blight,1,0.0,0.0,0.0
+stage6_mc,tomato leaf mold,3,0.0,0.0,0.0
+stage6_mc,tomato mold leaf,3,0.0,0.0,0.0
+stage6_mc,tomato potassium deficiency,1,0.0,0.0,0.0
+stage6_mc,tomato septoria leaf spot,3,0.0,0.0,0.0
+stage6_mc,tomato spider mites two spotted spider mite,2,0.0,0.0,0.0
+stage6_mc,tomato target spot,2,0.0,0.0,0.0
+stage6_mc,tomato tomato yellow leaf curl virus,11,0.0,0.0,0.0
+stage6_mc,tungro virus,7,0.0,0.0,0.0
+stage6_mc,viteus vitifoliae,1,0.0,0.0,0.0
+stage6_mc,wheat blossom midge,2,0.0,0.0,0.0
+stage6_mc,wheat phloeothrips,1,0.0,0.0,0.0
+stage6_mc,wheat sawfly,2,0.0,0.0,0.0
+stage6_mc,white backed plant hopper,1,0.0,0.0,0.0
+stage6_mc,white margined moth,2,0.0,0.0,0.0
+stage6_mc,white spot,2,0.0,0.0,0.0
+stage6_mc,wireworm,1,0.0,0.0,0.0
+stage6_mc,xylotrechus,2,0.0,0.0,0.0
+stage6_mc,yellow cutworm,1,0.0,0.0,0.0
+stage6_mc,yellow rice borer,1,0.0,0.0,0.0
+stage6_mc,yellow sigatoka,2,0.0,0.0,0.0

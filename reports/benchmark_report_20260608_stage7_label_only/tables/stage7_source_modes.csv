@@ -1,0 +1,8 @@
+source_dataset,total,mode_prediction,mode_count,mode_rate,accuracy,out_of_label_space_rate
+banana_disease,17,to spot,17,1.0,0.0,1.0
+digigreen_crop_disease,18,aphids,18,1.0,0.0,1.0
+ip102,123,aphids,123,1.0,0.04878048780487805,0.0
+plantdoc,21,peach leaf,21,1.0,0.047619047619047616,0.0
+plantvillage,104,peach bacterial spot,104,1.0,0.038461538461538464,0.0
+rice_disease,82,to spot,82,1.0,0.0,1.0
+tea_sickness,17,to spot,17,1.0,0.0,1.0

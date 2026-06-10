@@ -98,6 +98,64 @@ def _build_smoke_raw_data(raw_dir: Path, dataset_name: str, subset_tag: str, dow
             "%s 0\n" % _rel(pest_path, raw_dir),
             encoding="utf-8",
         )
+    elif dataset_name == "rice_disease":
+        _write_jsonl(
+            raw_dir / "records.jsonl",
+            [
+                {
+                    "id": "rice-disease-smoke-1",
+                    "image": image("rice_disease_smoke_1.png", [70, 140, 70]),
+                    "label": "nitrogen deficiency",
+                    "split": "train",
+                    "crop": "Rice",
+                    "disease": "nitrogen deficiency",
+                }
+            ],
+        )
+    elif dataset_name == "digigreen_crop_disease":
+        _write_jsonl(
+            raw_dir / "records.jsonl",
+            [
+                {
+                    "id": "digigreen-smoke-1",
+                    "image": image("digigreen_smoke_1.png", [90, 130, 60]),
+                    "label": "tomato early blight",
+                    "split": "train",
+                    "crop": "tomato",
+                    "disease": "early blight",
+                    "diagnoses": ["early blight"],
+                    "template_origin": "source_authored",
+                }
+            ],
+        )
+    elif dataset_name == "banana_disease":
+        _write_jsonl(
+            raw_dir / "records.jsonl",
+            [
+                {
+                    "id": "banana-disease-smoke-1",
+                    "image": image("banana_disease_smoke_1.png", [135, 120, 45]),
+                    "label": "healthy",
+                    "split": "train",
+                    "crop": "Banana",
+                    "disease": "healthy",
+                }
+            ],
+        )
+    elif dataset_name == "tea_sickness":
+        _write_jsonl(
+            raw_dir / "records.jsonl",
+            [
+                {
+                    "id": "tea-sickness-smoke-1",
+                    "image": image("tea_sickness_smoke_1.png", [40, 105, 75]),
+                    "label": "gray blight",
+                    "split": "train",
+                    "crop": "Tea",
+                    "disease": "gray blight",
+                }
+            ],
+        )
     elif dataset_name == "plantvillage_vqa":
         _write_jsonl(
             raw_dir / "records.jsonl",
@@ -239,6 +297,10 @@ def main() -> int:
             "plantvillage",
             "plantdoc",
             "ip102",
+            "rice_disease",
+            "digigreen_crop_disease",
+            "banana_disease",
+            "tea_sickness",
             "plantvillage_vqa",
             "agbase",
             "mirage",

@@ -1,0 +1,57 @@
+{
+  "eval_loss": {
+    "count": 8,
+    "first": 4.355119228363037,
+    "last": 1.4993938207626343,
+    "max": 4.355119228363037,
+    "mean": 2.366964176297188,
+    "median": 1.9672532677650452,
+    "min": 1.4993938207626343
+  },
+  "final_train_summary": {
+    "epoch": 32.0,
+    "global_step": 160,
+    "total_flos": 24939158986752.0,
+    "train_loss": 2.6821530029177665,
+    "train_runtime": 4073.6263,
+    "train_samples_per_second": 2.514,
+    "train_steps_per_second": 0.039
+  },
+  "first_epoch": 0.22857142857142856,
+  "first_step": 1,
+  "grad_norm": {
+    "count": 160,
+    "first": 65.4277413143264,
+    "last": 24.42368173982444,
+    "max": 65.7238958239622,
+    "mean": 19.89745812623377,
+    "median": 16.928365170476027,
+    "min": 11.848134576794111
+  },
+  "last_epoch": 32.0,
+  "last_step": 160,
+  "learning_rate": {
+    "count": 160,
+    "first": 0.0,
+    "last": 6.41025641025641e-09,
+    "max": 1e-06,
+    "mean": 5e-07,
+    "median": 5e-07,
+    "min": 0.0
+  },
+  "loss": {
+    "count": 160,
+    "first": 7.8635,
+    "first_100_mean": 3.429947,
+    "first_to_last_100_delta": -1.7142799999999998,
+    "last": 1.2811,
+    "last_100_mean": 1.715667,
+    "max": 7.8635,
+    "mean": 2.682149375,
+    "median": 2.0747999999999998,
+    "min": 1.1122
+  },
+  "metrics_jsonl": "outputs/sft/phi4-reasoning-vision-15b-classification-probe-stage6-mc-b200-4gpu/metrics.jsonl",
+  "rows": 169,
+  "title": "Stage6 MC SFT Training"
+}

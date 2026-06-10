@@ -1,0 +1,144 @@
+run,label,support,precision,recall,f1
+stage5,aleurocanthus spiniferus,1,0.0,0.0,0.0
+stage5,alfalfa plant bug,2,0.0,0.0,0.0
+stage5,alfalfa seed chalcid,1,0.0,0.0,0.0
+stage5,algal leaf,2,0.0,0.0,0.0
+stage5,aphids,6,0.0,0.0,0.0
+stage5,apple apple scab,2,0.0,0.0,0.0
+stage5,apple black rot,1,0.0,0.0,0.0
+stage5,apple healthy,4,0.0,0.0,0.0
+stage5,apple scab leaf,1,0.0,0.0,0.0
+stage5,army worm,3,0.0,0.0,0.0
+stage5,bacterial leaf blight,7,0.08536585365853659,1.0,0.15730337078651685
+stage5,bactrocera tsuneonis,1,0.0,0.0,0.0
+stage5,banana healthy leaf,3,0.0,0.0,0.0
+stage5,beet army worm,4,0.0,0.0,0.0
+stage5,bird cherry oataphid,3,0.0,0.0,0.0
+stage5,bird eye spot,2,0.0,0.0,0.0
+stage5,black cutworm,2,0.0,0.0,0.0
+stage5,black sigatoka,2,0.11764705882352941,1.0,0.21052631578947367
+stage5,blister beetle,4,0.0,0.0,0.0
+stage5,blueberry healthy,2,0.0,0.0,0.0
+stage5,blueberry leaf,1,0.0,0.0,0.0
+stage5,bract mosaic virus,2,0.0,0.0,0.0
+stage5,brinjal mites,1,0.0,0.0,0.0
+stage5,brown blight,5,0.0,0.0,0.0
+stage5,brown plant hopper,4,0.0,0.0,0.0
+stage5,brown spot,12,0.0,0.0,0.0
+stage5,cherry including sour healthy,3,0.0,0.0,0.0
+stage5,chickpea botrytis gray mold,1,0.0,0.0,0.0
+stage5,chilli leaf curl virus,1,0.0,0.0,0.0
+stage5,chilli thrips,1,0.0,0.0,0.0
+stage5,chilo suppressalis,3,0.0,0.0,0.0
+stage5,chlumetia transversa,2,0.0,0.0,0.0
+stage5,cicadella viridis,1,0.0,0.0,0.0
+stage5,cicadellidae,9,0.0,0.0,0.0
+stage5,coriander healthy,1,0.0,0.0,0.0
+stage5,corn borer,2,0.0,0.0,0.0
+stage5,corn gray leaf spot,1,0.0,0.0,0.0
+stage5,corn leaf blight,2,0.0,0.0,0.0
+stage5,corn maize cercospora leaf spot gray leaf spot,3,0.0,0.0,0.0
+stage5,corn maize common rust,3,0.0,0.0,0.0
+stage5,corn maize healthy,2,0.0,0.0,0.0
+stage5,corn maize northern leaf blight,3,0.028846153846153848,1.0,0.05607476635514019
+stage5,cucumber squash bug,1,0.0,0.0,0.0
+stage5,dacus dorsalis hendel,1,0.0,0.0,0.0
+stage5,dasineura sp,1,0.0,0.0,0.0
+stage5,english grain aphid,1,0.0,0.0,0.0
+stage5,flax budworm,1,0.0,0.0,0.0
+stage5,flea beetle,1,0.0,0.0,0.0
+stage5,grape esca black measles,3,0.0,0.0,0.0
+stage5,grape leaf black rot,1,0.0,0.0,0.0
+stage5,grape leaf blight isariopsis leaf spot,1,0.0,0.0,0.0
+stage5,gray light,1,0.0,0.0,0.0
+stage5,green bug,2,0.0,0.0,0.0
+stage5,grub,2,0.0,0.0,0.0
+stage5,guava healthy,1,0.0,0.0,0.0
+stage5,healthy,9,0.0,0.0,0.0
+stage5,hispa,4,0.0,0.0,0.0
+stage5,icerya purchasi maskell,1,0.0,0.0,0.0
+stage5,insect pest,3,0.0,0.0,0.0
+stage5,large cutworm,2,0.0,0.0,0.0
+stage5,leaf scald,10,0.0,0.0,0.0
+stage5,limacodidae,1,0.0,0.0,0.0
+stage5,locustoidea,2,0.0,0.0,0.0
+stage5,longlegged spider mite,2,0.0,0.0,0.0
+stage5,lycorma delicatula,10,0.0,0.0,0.0
+stage5,lytta polita,1,0.0,0.0,0.0
+stage5,maize fall armyworm,2,0.0,0.0,0.0
+stage5,maize healthy,1,0.0,0.0,0.0
+stage5,mango powdery mildew,1,0.0,0.0,0.0
+stage5,medicinal plants potassium deficiency,1,0.0,0.0,0.0
+stage5,miridae,7,0.0,0.0,0.0
+stage5,moko disease,5,0.0,0.0,0.0
+stage5,mole cricket,2,0.0,0.0,0.0
+stage5,narrow brown spot,8,0.0,0.0,0.0
+stage5,nitrogen deficiency,3,0.0,0.0,0.0
+stage5,odontothrips loti,1,0.0,0.0,0.0
+stage5,orange haunglongbing citrus greening,12,0.0,0.0,0.0
+stage5,panonchus citri mcgregor,2,0.0,0.0,0.0
+stage5,papaya papaya mealybug,1,0.0,0.0,0.0
+stage5,peach bacterial spot,4,0.0,0.0,0.0
+stage5,peach leaf,1,0.0,0.0,0.0
+stage5,pepper bell bacterial spot,2,0.0,0.0,0.0
+stage5,pepper bell healthy,1,0.0,0.0,0.0
+stage5,phyllocnistis citrella stainton,1,0.0,0.0,0.0
+stage5,polyphagotars onemus latus,1,0.0,0.0,0.0
+stage5,potato aphids,1,0.0,0.0,0.0
+stage5,potato early blight,2,0.0,0.0,0.0
+stage5,potato healthy,1,0.0,0.0,0.0
+stage5,potato late blight,4,0.0,0.0,0.0
+stage5,potato leaf early blight,2,0.0,0.0,0.0
+stage5,potato leaf late blight,1,0.0,0.0,0.0
+stage5,potosiabre vitarsis,1,0.0,0.0,0.0
+stage5,pseudococcus comstocki kuwana,2,0.0,0.0,0.0
+stage5,raspberry healthy,1,0.0,0.0,0.0
+stage5,red leaf spot,2,0.0,0.0,0.0
+stage5,rhytidodera bowrinii white,2,0.0,0.0,0.0
+stage5,rice gall midge,6,0.0,0.0,0.0
+stage5,rice leaf and neck blast,2,0.0,0.0,0.0
+stage5,rice leaf caterpillar,1,0.0,0.0,0.0
+stage5,rice leaf folder,2,0.0,0.0,0.0
+stage5,rice leaf roller,1,0.0,0.0,0.0
+stage5,rice shell pest,2,0.0,0.0,0.0
+stage5,rice skipper,4,0.0,0.0,0.0
+stage5,rice stemfly,1,0.0,0.0,0.0
+stage5,rice water weevil,1,0.0,0.0,0.0
+stage5,rice yellow stem borer,3,0.0,0.0,0.0
+stage5,sheath blight,5,0.0,0.0,0.0
+stage5,soybean healthy,12,0.0,0.0,0.0
+stage5,squash powdery mildew,2,0.0,0.0,0.0
+stage5,squash powdery mildew leaf,2,0.0,0.0,0.0
+stage5,strawberry healthy,1,0.0,0.0,0.0
+stage5,strawberry leaf scorch,1,0.0,0.0,0.0
+stage5,tarnished plant bug,2,0.0,0.0,0.0
+stage5,tetradacus c bactrocera minax,1,0.0,0.0,0.0
+stage5,therioaphis maculata buckton,2,0.0,0.0,0.0
+stage5,thrips,6,0.0,0.0,0.0
+stage5,tobacco healthy,1,0.0,0.0,0.0
+stage5,tomato bacterial spot,4,0.0,0.0,0.0
+stage5,tomato early blight,4,0.0,0.0,0.0
+stage5,tomato healthy,5,0.0,0.0,0.0
+stage5,tomato late blight,4,0.0,0.0,0.0
+stage5,tomato leaf bacterial spot,3,0.0,0.0,0.0
+stage5,tomato leaf late blight,1,0.0,0.0,0.0
+stage5,tomato leaf mold,3,0.0,0.0,0.0
+stage5,tomato mold leaf,3,0.0,0.0,0.0
+stage5,tomato potassium deficiency,1,0.0,0.0,0.0
+stage5,tomato septoria leaf spot,3,0.0,0.0,0.0
+stage5,tomato spider mites two spotted spider mite,2,0.0,0.0,0.0
+stage5,tomato target spot,2,0.0,0.0,0.0
+stage5,tomato tomato yellow leaf curl virus,11,0.0,0.0,0.0
+stage5,tungro virus,7,0.0,0.0,0.0
+stage5,viteus vitifoliae,1,0.0,0.0,0.0
+stage5,wheat blossom midge,2,0.0,0.0,0.0
+stage5,wheat phloeothrips,1,0.0,0.0,0.0
+stage5,wheat sawfly,2,0.0,0.0,0.0
+stage5,white backed plant hopper,1,0.0,0.0,0.0
+stage5,white margined moth,2,0.0,0.0,0.0
+stage5,white spot,2,0.0,0.0,0.0
+stage5,wireworm,1,0.0,0.0,0.0
+stage5,xylotrechus,2,0.0,0.0,0.0
+stage5,yellow cutworm,1,0.0,0.0,0.0
+stage5,yellow rice borer,1,0.0,0.0,0.0
+stage5,yellow sigatoka,2,0.0,0.0,0.0

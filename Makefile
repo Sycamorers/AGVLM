@@ -3,6 +3,7 @@ NPROC_PER_NODE ?=
 MASTER_PORT ?= 29500
 DATA_DOWNLOAD_MODE ?= partial
 DATA_FRACTION ?= 0.1
+DATA_VALIDATE_WORKERS ?= 8
 RL_MANIFEST ?= data/manifests/full/rl_manifest.jsonl
 RL_EVAL_MANIFEST ?= data/manifests/full/rl_local_holdout_eval.jsonl
 RL_PHI4_MODEL_CONFIG ?= configs/model/phi4_reasoning_vision_15b_turin_24g.yaml
@@ -14,7 +15,7 @@ BENCHMARK_MODEL_KEY ?= agvlm_phi4_sft_completed
 BENCHMARK_RL_MODEL_KEY ?= agvlm_phi4_rl_completed
 BENCHMARK_MAX_SAMPLES ?= 2
 
-.PHONY: help bootstrap verify verify-dist smoke prepare-slots download-data normalize-all data-partial data-full data-report build-sft-manifest build-rl-manifest build-eval-manifest rl-data-full rl-audit-full rl-reward-check-full rl-format-check-full rl-phi4-readiness rl-phi4-smoke-after-sft rl-phi4-full-after-sft test-rl benchmark-status benchmark-phase-splits benchmark-sft-splits benchmark-rl-splits benchmark-dry-run benchmark-sft-dry-run benchmark-rl-dry-run benchmark-sft-summary benchmark-rl-summary benchmark-all-summary benchmark-sft-agvlm-checkpoint-dry-run benchmark-rl-agvlm-sft-checkpoint-dry-run benchmark-rl-agvlm-rl-checkpoint-dry-run benchmark-rl-agvlm-checkpoint-dry-run export-training-artifacts export-benchmark-tables sft sft-dist rl rl-dist eval eval-local test
+.PHONY: help bootstrap verify verify-dist smoke prepare-slots download-data normalize-all normalize-all-strict data-partial data-full data-report build-sft-manifest build-rl-manifest build-eval-manifest stage5-datafix-manifests stage6-classification-probe-manifests stage7-label-only-manifests micro-banana-manifests rl-data-full rl-audit-full rl-reward-check-full rl-format-check-full rl-phi4-readiness rl-phi4-smoke-after-sft rl-phi4-full-after-sft test-rl benchmark-status benchmark-phase-splits benchmark-sft-splits benchmark-rl-splits benchmark-dry-run benchmark-sft-dry-run benchmark-rl-dry-run benchmark-sft-summary benchmark-rl-summary benchmark-all-summary benchmark-sft-agvlm-checkpoint-dry-run benchmark-rl-agvlm-sft-checkpoint-dry-run benchmark-rl-agvlm-rl-checkpoint-dry-run benchmark-rl-agvlm-checkpoint-dry-run export-training-artifacts export-benchmark-tables sft sft-dist rl rl-dist eval eval-local test
 
 help:
 	@echo "Targets:"
@@ -25,12 +26,17 @@ help:
 	@echo "  prepare-slots        Create subset-tagged dataset slots and smoke raw data"
 	@echo "  download-data        Download dataset subsets into raw storage"
 	@echo "  normalize-all        Normalize all available datasets for the active subset tag"
+	@echo "  normalize-all-strict Normalize datasets and fail if any selected source is missing"
 	@echo "  data-partial         Download, normalize, build manifests, and report for the default 10 percent subset"
 	@echo "  data-full            Download, normalize, build manifests, and report for the full dataset pass"
 	@echo "  data-report          Generate the dataset report for the active subset tag"
 	@echo "  build-sft-manifest   Build the SFT manifest"
 	@echo "  build-rl-manifest    Build the RL manifest"
 	@echo "  build-eval-manifest  Build evaluation manifests"
+	@echo "  stage5-datafix-manifests  Strictly rebuild current full Stage5 data-fix manifests"
+	@echo "  stage6-classification-probe-manifests  Build Stage6 classification probe train/eval manifests"
+	@echo "  stage7-label-only-manifests  Build Stage7 label-only train/eval manifests"
+	@echo "  micro-banana-manifests Build the banana micro-overfit diagnostic manifests"
 	@echo "  rl-data-full         Build the full reward-verifiable RL manifest"
 	@echo "  rl-audit-full        Audit the full RL manifest"
 	@echo "  rl-reward-check-full Run reward sanity checks on the full RL manifest"
@@ -81,6 +87,12 @@ normalize-all:
 	PYTHONPATH=src $(PYTHON) scripts/data/normalize_all.py \
 		--download-mode $(DATA_DOWNLOAD_MODE) \
 		--fraction $(DATA_FRACTION)
+
+normalize-all-strict:
+	PYTHONPATH=src $(PYTHON) scripts/data/normalize_all.py \
+		--download-mode $(DATA_DOWNLOAD_MODE) \
+		--fraction $(DATA_FRACTION) \
+		--fail-on-missing
 
 data-partial:
 	$(MAKE) download-data DATA_DOWNLOAD_MODE=partial DATA_FRACTION=0.1
@@ -163,6 +175,65 @@ build-eval-manifest:
 		--config configs/data/eval_build.yaml \
 		--download-mode $(DATA_DOWNLOAD_MODE) \
 		--fraction $(DATA_FRACTION)
+
+stage5-datafix-manifests:
+	PYTHONPATH=src $(PYTHON) scripts/data/prepare_manual_dataset_slots.py \
+		--download-mode full \
+		--fraction 1.0
+	$(MAKE) download-data DATA_DOWNLOAD_MODE=full DATA_FRACTION=1.0
+	$(MAKE) normalize-all-strict DATA_DOWNLOAD_MODE=full DATA_FRACTION=1.0
+	PYTHONPATH=src $(PYTHON) scripts/data/build_sft_manifest.py \
+		--config configs/data/sft_build_stage5_datafix.yaml \
+		--download-mode full \
+		--fraction 1.0 \
+		--fail-on-missing
+	PYTHONPATH=src $(PYTHON) scripts/data/build_eval_manifest.py \
+		--config configs/data/eval_build_stage5_datafix.yaml \
+		--download-mode full \
+		--fraction 1.0 \
+		--fail-on-missing
+	PYTHONPATH=src $(PYTHON) scripts/data/validate_manifest_images.py \
+		--manifest data/manifests/full/sft_manifest_stage5_datafix.jsonl \
+		--valid-output data/manifests/full/sft_manifest_stage5_datafix.decode_valid_images.jsonl \
+		--invalid-output reports/sft_stage5_datafix/sft_manifest_stage5_datafix.decode_invalid_images.jsonl \
+		--summary-output reports/sft_stage5_datafix/sft_manifest_stage5_datafix.decode_image_validation_summary.json \
+		--mode decode \
+		--workers $(DATA_VALIDATE_WORKERS) \
+		--allow-invalid-with-report
+	PYTHONPATH=src $(PYTHON) scripts/data/validate_manifest_images.py \
+		--manifest data/manifests/full/local_holdout_eval_stage5_datafix.jsonl \
+		--valid-output data/manifests/full/local_holdout_eval_stage5_datafix.decode_valid_images.jsonl \
+		--invalid-output reports/sft_stage5_datafix/local_holdout_eval_stage5_datafix.decode_invalid_images.jsonl \
+		--summary-output reports/sft_stage5_datafix/local_holdout_eval_stage5_datafix.decode_image_validation_summary.json \
+		--mode decode \
+		--workers $(DATA_VALIDATE_WORKERS) \
+		--allow-invalid-with-report
+	PYTHONPATH=src $(PYTHON) scripts/data/build_sft_train_eval_manifests.py \
+		--config configs/data/sft_train_eval_phi4_max3_stage5_datafix.yaml
+	PYTHONPATH=src $(PYTHON) scripts/data/build_closed_label_sft_manifest.py \
+		--config configs/data/sft_stage5_closed_label_datafix_phi4_max3.yaml
+	PYTHONPATH=src $(PYTHON) scripts/data/build_closed_label_eval_manifest.py \
+		--config configs/data/sft_eval_stage5_closed_label_datafix_phi4_max3.yaml
+	PYTHONPATH=src $(PYTHON) scripts/data/render_sft_format_audit.py \
+		--config configs/data/sft_format_audit_stage5_closed_label_datafix_phi4_max3.yaml
+
+stage6-classification-probe-manifests:
+	PYTHONPATH=src $(PYTHON) scripts/data/build_classification_probe_manifests.py \
+		--config configs/data/sft_classification_probe_stage6_phi4_max3.yaml
+	PYTHONPATH=src $(PYTHON) scripts/data/build_classification_probe_manifests.py \
+		--config configs/data/sft_classification_probe_stage6_mc_phi4_max3.yaml
+
+stage7-label-only-manifests:
+	PYTHONPATH=src $(PYTHON) scripts/data/build_filtered_sft_manifest.py \
+		--config configs/data/sft_classification_only_stage7_label_only_phi4_max3.yaml
+	PYTHONPATH=src $(PYTHON) scripts/data/build_filtered_sft_manifest.py \
+		--config configs/data/sft_classification_val_stage7_label_only_phi4_max3.yaml
+	PYTHONPATH=src $(PYTHON) scripts/data/render_sft_format_audit.py \
+		--config configs/data/sft_format_audit_stage7_label_only_classification_phi4_max3.yaml
+
+micro-banana-manifests:
+	PYTHONPATH=src $(PYTHON) scripts/data/build_classification_probe_manifests.py \
+		--config configs/data/sft_micro_banana_overfit_label_only_phi4_max3.yaml
 
 benchmark-status:
 	PYTHONPATH=src:benchmarks/vlm_baselines $(PYTHON) scripts/benchmarks/benchmark_status.py \

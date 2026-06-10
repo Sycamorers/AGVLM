@@ -9,6 +9,7 @@ from agri_vlm.schemas.dataset_schema import Message, UnifiedSample
 
 PLAIN_FORMAT = "plain"
 INSTRUCTIONAL_FORMAT = "instructional"
+CLASSIFICATION_LABEL_ONLY_FORMAT = "classification_label_only"
 MANIFEST_PROMPT_FORMAT = "manifest"
 
 
@@ -58,6 +59,59 @@ def _classification_label_space(sample: UnifiedSample) -> List[str]:
     return labels
 
 
+def _classification_choice_options(sample: UnifiedSample) -> List[Dict[str, str]]:
+    metadata = sample.metadata or {}
+    raw_options = metadata.get("classification_choice_options") or []
+    if not isinstance(raw_options, list):
+        return []
+    options: List[Dict[str, str]] = []
+    seen_letters = set()
+    seen_labels = set()
+    for raw_option in raw_options:
+        if not isinstance(raw_option, dict):
+            return []
+        letter = str(raw_option.get("letter") or "").strip().upper()
+        label = str(raw_option.get("label") or "").strip()
+        label_key = " ".join(label.lower().split())
+        if not letter or len(letter) > 2 or not label or letter in seen_letters or label_key in seen_labels:
+            return []
+        seen_letters.add(letter)
+        seen_labels.add(label_key)
+        options.append({"letter": letter, "label": label})
+    return options
+
+
+def _classification_choice_answer(sample: UnifiedSample) -> Dict[str, str]:
+    options = _classification_choice_options(sample)
+    if not options:
+        return {}
+    target_label = str(sample.target.canonical_label or sample.target.answer_text or "").strip()
+    target_key = " ".join(target_label.lower().split())
+    for option in options:
+        if " ".join(option["label"].lower().split()) == target_key:
+            return option
+    return {}
+
+
+def _is_classification_sample(sample: UnifiedSample) -> bool:
+    return sample.task_type == "classification" or sample.verifier.mode == "label"
+
+
+def label_only_instruction_for_classification(sample: UnifiedSample) -> str:
+    label_space = _classification_label_space(sample)
+    label_instruction = ""
+    if len(label_space) > 1:
+        label_instruction = (
+            "Choose exactly one label from this allowed label set:\n"
+            f"Allowed labels: {'; '.join(label_space)}\n"
+        )
+    return (
+        f"{label_instruction}"
+        "Respond with only the selected label text.\n"
+        "Do not include Answer:, Evidence:, option letters, punctuation, Markdown, JSON, or explanations."
+    )
+
+
 def output_instruction_for_sample(sample: UnifiedSample) -> str:
     """Return the preferred explicit output contract for SFT-style training."""
     if sample.task_type == "clarify_or_respond" or sample.verifier.mode == "clarify" or sample.target.decision:
@@ -74,6 +128,21 @@ def output_instruction_for_sample(sample: UnifiedSample) -> str:
             "Diagnosis:\nEvidence:\nUncertainty:\nManagement:\nFollow-up:"
         )
     if sample.task_type == "classification" or sample.verifier.mode == "label" or sample.target.canonical_label:
+        choice_options = _classification_choice_options(sample)
+        if choice_options:
+            rendered_options = "\n".join(
+                "%s. %s" % (option["letter"], option["label"]) for option in choice_options
+            )
+            return (
+                "Choose exactly one option from this list:\n"
+                "%s\n"
+                "Respond in this format:\n"
+                "Choice: <option letter>\n"
+                "Answer: <label text from the selected option>\n"
+                "Evidence: <brief visible symptom evidence>\n"
+                "Do not leave Choice or Answer blank, invent labels, or copy the placeholder text."
+                % rendered_options
+            )
         label_space = _classification_label_space(sample)
         label_instruction = ""
         answer_placeholder = "<canonical agricultural label>"
@@ -106,6 +175,7 @@ def _has_output_instruction(text: str) -> bool:
         "respond using these line-start",
         "answer:",
         "decision:",
+        "choice:",
     ]
     return any(marker in normalized for marker in markers)
 
@@ -136,12 +206,23 @@ def sample_to_prompt_messages(
         return messages
     if prompt_format == INSTRUCTIONAL_FORMAT:
         return _append_output_instruction(messages, output_instruction_for_sample(sample))
+    if prompt_format == CLASSIFICATION_LABEL_ONLY_FORMAT:
+        instruction = (
+            label_only_instruction_for_classification(sample)
+            if _is_classification_sample(sample)
+            else output_instruction_for_sample(sample)
+        )
+        return _append_output_instruction(messages, instruction)
     raise ValueError("Unsupported prompt_format=%r for sample %s." % (prompt_format, sample.sample_id))
 
 
 def target_to_text(sample: UnifiedSample, *, target_format: str = PLAIN_FORMAT) -> str:
     if target_format == PLAIN_FORMAT:
         return _plain_target_to_text(sample)
+    if target_format == CLASSIFICATION_LABEL_ONLY_FORMAT:
+        if _is_classification_sample(sample):
+            return sample.target.canonical_label or sample.target.answer_text or _plain_target_to_text(sample)
+        target_format = INSTRUCTIONAL_FORMAT
     if target_format != INSTRUCTIONAL_FORMAT:
         raise ValueError("Unsupported target_format=%r for sample %s." % (target_format, sample.sample_id))
 
@@ -156,6 +237,13 @@ def target_to_text(sample: UnifiedSample, *, target_format: str = PLAIN_FORMAT) 
         return _structured_target_to_text(sample)
     if sample.task_type == "classification" or sample.verifier.mode == "label" or target.canonical_label:
         label = target.canonical_label or target.answer_text or _plain_target_to_text(sample)
+        choice_answer = _classification_choice_answer(sample)
+        if choice_answer:
+            return "Choice: %s\nAnswer: %s\nEvidence: %s" % (
+                choice_answer["letter"],
+                choice_answer["label"],
+                _classification_evidence_to_text(sample),
+            )
         return "Answer: %s\nEvidence: %s" % (label, _classification_evidence_to_text(sample))
     if sample.task_type == "vqa" or sample.verifier.mode in {"exact_match", "synonym"}:
         return "Answer: %s" % _plain_target_to_text(sample)

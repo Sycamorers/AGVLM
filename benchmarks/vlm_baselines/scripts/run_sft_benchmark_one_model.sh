@@ -7,7 +7,7 @@ MODEL_NAME="${MODEL_NAME:-HuggingFaceTB/SmolVLM2-2.2B-Instruct}"
 SPLIT="${SPLIT:-test}"
 MAX_SAMPLES="${MAX_SAMPLES:-0}"
 DTYPE="${DTYPE:-bf16}"
-QUANTIZATION="${QUANTIZATION:-none}"
+QUANTIZATION="${QUANTIZATION:-}"
 DEVICE="${DEVICE:-cuda:0}"
 MAX_NEW_TOKENS="${MAX_NEW_TOKENS:-0}"
 OUTPUT_DIR="${OUTPUT_DIR:-benchmarks/vlm_baselines/results}"
@@ -26,11 +26,13 @@ args=(
   --batch-size 1
   --max-new-tokens "${MAX_NEW_TOKENS}"
   --dtype "${DTYPE}"
-  --quantization "${QUANTIZATION}"
   --device "${DEVICE}"
   --output-dir "${OUTPUT_DIR}"
 )
 
+if [[ -n "${QUANTIZATION}" ]]; then
+  args+=(--quantization "${QUANTIZATION}")
+fi
 if [[ -n "${MODEL_KEY}" ]]; then
   args+=(--model-key "${MODEL_KEY}")
 else

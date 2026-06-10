@@ -5,13 +5,32 @@ vision-language model. V1 is scoped to ground-level RGB agricultural
 consultation: crop disease, pest, symptom, management, and clarify-vs-respond
 tasks.
 
+## Cluster Reproduction
+
+For a new-cluster handoff, follow `docs/cluster_reproduction.md`. It covers
+environment setup, data-root/cache variables, automatic public downloads,
+manual dataset staging for IP102/AgBase/Agri-LLaVA, strict full-manifest
+rebuild commands, smoke tests, B200 Slurm submissions, and benchmark commands.
+
+The current strict manifest rebuild path is:
+
+```bash
+make stage5-datafix-manifests PYTHON=python DATA_VALIDATE_WORKERS=16
+make stage6-classification-probe-manifests PYTHON=python
+make stage7-label-only-manifests PYTHON=python
+```
+
+These targets fail on missing full-data inputs instead of silently accepting
+partial datasets.
+
 ## Active Training Path
 
-As of June 3, 2026, the active SFT path is Stage5 data-fix training for
-`microsoft/Phi-4-reasoning-vision-15B` on 4 B200 GPUs. Stage4 completed but was
-not promoted because benchmark classification collapsed to one dominant label
-per source despite lower eval loss. Stage5 therefore starts from the Stage2
-adapter and uses an expanded, closed-label classification mix.
+As of June 10, 2026, Stage5 data-fix training remains the full-data baseline for
+`microsoft/Phi-4-reasoning-vision-15B` on 4 B200 GPUs. Stage6 and Stage7 are
+classification-repair continuations that test source-scoped classification
+probes, multiple-choice probes, and label-only classification targets. Stage4
+completed but was not promoted because benchmark classification collapsed to one
+dominant label per source despite lower eval loss.
 
 Active files:
 
@@ -26,6 +45,15 @@ Active files:
 - preflight train config: `configs/train/sft_phi4_reasoning_vision_15b_b200_4gpu_stage5_datafix_preflight.yaml`
 - full train config: `configs/train/sft_phi4_reasoning_vision_15b_b200_4gpu_stage5_datafix.yaml`
 - Slurm wrapper: `scripts/hpc/run_sft_b200_4gpu_phi4_reasoning_vision_15b_full_max3.slurm`
+
+Current classification-repair continuation files:
+
+- Stage6 label-list probe data config: `configs/data/sft_classification_probe_stage6_phi4_max3.yaml`
+- Stage6 multiple-choice probe data config: `configs/data/sft_classification_probe_stage6_mc_phi4_max3.yaml`
+- Stage7 label-only classification data config: `configs/data/sft_classification_only_stage7_label_only_phi4_max3.yaml`
+- Stage7 label-only eval data config: `configs/data/sft_classification_val_stage7_label_only_phi4_max3.yaml`
+- Stage7 label-only classification train config: `configs/train/sft_phi4_reasoning_vision_15b_b200_4gpu_stage7_label_only_classification.yaml`
+- Stage7 label-only mixed train config: `configs/train/sft_phi4_reasoning_vision_15b_b200_4gpu_stage7_label_only_mixed.yaml`
 
 Generated Stage5 manifests:
 

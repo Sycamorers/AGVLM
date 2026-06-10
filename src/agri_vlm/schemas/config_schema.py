@@ -87,8 +87,8 @@ class TrainConfigSchema(BaseModel):
     gradient_checkpointing: bool = True
     gradient_checkpointing_use_reentrant: Optional[bool] = None
     loss_chunk_size: int = Field(default=0, ge=0)
-    sft_prompt_format: Literal["manifest", "instructional"] = "manifest"
-    sft_target_format: Literal["plain", "instructional"] = "plain"
+    sft_prompt_format: Literal["manifest", "instructional", "classification_label_only"] = "manifest"
+    sft_target_format: Literal["plain", "instructional", "classification_label_only"] = "plain"
     use_peft: bool = True
     report_to: List[str] = Field(default_factory=lambda: ["tensorboard"])
     run_name: Optional[str] = None

@@ -1,0 +1,150 @@
+run,reference,prediction,count
+stage5,aleurocanthus spiniferus,alfalfa weevil,1
+stage5,alfalfa plant bug,alfalfa weevil,2
+stage5,alfalfa seed chalcid,alfalfa weevil,1
+stage5,algal leaf,gray blight,2
+stage5,aphids,alfalfa weevil,6
+stage5,apple apple scab,corn maize northern leaf blight,2
+stage5,apple black rot,corn maize northern leaf blight,1
+stage5,apple healthy,corn maize northern leaf blight,4
+stage5,apple scab leaf,bell pepper leaf spot,1
+stage5,army worm,alfalfa weevil,3
+stage5,bacterial leaf blight,bacterial leaf blight,7
+stage5,bactrocera tsuneonis,alfalfa weevil,1
+stage5,banana healthy leaf,black sigatoka,3
+stage5,beet army worm,alfalfa weevil,4
+stage5,bird cherry oataphid,alfalfa weevil,3
+stage5,bird eye spot,gray blight,2
+stage5,black cutworm,alfalfa weevil,2
+stage5,black sigatoka,black sigatoka,2
+stage5,blister beetle,alfalfa weevil,4
+stage5,blueberry healthy,corn maize northern leaf blight,2
+stage5,blueberry leaf,bell pepper leaf spot,1
+stage5,bract mosaic virus,black sigatoka,2
+stage5,brinjal mites,healthy,1
+stage5,brown blight,gray blight,5
+stage5,brown plant hopper,alfalfa weevil,3
+stage5,brown plant hopper,bacterial leaf blight,1
+stage5,brown spot,bacterial leaf blight,12
+stage5,cherry including sour healthy,corn maize northern leaf blight,3
+stage5,chickpea botrytis gray mold,healthy,1
+stage5,chilli leaf curl virus,healthy,1
+stage5,chilli thrips,healthy,1
+stage5,chilo suppressalis,bacterial leaf blight,3
+stage5,chlumetia transversa,alfalfa weevil,2
+stage5,cicadella viridis,alfalfa weevil,1
+stage5,cicadellidae,alfalfa weevil,9
+stage5,coriander healthy,healthy,1
+stage5,corn borer,alfalfa weevil,2
+stage5,corn gray leaf spot,bell pepper leaf spot,1
+stage5,corn leaf blight,bell pepper leaf spot,2
+stage5,corn maize cercospora leaf spot gray leaf spot,corn maize northern leaf blight,3
+stage5,corn maize common rust,corn maize northern leaf blight,3
+stage5,corn maize healthy,corn maize northern leaf blight,2
+stage5,corn maize northern leaf blight,corn maize northern leaf blight,3
+stage5,cucumber squash bug,healthy,1
+stage5,dacus dorsalis hendel,alfalfa weevil,1
+stage5,dasineura sp,alfalfa weevil,1
+stage5,english grain aphid,alfalfa weevil,1
+stage5,flax budworm,alfalfa weevil,1
+stage5,flea beetle,alfalfa weevil,1
+stage5,grape esca black measles,corn maize northern leaf blight,3
+stage5,grape leaf black rot,bell pepper leaf spot,1
+stage5,grape leaf blight isariopsis leaf spot,corn maize northern leaf blight,1
+stage5,gray light,gray blight,1
+stage5,green bug,alfalfa weevil,2
+stage5,grub,alfalfa weevil,2
+stage5,guava healthy,healthy,1
+stage5,healthy,bacterial leaf blight,6
+stage5,healthy,gray blight,3
+stage5,hispa,bacterial leaf blight,4
+stage5,icerya purchasi maskell,alfalfa weevil,1
+stage5,insect pest,black sigatoka,3
+stage5,large cutworm,alfalfa weevil,2
+stage5,leaf scald,bacterial leaf blight,10
+stage5,limacodidae,alfalfa weevil,1
+stage5,locustoidea,alfalfa weevil,2
+stage5,longlegged spider mite,alfalfa weevil,2
+stage5,lycorma delicatula,alfalfa weevil,10
+stage5,lytta polita,alfalfa weevil,1
+stage5,maize fall armyworm,healthy,2
+stage5,maize healthy,healthy,1
+stage5,mango powdery mildew,healthy,1
+stage5,medicinal plants potassium deficiency,healthy,1
+stage5,miridae,alfalfa weevil,7
+stage5,moko disease,black sigatoka,5
+stage5,mole cricket,alfalfa weevil,2
+stage5,narrow brown spot,bacterial leaf blight,8
+stage5,nitrogen deficiency,bacterial leaf blight,3
+stage5,odontothrips loti,alfalfa weevil,1
+stage5,orange haunglongbing citrus greening,corn maize northern leaf blight,12
+stage5,panonchus citri mcgregor,alfalfa weevil,2
+stage5,papaya papaya mealybug,healthy,1
+stage5,peach bacterial spot,corn maize northern leaf blight,4
+stage5,peach leaf,bell pepper leaf spot,1
+stage5,pepper bell bacterial spot,corn maize northern leaf blight,2
+stage5,pepper bell healthy,corn maize northern leaf blight,1
+stage5,phyllocnistis citrella stainton,alfalfa weevil,1
+stage5,polyphagotars onemus latus,alfalfa weevil,1
+stage5,potato aphids,healthy,1
+stage5,potato early blight,corn maize northern leaf blight,2
+stage5,potato healthy,healthy,1
+stage5,potato late blight,corn maize northern leaf blight,4
+stage5,potato leaf early blight,bell pepper leaf spot,2
+stage5,potato leaf late blight,bell pepper leaf spot,1
+stage5,potosiabre vitarsis,alfalfa weevil,1
+stage5,pseudococcus comstocki kuwana,alfalfa weevil,2
+stage5,raspberry healthy,corn maize northern leaf blight,1
+stage5,red leaf spot,gray blight,2
+stage5,rhytidodera bowrinii white,alfalfa weevil,2
+stage5,rice gall midge,alfalfa weevil,3
+stage5,rice gall midge,bacterial leaf blight,3
+stage5,rice leaf and neck blast,bacterial leaf blight,2
+stage5,rice leaf caterpillar,alfalfa weevil,1
+stage5,rice leaf folder,bacterial leaf blight,2
+stage5,rice leaf roller,alfalfa weevil,1
+stage5,rice shell pest,alfalfa weevil,2
+stage5,rice skipper,bacterial leaf blight,4
+stage5,rice stemfly,alfalfa weevil,1
+stage5,rice water weevil,alfalfa weevil,1
+stage5,rice yellow stem borer,bacterial leaf blight,3
+stage5,sheath blight,bacterial leaf blight,5
+stage5,soybean healthy,corn maize northern leaf blight,12
+stage5,squash powdery mildew,corn maize northern leaf blight,2
+stage5,squash powdery mildew leaf,bell pepper leaf spot,2
+stage5,strawberry healthy,corn maize northern leaf blight,1
+stage5,strawberry leaf scorch,corn maize northern leaf blight,1
+stage5,tarnished plant bug,alfalfa weevil,2
+stage5,tetradacus c bactrocera minax,alfalfa weevil,1
+stage5,therioaphis maculata buckton,alfalfa weevil,2
+stage5,thrips,alfalfa weevil,4
+stage5,thrips,bacterial leaf blight,2
+stage5,tobacco healthy,healthy,1
+stage5,tomato bacterial spot,corn maize northern leaf blight,4
+stage5,tomato early blight,corn maize northern leaf blight,4
+stage5,tomato healthy,corn maize northern leaf blight,4
+stage5,tomato healthy,healthy,1
+stage5,tomato late blight,corn maize northern leaf blight,4
+stage5,tomato leaf bacterial spot,bell pepper leaf spot,3
+stage5,tomato leaf late blight,bell pepper leaf spot,1
+stage5,tomato leaf mold,corn maize northern leaf blight,3
+stage5,tomato mold leaf,bell pepper leaf spot,3
+stage5,tomato potassium deficiency,healthy,1
+stage5,tomato septoria leaf spot,bell pepper leaf spot,2
+stage5,tomato septoria leaf spot,corn maize northern leaf blight,1
+stage5,tomato spider mites two spotted spider mite,corn maize northern leaf blight,2
+stage5,tomato target spot,corn maize northern leaf blight,2
+stage5,tomato tomato yellow leaf curl virus,corn maize northern leaf blight,11
+stage5,tungro virus,bacterial leaf blight,7
+stage5,viteus vitifoliae,alfalfa weevil,1
+stage5,wheat blossom midge,alfalfa weevil,2
+stage5,wheat phloeothrips,alfalfa weevil,1
+stage5,wheat sawfly,alfalfa weevil,2
+stage5,white backed plant hopper,alfalfa weevil,1
+stage5,white margined moth,alfalfa weevil,2
+stage5,white spot,gray blight,2
+stage5,wireworm,alfalfa weevil,1
+stage5,xylotrechus,alfalfa weevil,2
+stage5,yellow cutworm,alfalfa weevil,1
+stage5,yellow rice borer,alfalfa weevil,1
+stage5,yellow sigatoka,black sigatoka,2

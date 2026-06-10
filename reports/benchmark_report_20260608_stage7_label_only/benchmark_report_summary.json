@@ -1,0 +1,186 @@
+{
+  "report_path": "reports/benchmark_report_20260608_stage7_label_only/benchmark_report.md",
+  "stage7_source_modes": [
+    {
+      "accuracy": 0.0,
+      "mode_count": 17,
+      "mode_prediction": "to spot",
+      "mode_rate": 1.0,
+      "out_of_label_space_rate": 1.0,
+      "source_dataset": "banana_disease",
+      "total": 17
+    },
+    {
+      "accuracy": 0.0,
+      "mode_count": 18,
+      "mode_prediction": "aphids",
+      "mode_rate": 1.0,
+      "out_of_label_space_rate": 1.0,
+      "source_dataset": "digigreen_crop_disease",
+      "total": 18
+    },
+    {
+      "accuracy": 0.04878048780487805,
+      "mode_count": 123,
+      "mode_prediction": "aphids",
+      "mode_rate": 1.0,
+      "out_of_label_space_rate": 0.0,
+      "source_dataset": "ip102",
+      "total": 123
+    },
+    {
+      "accuracy": 0.047619047619047616,
+      "mode_count": 21,
+      "mode_prediction": "peach leaf",
+      "mode_rate": 1.0,
+      "out_of_label_space_rate": 0.0,
+      "source_dataset": "plantdoc",
+      "total": 21
+    },
+    {
+      "accuracy": 0.038461538461538464,
+      "mode_count": 104,
+      "mode_prediction": "peach bacterial spot",
+      "mode_rate": 1.0,
+      "out_of_label_space_rate": 0.0,
+      "source_dataset": "plantvillage",
+      "total": 104
+    },
+    {
+      "accuracy": 0.0,
+      "mode_count": 82,
+      "mode_prediction": "to spot",
+      "mode_rate": 1.0,
+      "out_of_label_space_rate": 1.0,
+      "source_dataset": "rice_disease",
+      "total": 82
+    },
+    {
+      "accuracy": 0.0,
+      "mode_count": 17,
+      "mode_prediction": "to spot",
+      "mode_rate": 1.0,
+      "out_of_label_space_rate": 1.0,
+      "source_dataset": "tea_sickness",
+      "total": 17
+    }
+  ],
+  "stage7_top_predictions": [
+    {
+      "correct": 6,
+      "count": 141,
+      "out_of_label_space": 18,
+      "prediction": "aphids"
+    },
+    {
+      "correct": 0,
+      "count": 116,
+      "out_of_label_space": 116,
+      "prediction": "to spot"
+    },
+    {
+      "correct": 4,
+      "count": 104,
+      "out_of_label_space": 0,
+      "prediction": "peach bacterial spot"
+    },
+    {
+      "correct": 1,
+      "count": 21,
+      "out_of_label_space": 0,
+      "prediction": "peach leaf"
+    }
+  ],
+  "stage_rows": [
+    {
+      "clarify_decision_accuracy": 0.75,
+      "clarify_macro_f1": 0.6813008130081302,
+      "classification_balanced_accuracy": 0.01639344262295082,
+      "classification_macro_f1": 0.0013247226361980462,
+      "classification_out_of_label_space_rate": 0.16666666666666666,
+      "classification_top1_accuracy": 0.03508771929824561,
+      "classification_weighted_f1": 0.0028353712564238884,
+      "metrics_path": "benchmarks/vlm_baselines/results/agvlm_stage2_b200_retry_full_20260601/metrics/sft-benchmark_agvlm-phi4-sft-classification-repair-instructional-stage2-b200-candidate_test_metrics.json",
+      "num_examples": 392,
+      "stage": "Stage2 closed-label",
+      "task_macro_average": 0.30220851188144277,
+      "vqa_relaxed_accuracy": 0.224,
+      "vqa_token_f1": 0.20315037279197604
+    },
+    {
+      "clarify_decision_accuracy": 0.6785714285714286,
+      "clarify_macro_f1": 0.6748387096774193,
+      "classification_balanced_accuracy": 0.01639344262295082,
+      "classification_macro_f1": 0.00034153005464480874,
+      "classification_out_of_label_space_rate": 0.0,
+      "classification_top1_accuracy": 0.008771929824561403,
+      "classification_weighted_f1": 0.0001827485380116959,
+      "metrics_path": "benchmarks/vlm_baselines/results/agvlm_stage3_closed_label_classification_repair_benchmark_20260601/metrics/sft-benchmark_agvlm-phi4-sft-closed-label-classification-repair-stage3-b200-candidate_test_metrics.json",
+      "num_examples": 392,
+      "stage": "Stage3 cls repair",
+      "task_macro_average": 0.30639341324402136,
+      "vqa_relaxed_accuracy": 0.244,
+      "vqa_token_f1": 0.22862469344656577
+    },
+    {
+      "clarify_decision_accuracy": 0.59375,
+      "clarify_macro_f1": 0.5393133997785161,
+      "classification_balanced_accuracy": 0.02040816326530612,
+      "classification_macro_f1": 0.0007133010487076071,
+      "classification_out_of_label_space_rate": 0.0,
+      "classification_top1_accuracy": 0.016194331983805668,
+      "classification_weighted_f1": 0.0005660202653712187,
+      "metrics_path": "benchmarks/vlm_baselines/results/agvlm_stage4_datafix_benchmark_20260602/metrics/sft-benchmark_agvlm-phi4-sft-stage4-datafix-b200-candidate_test_metrics.json",
+      "num_examples": 616,
+      "stage": "Stage4 datafix",
+      "task_macro_average": 0.26012759463775903,
+      "vqa_relaxed_accuracy": 0.2403560830860534,
+      "vqa_token_f1": 0.23054326334523448
+    },
+    {
+      "clarify_decision_accuracy": 0.71875,
+      "clarify_macro_f1": 0.7162561576354679,
+      "classification_balanced_accuracy": 0.02097902097902098,
+      "classification_macro_f1": 0.0029643668037142006,
+      "classification_out_of_label_space_rate": 0.09162303664921466,
+      "classification_top1_accuracy": 0.031413612565445025,
+      "classification_weighted_f1": 0.00442513226740834,
+      "metrics_path": "benchmarks/vlm_baselines/results/agvlm_stage5_datafix_benchmark_20260604/metrics/sft-benchmark_agvlm-phi4-sft-stage5-datafix-b200-candidate_test_metrics.json",
+      "num_examples": 736,
+      "stage": "Stage5 datafix",
+      "task_macro_average": 0.31634472967848515,
+      "vqa_relaxed_accuracy": 0.22981366459627328,
+      "vqa_token_f1": 0.24225760762750947
+    },
+    {
+      "clarify_decision_accuracy": 0.5625,
+      "clarify_macro_f1": 0.5151515151515151,
+      "classification_balanced_accuracy": 0.024475524475524476,
+      "classification_macro_f1": 0.003118139940122679,
+      "classification_out_of_label_space_rate": 0.0,
+      "classification_top1_accuracy": 0.02356020942408377,
+      "classification_weighted_f1": 0.0029043951592837383,
+      "metrics_path": "benchmarks/vlm_baselines/results/agvlm_stage6_mc_benchmark_20260607/metrics/sft-benchmark_agvlm-phi4-sft-classification-probe-stage6-mc-b200-candidate_test_metrics.json",
+      "num_examples": 736,
+      "stage": "Stage6 MC cls-only",
+      "task_macro_average": 0.25453708999949004,
+      "vqa_relaxed_accuracy": 0.2453416149068323,
+      "vqa_token_f1": 0.28148275985450955
+    },
+    {
+      "clarify_decision_accuracy": 0.6875,
+      "clarify_macro_f1": 0.6862745098039216,
+      "classification_balanced_accuracy": 0.02097902097902098,
+      "classification_macro_f1": 0.0017245861401705557,
+      "classification_out_of_label_space_rate": 0.3507853403141361,
+      "classification_top1_accuracy": 0.028795811518324606,
+      "classification_weighted_f1": 0.0022958149360542777,
+      "metrics_path": "benchmarks/vlm_baselines/results/agvlm_stage7_label_only_classification_benchmark_20260607/metrics/sft-benchmark_agvlm-phi4-sft-stage7-label-only-classification-b200-candidate_test_metrics.json",
+      "num_examples": 736,
+      "stage": "Stage7 label-only cls",
+      "task_macro_average": 0.29558561997308247,
+      "vqa_relaxed_accuracy": 0.19875776397515527,
+      "vqa_token_f1": 0.06471761405839886
+    }
+  ]
+}

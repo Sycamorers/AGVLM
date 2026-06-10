@@ -1,0 +1,425 @@
+{
+  "duplicate_sample_id_count_across_split_manifests": 0,
+  "extra": {
+    "phase_report": {
+      "contains_public_test_data": false,
+      "duplicate_sample_id_count": 0,
+      "duplicate_sample_id_examples": [],
+      "examples_by_task_type": {
+        "clarify_or_respond": [
+          {
+            "benchmark_split": "test",
+            "images": [
+              "data/raw/mirage/full/images/MMMT_Direct/dev/MMMT_Direct-dev-000569-01.png",
+              "data/raw/mirage/full/images/MMMT_Direct/dev/MMMT_Direct-dev-000569-02.png",
+              "data/raw/mirage/full/images/MMMT_Direct/dev/MMMT_Direct-dev-000569-03.png"
+            ],
+            "sample_id": "mirage-#831081",
+            "source_dataset": "mirage",
+            "target_preview": "{'acceptable_answers': [\"The symptoms you're describing, such as the splitting bark and uneven leaf growth, could be indicative of a few potential issues. One possibility is that the tree is experienc"
+          },
+          {
+            "benchmark_split": "test",
+            "images": [
+              "data/raw/mirage/full/images/MMMT_Direct/dev/MMMT_Direct-dev-000711-01.png",
+              "data/raw/mirage/full/images/MMMT_Direct/dev/MMMT_Direct-dev-000711-02.png"
+            ],
+            "sample_id": "mirage-#842770",
+            "source_dataset": "mirage",
+            "target_preview": "{'acceptable_answers': ['Could you provide a description of the organisms or objects you found on the silver maple trunk, or any visible characteristics from the images you attached? This will help in"
+          },
+          {
+            "benchmark_split": "test",
+            "images": [
+              "data/raw/mirage/full/images/MMMT_Direct/dev/MMMT_Direct-dev-000782-01.png",
+              "data/raw/mirage/full/images/MMMT_Direct/dev/MMMT_Direct-dev-000782-02.png"
+            ],
+            "sample_id": "mirage-#824137",
+            "source_dataset": "mirage",
+            "target_preview": "{'acceptable_answers': [\"Could you provide more details about the brown spots, such as their size, shape, and distribution on the leaves? Additionally, information about your camellias' care routine, "
+          }
+        ],
+        "classification": [
+          {
+            "benchmark_split": "val",
+            "images": [
+              "data/raw/rice_disease/full/images/validation/004243.jpg"
+            ],
+            "sample_id": "rice_disease-validation-004243",
+            "source_dataset": "rice_disease",
+            "target_preview": "{'acceptable_answers': [], 'answer_text': 'healthy', 'canonical_label': 'healthy', 'canonical_labels': [], 'decision': None, 'structured': {}}"
+          },
+          {
+            "benchmark_split": "val",
+            "images": [
+              "data/raw/ip102/full/ip102_v1.1/images/38241.jpg"
+            ],
+            "sample_id": "ip102-ip102-v1-1-images-38241-jpg",
+            "source_dataset": "ip102",
+            "target_preview": "{'acceptable_answers': [], 'answer_text': 'blister beetle', 'canonical_label': 'blister beetle', 'canonical_labels': [], 'decision': None, 'structured': {}}"
+          },
+          {
+            "benchmark_split": "val",
+            "images": [
+              "data/raw/tea_sickness/full/images/validation/000002.jpg"
+            ],
+            "sample_id": "tea_sickness-validation-000002",
+            "source_dataset": "tea_sickness",
+            "target_preview": "{'acceptable_answers': [], 'answer_text': 'white spot', 'canonical_label': 'white spot', 'canonical_labels': [], 'decision': None, 'structured': {}}"
+          }
+        ],
+        "vqa": [
+          {
+            "benchmark_split": "test",
+            "images": [
+              "data/raw/plantvillage_vqa/full/images/train/image_004230.JPG"
+            ],
+            "sample_id": "plantvillage_vqa-image_004230.JPG-012292",
+            "source_dataset": "plantvillage_vqa",
+            "target_preview": "{'acceptable_answers': ['Tomato'], 'answer_text': 'Tomato', 'canonical_label': None, 'canonical_labels': [], 'decision': None, 'structured': {}}"
+          },
+          {
+            "benchmark_split": "test",
+            "images": [
+              "data/raw/plantvillage_vqa/full/images/train/image_010135.JPG"
+            ],
+            "sample_id": "plantvillage_vqa-image_010135.JPG-029623",
+            "source_dataset": "plantvillage_vqa",
+            "target_preview": "{'acceptable_answers': ['No'], 'answer_text': 'No', 'canonical_label': None, 'canonical_labels': [], 'decision': None, 'structured': {}}"
+          },
+          {
+            "benchmark_split": "test",
+            "images": [
+              "data/raw/plantvillage_vqa/full/images/train/image_026390.JPG"
+            ],
+            "sample_id": "plantvillage_vqa-image_026390.JPG-077536",
+            "source_dataset": "plantvillage_vqa",
+            "target_preview": "{'acceptable_answers': ['This is a healthy plant leaf.'], 'answer_text': 'This is a healthy plant leaf.', 'canonical_label': None, 'canonical_labels': [], 'decision': None, 'structured': {}}"
+          }
+        ]
+      },
+      "missing_image_examples": [],
+      "missing_image_file_count": 0,
+      "missing_image_sample_count": 0,
+      "multi_image_distribution": {
+        "1": 998,
+        "2": 13,
+        "3": 13
+      },
+      "phase": "sft_benchmark",
+      "prompt_leakage": {
+        "ground_truth_leakage_count": 0,
+        "ground_truth_leakage_examples": [],
+        "notes": "Prompt hits are heuristic. Yes/no questions may contain candidate labels without leaking the yes/no answer.",
+        "prompt_leakage_count": 1,
+        "prompt_leakage_examples": [
+          {
+            "reference": "respond",
+            "sample_id": "mirage-#874219",
+            "task_type": "clarify_or_respond"
+          }
+        ]
+      },
+      "public_test_examples": [],
+      "rows_by_crop_disease": {
+        "crop": {
+          "Apple": 7,
+          "Banana": 17,
+          "Blueberry": 2,
+          "Brinjal": 1,
+          "Cherry (including sour)": 3,
+          "Chickpea": 1,
+          "Chilli": 2,
+          "Coriander": 1,
+          "Corn (maize)": 11,
+          "Cucumber": 1,
+          "Grape": 4,
+          "Guava": 1,
+          "Maize": 3,
+          "Mango": 1,
+          "Medicinal plants": 1,
+          "Orange": 12,
+          "Papaya": 1,
+          "Peach": 4,
+          "Pepper, bell": 3,
+          "Potato": 8,
+          "Raspberry": 1,
+          "Rice": 201,
+          "Soybean": 12,
+          "Squash": 2,
+          "Strawberry": 2,
+          "Tea": 34,
+          "Tobacco": 1,
+          "Tomato": 37,
+          "missing": 650
+        },
+        "disease": {
+          "Anthracnose": 2,
+          "Aphids": 1,
+          "Apple Scab Leaf": 1,
+          "Apple scab": 2,
+          "Bacterial leaf blight": 14,
+          "Bacterial spot": 10,
+          "Black rot": 1,
+          "Blueberry leaf": 1,
+          "Botrytis Gray Mold": 1,
+          "Brown Plant Hopper": 5,
+          "Brown spot": 20,
+          "Cercospora leaf spot Gray leaf spot": 3,
+          "Chilo suppressalis": 13,
+          "Common rust": 3,
+          "Corn Gray leaf spot": 1,
+          "Corn leaf blight": 2,
+          "Early blight": 6,
+          "Esca (Black Measles)": 3,
+          "Fall Armyworm": 2,
+          "False Smut": 1,
+          "Haunglongbing (Citrus greening)": 12,
+          "Healthy": 21,
+          "Hispa": 15,
+          "Late blight": 8,
+          "Leaf Curl Virus": 1,
+          "Leaf Mold": 3,
+          "Leaf blight (Isariopsis Leaf Spot)": 1,
+          "Leaf scald": 23,
+          "Leaf scorch": 1,
+          "Mites": 1,
+          "Narrow Brown Spot": 13,
+          "Northern Leaf Blight": 3,
+          "Papaya Mealybug": 1,
+          "Peach leaf": 1,
+          "Potassium Deficiency": 2,
+          "Potato leaf early blight": 2,
+          "Potato leaf late blight": 1,
+          "Powdery Mildew": 1,
+          "Powdery mildew": 2,
+          "Rice Gall Midge": 5,
+          "Rice leaf and neck blast": 8,
+          "Rice leaf folder": 3,
+          "Rice skipper": 7,
+          "Rice yellow stem borer": 9,
+          "Septoria leaf spot": 1,
+          "Sheath Blight": 15,
+          "Spider mites Two-spotted spider mite": 2,
+          "Squash Bug": 1,
+          "Squash Powdery mildew leaf": 2,
+          "Target Spot": 2,
+          "Thrips": 7,
+          "Tomato Septoria leaf spot": 2,
+          "Tomato Yellow Leaf Curl Virus": 11,
+          "Tomato leaf bacterial spot": 3,
+          "Tomato leaf late blight": 1,
+          "Tomato mold leaf": 3,
+          "Tungro virus": 19,
+          "algal leaf": 4,
+          "banana healthy leaf": 3,
+          "bird eye spot": 3,
+          "black sigatoka": 2,
+          "bract mosaic virus": 2,
+          "brown blight": 9,
+          "grape leaf black rot": 1,
+          "gray light": 4,
+          "healthy": 34,
+          "insect pest": 3,
+          "missing": 629,
+          "moko disease": 5,
+          "nitrogen deficiency": 5,
+          "phosphorus deficiency": 1,
+          "potassium deficiency": 4,
+          "red leaf spot": 4,
+          "white spot": 4,
+          "yellow sigatoka": 2
+        }
+      },
+      "rows_by_source_dataset": {
+        "banana_disease": 17,
+        "digigreen_crop_disease": 18,
+        "ip102": 275,
+        "mirage": 32,
+        "plantdoc": 21,
+        "plantvillage": 104,
+        "plantvillage_vqa": 322,
+        "rice_disease": 201,
+        "tea_sickness": 34
+      },
+      "rows_by_split": {
+        "test": 736,
+        "val": 288
+      },
+      "rows_by_task_type": {
+        "clarify_or_respond": 32,
+        "classification": 670,
+        "vqa": 322
+      },
+      "train_eval_overlap": {
+        "exact_sample_id_count": 0,
+        "exact_sample_id_examples": [],
+        "group_key_count": 0,
+        "group_key_examples": []
+      },
+      "unique_image_groups": 1011
+    }
+  },
+  "missing_image_examples": [],
+  "missing_image_file_count": 0,
+  "missing_image_sample_count": 0,
+  "missing_text_prompt_count": 0,
+  "per_split_source_dataset": {
+    "test": {
+      "banana_disease": 17,
+      "digigreen_crop_disease": 18,
+      "ip102": 123,
+      "mirage": 32,
+      "plantdoc": 21,
+      "plantvillage": 104,
+      "plantvillage_vqa": 322,
+      "rice_disease": 82,
+      "tea_sickness": 17
+    },
+    "val": {
+      "ip102": 152,
+      "rice_disease": 119,
+      "tea_sickness": 17
+    }
+  },
+  "per_split_task_type": {
+    "test": {
+      "clarify_or_respond": 32,
+      "classification": 382,
+      "vqa": 322
+    },
+    "val": {
+      "classification": 288
+    }
+  },
+  "samples_per_label_or_answer_top100": {
+    "A healthy leaf would be uniformly green and free of the evidence of orange or brown pustular structures.": 4,
+    "A healthy version of this plant would not exhibit the evidence of orange or brown pustular structures.": 4,
+    "Aleurocanthus spiniferus": 4,
+    "Ampelophaga": 3,
+    "Cicadellidae": 22,
+    "Dacus dorsalis(Hendel)": 3,
+    "Diagnosis: Huanglongbing (HLB), or citrus greening.": 5,
+    "Icerya purchasi Maskell": 3,
+    "Limacodidae": 4,
+    "Locustoidea": 4,
+    "Lycorma delicatula": 22,
+    "Miridae": 18,
+    "No": 71,
+    "No signs of disease are visible; the plant is in good health.": 3,
+    "Orange": 6,
+    "Phyllocnistis citrella Stainton": 3,
+    "Potosiabre vitarsis": 3,
+    "Prodenia litura": 3,
+    "Rhytidodera bowrinii white": 3,
+    "Rice Stemfly": 3,
+    "Scirtothrips dorsalis Hood": 4,
+    "The causal agent is the Tomato Yellow Leaf Curl Virus.": 7,
+    "The cause is the bacterium Candidatus Liberibacter asiaticus, leading to Huanglongbing.": 11,
+    "The condition is identified as Late Blight.": 3,
+    "The diagnosis is Bacterial Spot.": 5,
+    "The diagnosis is Septoria Leaf Spot.": 4,
+    "The diagnosis is Tomato Yellow Leaf Curl Virus (TYLCV).": 6,
+    "The key visual difference would be the absence of evidence of orange or brown pustular structures.": 5,
+    "The large, dark, water-soaked lesions are a key sign of Late Blight.": 4,
+    "The leaf shows blotchy, asymmetrical yellowing, a classic symptom of HLB.": 8,
+    "The leaf shows symptoms of Early Blight.": 4,
+    "The plant is suffering from a Late Blight infection.": 4,
+    "The plant is suffering from a fungal infection: Septoria Leaf Spot.": 6,
+    "The symptoms, especially the olive-green mold on the leaf underside, indicate Leaf Mold.": 4,
+    "This is a background image without a plant leaf.": 4,
+    "This is a healthy plant leaf.": 3,
+    "This is a viral infection: TYLCV.": 8,
+    "This is citrus greening disease.": 7,
+    "This tomato leaf shows classic signs of TYLCV, like yellowing and curling.": 3,
+    "Thrips": 5,
+    "Tomato": 16,
+    "Trialeurodes vaporariorum": 3,
+    "Xylotrechus": 6,
+    "Yes": 64,
+    "algal leaf": 4,
+    "aphids": 17,
+    "apple healthy": 4,
+    "army worm": 6,
+    "bacterial leaf blight": 14,
+    "beet army worm": 7,
+    "bird cherry oataphid": 7,
+    "bird eye spot": 3,
+    "blister beetle": 8,
+    "brown blight": 9,
+    "brown plant hopper": 9,
+    "brown spot": 20,
+    "chilo suppressalis": 13,
+    "corn borer": 3,
+    "corn maize common rust": 3,
+    "corn maize northern leaf blight": 3,
+    "flax budworm": 5,
+    "gray light": 4,
+    "green bug": 3,
+    "grub": 5,
+    "healthy": 19,
+    "hispa": 15,
+    "insect pest": 3,
+    "leaf scald": 23,
+    "moko disease": 5,
+    "mole cricket": 4,
+    "narrow brown spot": 13,
+    "nitrogen deficiency": 5,
+    "orange haunglongbing citrus greening": 12,
+    "peach bacterial spot": 4,
+    "potassium deficiency": 4,
+    "potato late blight": 4,
+    "red leaf spot": 4,
+    "rice gall midge": 9,
+    "rice leaf and neck blast": 8,
+    "rice leaf folder": 3,
+    "rice leaf roller": 6,
+    "rice skipper": 7,
+    "rice yellow stem borer": 9,
+    "sheath blight": 15,
+    "soybean healthy": 12,
+    "tarnished plant bug": 5,
+    "thrips": 6,
+    "tomato bacterial spot": 4,
+    "tomato early blight": 4,
+    "tomato healthy": 5,
+    "tomato late blight": 4,
+    "tomato mold leaf": 3,
+    "tomato septoria leaf spot": 3,
+    "tomato tomato yellow leaf curl virus": 11,
+    "tungro virus": 19,
+    "wheat blossom midge": 3,
+    "wheat sawfly": 3,
+    "white spot": 4,
+    "wireworm": 4,
+    "yellow rice borer": 3
+  },
+  "samples_per_original_split": {
+    "dev": 32,
+    "holdout": 704,
+    "validation": 288
+  },
+  "samples_per_source_dataset": {
+    "banana_disease": 17,
+    "digigreen_crop_disease": 18,
+    "ip102": 275,
+    "mirage": 32,
+    "plantdoc": 21,
+    "plantvillage": 104,
+    "plantvillage_vqa": 322,
+    "rice_disease": 201,
+    "tea_sickness": 34
+  },
+  "samples_per_split": {
+    "test": 736,
+    "val": 288
+  },
+  "samples_per_task_type": {
+    "clarify_or_respond": 32,
+    "classification": 670,
+    "vqa": 322
+  },
+  "skipped_samples": {},
+  "total_samples": 1024,
+  "unique_sample_count": 1024
+}

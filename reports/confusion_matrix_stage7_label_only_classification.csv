@@ -1,0 +1,149 @@
+run,reference,prediction,count
+stage7_label_only_classification,aleurocanthus spiniferus,aphids,1
+stage7_label_only_classification,alfalfa plant bug,aphids,2
+stage7_label_only_classification,alfalfa seed chalcid,aphids,1
+stage7_label_only_classification,algal leaf,to spot,2
+stage7_label_only_classification,aphids,aphids,6
+stage7_label_only_classification,apple apple scab,peach bacterial spot,2
+stage7_label_only_classification,apple black rot,peach bacterial spot,1
+stage7_label_only_classification,apple healthy,peach bacterial spot,4
+stage7_label_only_classification,apple scab leaf,peach leaf,1
+stage7_label_only_classification,army worm,aphids,3
+stage7_label_only_classification,bacterial leaf blight,to spot,7
+stage7_label_only_classification,bactrocera tsuneonis,aphids,1
+stage7_label_only_classification,banana healthy leaf,to spot,3
+stage7_label_only_classification,beet army worm,aphids,4
+stage7_label_only_classification,bird cherry oataphid,aphids,3
+stage7_label_only_classification,bird eye spot,to spot,2
+stage7_label_only_classification,black cutworm,aphids,2
+stage7_label_only_classification,black sigatoka,to spot,2
+stage7_label_only_classification,blister beetle,aphids,4
+stage7_label_only_classification,blueberry healthy,peach bacterial spot,2
+stage7_label_only_classification,blueberry leaf,peach leaf,1
+stage7_label_only_classification,bract mosaic virus,to spot,2
+stage7_label_only_classification,brinjal mites,aphids,1
+stage7_label_only_classification,brown blight,to spot,5
+stage7_label_only_classification,brown plant hopper,aphids,3
+stage7_label_only_classification,brown plant hopper,to spot,1
+stage7_label_only_classification,brown spot,to spot,12
+stage7_label_only_classification,cherry including sour healthy,peach bacterial spot,3
+stage7_label_only_classification,chickpea botrytis gray mold,aphids,1
+stage7_label_only_classification,chilli leaf curl virus,aphids,1
+stage7_label_only_classification,chilli thrips,aphids,1
+stage7_label_only_classification,chilo suppressalis,to spot,3
+stage7_label_only_classification,chlumetia transversa,aphids,2
+stage7_label_only_classification,cicadella viridis,aphids,1
+stage7_label_only_classification,cicadellidae,aphids,9
+stage7_label_only_classification,coriander healthy,aphids,1
+stage7_label_only_classification,corn borer,aphids,2
+stage7_label_only_classification,corn gray leaf spot,peach leaf,1
+stage7_label_only_classification,corn leaf blight,peach leaf,2
+stage7_label_only_classification,corn maize cercospora leaf spot gray leaf spot,peach bacterial spot,3
+stage7_label_only_classification,corn maize common rust,peach bacterial spot,3
+stage7_label_only_classification,corn maize healthy,peach bacterial spot,2
+stage7_label_only_classification,corn maize northern leaf blight,peach bacterial spot,3
+stage7_label_only_classification,cucumber squash bug,aphids,1
+stage7_label_only_classification,dacus dorsalis hendel,aphids,1
+stage7_label_only_classification,dasineura sp,aphids,1
+stage7_label_only_classification,english grain aphid,aphids,1
+stage7_label_only_classification,flax budworm,aphids,1
+stage7_label_only_classification,flea beetle,aphids,1
+stage7_label_only_classification,grape esca black measles,peach bacterial spot,3
+stage7_label_only_classification,grape leaf black rot,peach leaf,1
+stage7_label_only_classification,grape leaf blight isariopsis leaf spot,peach bacterial spot,1
+stage7_label_only_classification,gray light,to spot,1
+stage7_label_only_classification,green bug,aphids,2
+stage7_label_only_classification,grub,aphids,2
+stage7_label_only_classification,guava healthy,aphids,1
+stage7_label_only_classification,healthy,to spot,9
+stage7_label_only_classification,hispa,to spot,4
+stage7_label_only_classification,icerya purchasi maskell,aphids,1
+stage7_label_only_classification,insect pest,to spot,3
+stage7_label_only_classification,large cutworm,aphids,2
+stage7_label_only_classification,leaf scald,to spot,10
+stage7_label_only_classification,limacodidae,aphids,1
+stage7_label_only_classification,locustoidea,aphids,2
+stage7_label_only_classification,longlegged spider mite,aphids,2
+stage7_label_only_classification,lycorma delicatula,aphids,10
+stage7_label_only_classification,lytta polita,aphids,1
+stage7_label_only_classification,maize fall armyworm,aphids,2
+stage7_label_only_classification,maize healthy,aphids,1
+stage7_label_only_classification,mango powdery mildew,aphids,1
+stage7_label_only_classification,medicinal plants potassium deficiency,aphids,1
+stage7_label_only_classification,miridae,aphids,7
+stage7_label_only_classification,moko disease,to spot,5
+stage7_label_only_classification,mole cricket,aphids,2
+stage7_label_only_classification,narrow brown spot,to spot,8
+stage7_label_only_classification,nitrogen deficiency,to spot,3
+stage7_label_only_classification,odontothrips loti,aphids,1
+stage7_label_only_classification,orange haunglongbing citrus greening,peach bacterial spot,12
+stage7_label_only_classification,panonchus citri mcgregor,aphids,2
+stage7_label_only_classification,papaya papaya mealybug,aphids,1
+stage7_label_only_classification,peach bacterial spot,peach bacterial spot,4
+stage7_label_only_classification,peach leaf,peach leaf,1
+stage7_label_only_classification,pepper bell bacterial spot,peach bacterial spot,2
+stage7_label_only_classification,pepper bell healthy,peach bacterial spot,1
+stage7_label_only_classification,phyllocnistis citrella stainton,aphids,1
+stage7_label_only_classification,polyphagotars onemus latus,aphids,1
+stage7_label_only_classification,potato aphids,aphids,1
+stage7_label_only_classification,potato early blight,peach bacterial spot,2
+stage7_label_only_classification,potato healthy,aphids,1
+stage7_label_only_classification,potato late blight,peach bacterial spot,4
+stage7_label_only_classification,potato leaf early blight,peach leaf,2
+stage7_label_only_classification,potato leaf late blight,peach leaf,1
+stage7_label_only_classification,potosiabre vitarsis,aphids,1
+stage7_label_only_classification,pseudococcus comstocki kuwana,aphids,2
+stage7_label_only_classification,raspberry healthy,peach bacterial spot,1
+stage7_label_only_classification,red leaf spot,to spot,2
+stage7_label_only_classification,rhytidodera bowrinii white,aphids,2
+stage7_label_only_classification,rice gall midge,aphids,3
+stage7_label_only_classification,rice gall midge,to spot,3
+stage7_label_only_classification,rice leaf and neck blast,to spot,2
+stage7_label_only_classification,rice leaf caterpillar,aphids,1
+stage7_label_only_classification,rice leaf folder,to spot,2
+stage7_label_only_classification,rice leaf roller,aphids,1
+stage7_label_only_classification,rice shell pest,aphids,2
+stage7_label_only_classification,rice skipper,to spot,4
+stage7_label_only_classification,rice stemfly,aphids,1
+stage7_label_only_classification,rice water weevil,aphids,1
+stage7_label_only_classification,rice yellow stem borer,to spot,3
+stage7_label_only_classification,sheath blight,to spot,5
+stage7_label_only_classification,soybean healthy,peach bacterial spot,12
+stage7_label_only_classification,squash powdery mildew,peach bacterial spot,2
+stage7_label_only_classification,squash powdery mildew leaf,peach leaf,2
+stage7_label_only_classification,strawberry healthy,peach bacterial spot,1
+stage7_label_only_classification,strawberry leaf scorch,peach bacterial spot,1
+stage7_label_only_classification,tarnished plant bug,aphids,2
+stage7_label_only_classification,tetradacus c bactrocera minax,aphids,1
+stage7_label_only_classification,therioaphis maculata buckton,aphids,2
+stage7_label_only_classification,thrips,aphids,4
+stage7_label_only_classification,thrips,to spot,2
+stage7_label_only_classification,tobacco healthy,aphids,1
+stage7_label_only_classification,tomato bacterial spot,peach bacterial spot,4
+stage7_label_only_classification,tomato early blight,peach bacterial spot,4
+stage7_label_only_classification,tomato healthy,peach bacterial spot,4
+stage7_label_only_classification,tomato healthy,aphids,1
+stage7_label_only_classification,tomato late blight,peach bacterial spot,4
+stage7_label_only_classification,tomato leaf bacterial spot,peach leaf,3
+stage7_label_only_classification,tomato leaf late blight,peach leaf,1
+stage7_label_only_classification,tomato leaf mold,peach bacterial spot,3
+stage7_label_only_classification,tomato mold leaf,peach leaf,3
+stage7_label_only_classification,tomato potassium deficiency,aphids,1
+stage7_label_only_classification,tomato septoria leaf spot,peach leaf,2
+stage7_label_only_classification,tomato septoria leaf spot,peach bacterial spot,1
+stage7_label_only_classification,tomato spider mites two spotted spider mite,peach bacterial spot,2
+stage7_label_only_classification,tomato target spot,peach bacterial spot,2
+stage7_label_only_classification,tomato tomato yellow leaf curl virus,peach bacterial spot,11
+stage7_label_only_classification,tungro virus,to spot,7
+stage7_label_only_classification,viteus vitifoliae,aphids,1
+stage7_label_only_classification,wheat blossom midge,aphids,2
+stage7_label_only_classification,wheat phloeothrips,aphids,1
+stage7_label_only_classification,wheat sawfly,aphids,2
+stage7_label_only_classification,white backed plant hopper,aphids,1
+stage7_label_only_classification,white margined moth,aphids,2
+stage7_label_only_classification,white spot,to spot,2
+stage7_label_only_classification,wireworm,aphids,1
+stage7_label_only_classification,xylotrechus,aphids,2
+stage7_label_only_classification,yellow cutworm,aphids,1
+stage7_label_only_classification,yellow rice borer,aphids,1
+stage7_label_only_classification,yellow sigatoka,to spot,2

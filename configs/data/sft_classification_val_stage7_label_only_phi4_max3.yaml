@@ -1,0 +1,18 @@
+input_manifest_path: benchmarks/vlm_baselines/splits_stage5_datafix/sft_val_manifest.jsonl
+output_manifest_path: data/manifests/full/sft_classification_stage7_label_only_val.jsonl
+summary_output_path: data/manifests/full/sft_classification_stage7_label_only_val_summary.json
+seed: 57
+shuffle: false
+allowed_task_types:
+  - classification
+required_task_types:
+  - classification
+sources:
+  - plantvillage
+  - plantdoc
+  - ip102
+  - rice_disease
+  - digigreen_crop_disease
+  - banana_disease
+  - tea_sickness
+max_images_per_sample: 3

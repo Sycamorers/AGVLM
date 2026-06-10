@@ -118,6 +118,108 @@ models:
     model_family: phi4_reasoning_vision
     notes: Pending 2026-06-02 Stage4 data-fix candidate. Benchmarked on source-specific closed-label Stage4 splits before promotion or RL.
 
+  agvlm_phi4_sft_stage5_datafix_b200_candidate:
+    model_name: agvlm_phi4_sft_stage5_datafix_b200_candidate
+    adapter_type: agvlm_sft
+    checkpoint_type: sft
+    base_model_name_or_path: microsoft/Phi-4-reasoning-vision-15B
+    processor_name_or_path: microsoft/Phi-4-reasoning-vision-15B
+    checkpoint_path: ""
+    adapter_path: /orange/hmedeiros/qinruoyao/agvlm/outputs/sft/phi4-reasoning-vision-15b-stage5-datafix-b200-4gpu
+    initialized_from_sft_checkpoint: /orange/hmedeiros/qinruoyao/agvlm/outputs/sft/phi4-reasoning-vision-15b-classification-repair-instructional-stage2-b200-4gpu
+    trust_remote_code: true
+    max_images: 3
+    image_policy: all_images
+    dtype: bf16
+    quantization: 4bit
+    model_family: phi4_reasoning_vision
+    notes: Pending 2026-06-04 Stage5 data-fix candidate. Benchmark on Stage5 closed-label splits before promotion or RL.
+
+  agvlm_phi4_sft_classification_probe_stage6_b200_candidate:
+    model_name: agvlm_phi4_sft_classification_probe_stage6_b200_candidate
+    adapter_type: agvlm_sft
+    checkpoint_type: sft
+    base_model_name_or_path: microsoft/Phi-4-reasoning-vision-15B
+    processor_name_or_path: microsoft/Phi-4-reasoning-vision-15B
+    checkpoint_path: ""
+    adapter_path: /orange/hmedeiros/qinruoyao/agvlm/outputs/sft/phi4-reasoning-vision-15b-classification-probe-stage6-b200-4gpu
+    initialized_from_sft_checkpoint: /orange/hmedeiros/qinruoyao/agvlm/outputs/sft/phi4-reasoning-vision-15b-classification-repair-instructional-stage2-b200-4gpu
+    trust_remote_code: true
+    max_images: 3
+    image_policy: all_images
+    dtype: bf16
+    quantization: 4bit
+    model_family: phi4_reasoning_vision
+    notes: Pending 2026-06-04 Stage6 classification-only overfit probe candidate. Benchmark only after Slurm job 33919126 writes the adapter.
+
+  agvlm_phi4_sft_classification_probe_stage6_mc_b200_candidate:
+    model_name: agvlm_phi4_sft_classification_probe_stage6_mc_b200_candidate
+    adapter_type: agvlm_sft
+    checkpoint_type: sft
+    base_model_name_or_path: microsoft/Phi-4-reasoning-vision-15B
+    processor_name_or_path: microsoft/Phi-4-reasoning-vision-15B
+    checkpoint_path: ""
+    adapter_path: /orange/hmedeiros/qinruoyao/agvlm/outputs/sft/phi4-reasoning-vision-15b-classification-probe-stage6-mc-b200-4gpu
+    initialized_from_sft_checkpoint: /orange/hmedeiros/qinruoyao/agvlm/outputs/sft/phi4-reasoning-vision-15b-classification-repair-instructional-stage2-b200-4gpu
+    trust_remote_code: true
+    max_images: 3
+    image_policy: all_images
+    dtype: bf16
+    quantization: 4bit
+    model_family: phi4_reasoning_vision
+    notes: Pending 2026-06-05 Stage6 multiple-choice classification-only overfit probe candidate.
+
+  agvlm_phi4_sft_stage7_label_only_mixed_b200_candidate:
+    model_name: agvlm_phi4_sft_stage7_label_only_mixed_b200_candidate
+    adapter_type: agvlm_sft
+    checkpoint_type: sft
+    base_model_name_or_path: microsoft/Phi-4-reasoning-vision-15B
+    processor_name_or_path: microsoft/Phi-4-reasoning-vision-15B
+    checkpoint_path: ""
+    adapter_path: /orange/hmedeiros/qinruoyao/agvlm/outputs/sft/phi4-reasoning-vision-15b-stage7-label-only-mixed-b200-4gpu
+    initialized_from_sft_checkpoint: /orange/hmedeiros/qinruoyao/agvlm/outputs/sft/phi4-reasoning-vision-15b-classification-repair-instructional-stage2-b200-4gpu
+    trust_remote_code: true
+    max_images: 3
+    image_policy: all_images
+    dtype: bf16
+    quantization: 4bit
+    model_family: phi4_reasoning_vision
+    notes: Pending 2026-06-07 Experiment B. Mixed Stage5 data with classification rows trained as label-only outputs.
+
+  agvlm_phi4_sft_stage7_label_only_classification_b200_candidate:
+    model_name: agvlm_phi4_sft_stage7_label_only_classification_b200_candidate
+    adapter_type: agvlm_sft
+    checkpoint_type: sft
+    base_model_name_or_path: microsoft/Phi-4-reasoning-vision-15B
+    processor_name_or_path: microsoft/Phi-4-reasoning-vision-15B
+    checkpoint_path: ""
+    adapter_path: /orange/hmedeiros/qinruoyao/agvlm/outputs/sft/phi4-reasoning-vision-15b-stage7-label-only-classification-b200-4gpu
+    initialized_from_sft_checkpoint: /orange/hmedeiros/qinruoyao/agvlm/outputs/sft/phi4-reasoning-vision-15b-classification-repair-instructional-stage2-b200-4gpu
+    trust_remote_code: true
+    max_images: 3
+    image_policy: all_images
+    dtype: bf16
+    quantization: 4bit
+    model_family: phi4_reasoning_vision
+    notes: Pending 2026-06-07 Experiment C. Classification-only Stage5 data with label-only prompt and target format.
+
+  agvlm_phi4_sft_micro_banana_overfit_b200_1gpu_candidate:
+    model_name: agvlm_phi4_sft_micro_banana_overfit_b200_1gpu_candidate
+    adapter_type: agvlm_sft
+    checkpoint_type: sft
+    base_model_name_or_path: microsoft/Phi-4-reasoning-vision-15B
+    processor_name_or_path: microsoft/Phi-4-reasoning-vision-15B
+    checkpoint_path: ""
+    adapter_path: /orange/hmedeiros/qinruoyao/agvlm/outputs/sft/phi4-reasoning-vision-15b-micro-banana-overfit-label-only-b200-1gpu
+    initialized_from_sft_checkpoint: ""
+    trust_remote_code: true
+    max_images: 3
+    image_policy: all_images
+    dtype: bf16
+    quantization: 4bit
+    model_family: phi4_reasoning_vision
+    notes: 2026-06-08 fresh-LoRA single-source banana label-only micro-overfit diagnostic.
+
   agvlm_phi4_rl_completed:
     model_name: agvlm_phi4_rl_completed
     adapter_type: agvlm_rl

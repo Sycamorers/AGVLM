@@ -19,6 +19,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--subset-tag", default=None)
     parser.add_argument("--data-root", default=None)
     parser.add_argument("--datasets", nargs="*", default=None)
+    parser.add_argument(
+        "--fail-on-missing",
+        action="store_true",
+        help="Return a non-zero status when any selected dataset is missing materialized raw data.",
+    )
     return parser.parse_args()
 
 
@@ -56,18 +61,17 @@ def main() -> int:
             summary[dataset_name] = {"status": "error", "reason": str(exc)}
             raise
 
-    print(
-        json.dumps(
-            {
-                "subset_tag": runtime["subset_tag"],
-                "download_mode": runtime["download_mode"],
-                "sample_fraction": runtime["sample_fraction"],
-                "summary": summary,
-            },
-            indent=2,
-            sort_keys=True,
-        )
-    )
+    payload = {
+        "subset_tag": runtime["subset_tag"],
+        "download_mode": runtime["download_mode"],
+        "sample_fraction": runtime["sample_fraction"],
+        "summary": summary,
+    }
+    print(json.dumps(payload, indent=2, sort_keys=True))
+    missing = sorted(name for name, item in summary.items() if item["status"] == "missing_raw")
+    if missing and args.fail_on_missing:
+        print("missing_raw_datasets=%s" % ",".join(missing))
+        return 1
     return 0
 
 

@@ -1,0 +1,243 @@
+{
+  "latest_completed_benchmark": "benchmarks/vlm_baselines/results/agvlm_stage5_datafix_benchmark_20260604/metrics/sft-benchmark_agvlm-phi4-sft-stage5-datafix-b200-candidate_test_metrics.json",
+  "latest_training_run_without_benchmark": "outputs/sft/phi4-reasoning-vision-15b-classification-probe-stage6-mc-b200-4gpu",
+  "report_date": "2026-06-07",
+  "stage5": {
+    "by_source_dataset": {
+      "banana_disease": 17,
+      "digigreen_crop_disease": 18,
+      "ip102": 123,
+      "mirage": 32,
+      "plantdoc": 21,
+      "plantvillage": 104,
+      "plantvillage_vqa": 322,
+      "rice_disease": 82,
+      "tea_sickness": 17
+    },
+    "by_task_type": {
+      "clarify_or_respond": 32,
+      "classification": 382,
+      "vqa": 322
+    },
+    "clarify_decision_accuracy": 0.71875,
+    "clarify_macro_f1": 0.7162561576354679,
+    "classification_macro_f1": 0.0029643668037142006,
+    "classification_out_of_label_space_rate": 0.09162303664921466,
+    "classification_top1_accuracy": 0.031413612565445025,
+    "num_examples": 736,
+    "source_prediction_modes": [
+      {
+        "num_classification_examples": 17,
+        "source_dataset": "banana_disease",
+        "top_predicted_count": 17,
+        "top_predicted_label": "black sigatoka",
+        "top_predicted_share": 1.0
+      },
+      {
+        "num_classification_examples": 18,
+        "source_dataset": "digigreen_crop_disease",
+        "top_predicted_count": 18,
+        "top_predicted_label": "healthy",
+        "top_predicted_share": 1.0
+      },
+      {
+        "num_classification_examples": 123,
+        "source_dataset": "ip102",
+        "top_predicted_count": 123,
+        "top_predicted_label": "alfalfa weevil",
+        "top_predicted_share": 1.0
+      },
+      {
+        "num_classification_examples": 21,
+        "source_dataset": "plantdoc",
+        "top_predicted_count": 21,
+        "top_predicted_label": "bell pepper leaf spot",
+        "top_predicted_share": 1.0
+      },
+      {
+        "num_classification_examples": 104,
+        "source_dataset": "plantvillage",
+        "top_predicted_count": 104,
+        "top_predicted_label": "corn maize northern leaf blight",
+        "top_predicted_share": 1.0
+      },
+      {
+        "num_classification_examples": 82,
+        "source_dataset": "rice_disease",
+        "top_predicted_count": 82,
+        "top_predicted_label": "bacterial leaf blight",
+        "top_predicted_share": 1.0
+      },
+      {
+        "num_classification_examples": 17,
+        "source_dataset": "tea_sickness",
+        "top_predicted_count": 17,
+        "top_predicted_label": "gray blight",
+        "top_predicted_share": 1.0
+      }
+    ],
+    "task_macro_average": 0.31634472967848515,
+    "top_classification_predictions": [
+      {
+        "correct_count": 0,
+        "count": 123,
+        "label": "alfalfa weevil"
+      },
+      {
+        "correct_count": 3,
+        "count": 104,
+        "label": "corn maize northern leaf blight"
+      },
+      {
+        "correct_count": 7,
+        "count": 82,
+        "label": "bacterial leaf blight"
+      },
+      {
+        "correct_count": 0,
+        "count": 21,
+        "label": "bell pepper leaf spot"
+      },
+      {
+        "correct_count": 0,
+        "count": 18,
+        "label": "healthy"
+      },
+      {
+        "correct_count": 2,
+        "count": 17,
+        "label": "black sigatoka"
+      },
+      {
+        "correct_count": 0,
+        "count": 17,
+        "label": "gray blight"
+      }
+    ],
+    "vqa_relaxed_accuracy": 0.22981366459627328,
+    "vqa_token_f1": 0.24225760762750947
+  },
+  "stage6_training": {
+    "eval_loss": {
+      "count": 8,
+      "first": 4.355119228363037,
+      "last": 1.4993938207626343,
+      "max": 4.355119228363037,
+      "mean": 2.366964176297188,
+      "median": 1.9672532677650452,
+      "min": 1.4993938207626343
+    },
+    "final_train_summary": {
+      "epoch": 32.0,
+      "global_step": 160,
+      "total_flos": 24939158986752.0,
+      "train_loss": 2.6821530029177665,
+      "train_runtime": 4073.6263,
+      "train_samples_per_second": 2.514,
+      "train_steps_per_second": 0.039
+    },
+    "first_epoch": 0.22857142857142856,
+    "first_step": 1,
+    "grad_norm": {
+      "count": 160,
+      "first": 65.4277413143264,
+      "last": 24.42368173982444,
+      "max": 65.7238958239622,
+      "mean": 19.89745812623377,
+      "median": 16.928365170476027,
+      "min": 11.848134576794111
+    },
+    "last_epoch": 32.0,
+    "last_step": 160,
+    "learning_rate": {
+      "count": 160,
+      "first": 0.0,
+      "last": 6.41025641025641e-09,
+      "max": 1e-06,
+      "mean": 5e-07,
+      "median": 5e-07,
+      "min": 0.0
+    },
+    "loss": {
+      "count": 160,
+      "first": 7.8635,
+      "first_100_mean": 3.429947,
+      "first_to_last_100_delta": -1.7142799999999998,
+      "last": 1.2811,
+      "last_100_mean": 1.715667,
+      "max": 7.8635,
+      "mean": 2.682149375,
+      "median": 2.0747999999999998,
+      "min": 1.1122
+    },
+    "metrics_jsonl": "outputs/sft/phi4-reasoning-vision-15b-classification-probe-stage6-mc-b200-4gpu/metrics.jsonl",
+    "rows": 169,
+    "title": "Stage6 MC SFT Training"
+  },
+  "stage_progression": [
+    {
+      "clarify_decision_accuracy": 0.75,
+      "clarify_macro_f1": 0.6813008130081302,
+      "classification_macro_f1": 0.0002851033499643621,
+      "classification_out_of_label_space_rate": 0.0,
+      "classification_top1_accuracy": 0.008771929824561403,
+      "label": "Stage2 closed-label",
+      "model_key": "agvlm_phi4_sft_classification_repair_instructional_stage2_b200_candidate",
+      "num_examples": 392,
+      "stage": "stage2",
+      "summary_path": "benchmarks/vlm_baselines/results/agvlm_stage2_b200_closed_label_prompt_benchmark_20260601/metrics/summary_table.json",
+      "task_macro_average": 0.30186197211936483,
+      "timestamp": "2026-06-01T17:00:35.490956+00:00",
+      "vqa_relaxed_accuracy": 0.224,
+      "vqa_token_f1": 0.20315037279197604
+    },
+    {
+      "clarify_decision_accuracy": 0.6785714285714286,
+      "clarify_macro_f1": 0.6748387096774193,
+      "classification_macro_f1": 0.00034153005464480874,
+      "classification_out_of_label_space_rate": 0.0,
+      "classification_top1_accuracy": 0.008771929824561403,
+      "label": "Stage3 cls repair",
+      "model_key": "agvlm_phi4_sft_closed_label_classification_repair_stage3_b200_candidate",
+      "num_examples": 392,
+      "stage": "stage3",
+      "summary_path": "benchmarks/vlm_baselines/results/agvlm_stage3_closed_label_classification_repair_benchmark_20260601/metrics/summary_table.json",
+      "task_macro_average": 0.30639341324402136,
+      "timestamp": "2026-06-02T09:04:38.116811+00:00",
+      "vqa_relaxed_accuracy": 0.244,
+      "vqa_token_f1": 0.22862469344656577
+    },
+    {
+      "clarify_decision_accuracy": 0.59375,
+      "clarify_macro_f1": 0.5393133997785161,
+      "classification_macro_f1": 0.0007133010487076071,
+      "classification_out_of_label_space_rate": 0.0,
+      "classification_top1_accuracy": 0.016194331983805668,
+      "label": "Stage4 datafix",
+      "model_key": "agvlm_phi4_sft_stage4_datafix_b200_candidate",
+      "num_examples": 616,
+      "stage": "stage4",
+      "summary_path": "benchmarks/vlm_baselines/results/agvlm_stage4_datafix_benchmark_20260602/metrics/summary_table.json",
+      "task_macro_average": 0.26012759463775903,
+      "timestamp": "2026-06-03T18:58:52.525721+00:00",
+      "vqa_relaxed_accuracy": 0.2403560830860534,
+      "vqa_token_f1": 0.23054326334523448
+    },
+    {
+      "clarify_decision_accuracy": 0.71875,
+      "clarify_macro_f1": 0.7162561576354679,
+      "classification_macro_f1": 0.0029643668037142006,
+      "classification_out_of_label_space_rate": 0.09162303664921466,
+      "classification_top1_accuracy": 0.031413612565445025,
+      "label": "Stage5 datafix",
+      "model_key": "agvlm_phi4_sft_stage5_datafix_b200_candidate",
+      "num_examples": 736,
+      "stage": "stage5",
+      "summary_path": "benchmarks/vlm_baselines/results/agvlm_stage5_datafix_benchmark_20260604/metrics/summary_table.json",
+      "task_macro_average": 0.31634472967848515,
+      "timestamp": "2026-06-04T15:47:09.239798+00:00",
+      "vqa_relaxed_accuracy": 0.22981366459627328,
+      "vqa_token_f1": 0.24225760762750947
+    }
+  ]
+}

@@ -11,7 +11,8 @@
 
 set -euo pipefail
 
-cd /blue/hmedeiros/qinruoyao/agvlm
+REPO_ROOT="${AGRI_VLM_REPO_ROOT:-${SLURM_SUBMIT_DIR:-$PWD}}"
+cd "$REPO_ROOT"
 
 MODEL_KEY="${MODEL_KEY:-agvlm_phi4_sft_completed}"
 QUANTIZATION="${QUANTIZATION:-4bit}"

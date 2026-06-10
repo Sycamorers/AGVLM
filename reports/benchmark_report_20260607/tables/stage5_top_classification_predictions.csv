@@ -1,0 +1,8 @@
+predicted_label,count,correct_count,precision_within_prediction
+alfalfa weevil,123,0,0.0
+corn maize northern leaf blight,104,3,0.028846153846153848
+bacterial leaf blight,82,7,0.08536585365853659
+bell pepper leaf spot,21,0,0.0
+healthy,18,0,0.0
+black sigatoka,17,2,0.11764705882352941
+gray blight,17,0,0.0

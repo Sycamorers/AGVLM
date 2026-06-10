@@ -309,3 +309,16 @@ def test_short_answer_format_retry_detects_empty_answer_prefix():
 
     assert adapter._needs_format_retry(sample, "Answer:") is True
     assert adapter._needs_format_retry(sample, "Answer: tomato early blight") is False
+
+
+def test_constrained_label_token_options_allow_prefixes_and_eos():
+    sys.path.insert(0, "benchmarks/vlm_baselines")
+    from model_adapters import _next_allowed_label_tokens
+
+    label_token_sequences = [[10], [10, 20], [30, 40]]
+    eos_token_ids = [2]
+
+    assert _next_allowed_label_tokens([], label_token_sequences, eos_token_ids) == [10, 30]
+    assert _next_allowed_label_tokens([10], label_token_sequences, eos_token_ids) == [2, 20]
+    assert _next_allowed_label_tokens([10, 20], label_token_sequences, eos_token_ids) == [2]
+    assert _next_allowed_label_tokens([999], label_token_sequences, eos_token_ids) == [2]

@@ -1,0 +1,144 @@
+run,label,support,precision,recall,f1
+stage7_label_only_classification,aleurocanthus spiniferus,1,0.0,0.0,0.0
+stage7_label_only_classification,alfalfa plant bug,2,0.0,0.0,0.0
+stage7_label_only_classification,alfalfa seed chalcid,1,0.0,0.0,0.0
+stage7_label_only_classification,algal leaf,2,0.0,0.0,0.0
+stage7_label_only_classification,aphids,6,0.0425531914893617,1.0,0.08163265306122448
+stage7_label_only_classification,apple apple scab,2,0.0,0.0,0.0
+stage7_label_only_classification,apple black rot,1,0.0,0.0,0.0
+stage7_label_only_classification,apple healthy,4,0.0,0.0,0.0
+stage7_label_only_classification,apple scab leaf,1,0.0,0.0,0.0
+stage7_label_only_classification,army worm,3,0.0,0.0,0.0
+stage7_label_only_classification,bacterial leaf blight,7,0.0,0.0,0.0
+stage7_label_only_classification,bactrocera tsuneonis,1,0.0,0.0,0.0
+stage7_label_only_classification,banana healthy leaf,3,0.0,0.0,0.0
+stage7_label_only_classification,beet army worm,4,0.0,0.0,0.0
+stage7_label_only_classification,bird cherry oataphid,3,0.0,0.0,0.0
+stage7_label_only_classification,bird eye spot,2,0.0,0.0,0.0
+stage7_label_only_classification,black cutworm,2,0.0,0.0,0.0
+stage7_label_only_classification,black sigatoka,2,0.0,0.0,0.0
+stage7_label_only_classification,blister beetle,4,0.0,0.0,0.0
+stage7_label_only_classification,blueberry healthy,2,0.0,0.0,0.0
+stage7_label_only_classification,blueberry leaf,1,0.0,0.0,0.0
+stage7_label_only_classification,bract mosaic virus,2,0.0,0.0,0.0
+stage7_label_only_classification,brinjal mites,1,0.0,0.0,0.0
+stage7_label_only_classification,brown blight,5,0.0,0.0,0.0
+stage7_label_only_classification,brown plant hopper,4,0.0,0.0,0.0
+stage7_label_only_classification,brown spot,12,0.0,0.0,0.0
+stage7_label_only_classification,cherry including sour healthy,3,0.0,0.0,0.0
+stage7_label_only_classification,chickpea botrytis gray mold,1,0.0,0.0,0.0
+stage7_label_only_classification,chilli leaf curl virus,1,0.0,0.0,0.0
+stage7_label_only_classification,chilli thrips,1,0.0,0.0,0.0
+stage7_label_only_classification,chilo suppressalis,3,0.0,0.0,0.0
+stage7_label_only_classification,chlumetia transversa,2,0.0,0.0,0.0
+stage7_label_only_classification,cicadella viridis,1,0.0,0.0,0.0
+stage7_label_only_classification,cicadellidae,9,0.0,0.0,0.0
+stage7_label_only_classification,coriander healthy,1,0.0,0.0,0.0
+stage7_label_only_classification,corn borer,2,0.0,0.0,0.0
+stage7_label_only_classification,corn gray leaf spot,1,0.0,0.0,0.0
+stage7_label_only_classification,corn leaf blight,2,0.0,0.0,0.0
+stage7_label_only_classification,corn maize cercospora leaf spot gray leaf spot,3,0.0,0.0,0.0
+stage7_label_only_classification,corn maize common rust,3,0.0,0.0,0.0
+stage7_label_only_classification,corn maize healthy,2,0.0,0.0,0.0
+stage7_label_only_classification,corn maize northern leaf blight,3,0.0,0.0,0.0
+stage7_label_only_classification,cucumber squash bug,1,0.0,0.0,0.0
+stage7_label_only_classification,dacus dorsalis hendel,1,0.0,0.0,0.0
+stage7_label_only_classification,dasineura sp,1,0.0,0.0,0.0
+stage7_label_only_classification,english grain aphid,1,0.0,0.0,0.0
+stage7_label_only_classification,flax budworm,1,0.0,0.0,0.0
+stage7_label_only_classification,flea beetle,1,0.0,0.0,0.0
+stage7_label_only_classification,grape esca black measles,3,0.0,0.0,0.0
+stage7_label_only_classification,grape leaf black rot,1,0.0,0.0,0.0
+stage7_label_only_classification,grape leaf blight isariopsis leaf spot,1,0.0,0.0,0.0
+stage7_label_only_classification,gray light,1,0.0,0.0,0.0
+stage7_label_only_classification,green bug,2,0.0,0.0,0.0
+stage7_label_only_classification,grub,2,0.0,0.0,0.0
+stage7_label_only_classification,guava healthy,1,0.0,0.0,0.0
+stage7_label_only_classification,healthy,9,0.0,0.0,0.0
+stage7_label_only_classification,hispa,4,0.0,0.0,0.0
+stage7_label_only_classification,icerya purchasi maskell,1,0.0,0.0,0.0
+stage7_label_only_classification,insect pest,3,0.0,0.0,0.0
+stage7_label_only_classification,large cutworm,2,0.0,0.0,0.0
+stage7_label_only_classification,leaf scald,10,0.0,0.0,0.0
+stage7_label_only_classification,limacodidae,1,0.0,0.0,0.0
+stage7_label_only_classification,locustoidea,2,0.0,0.0,0.0
+stage7_label_only_classification,longlegged spider mite,2,0.0,0.0,0.0
+stage7_label_only_classification,lycorma delicatula,10,0.0,0.0,0.0
+stage7_label_only_classification,lytta polita,1,0.0,0.0,0.0
+stage7_label_only_classification,maize fall armyworm,2,0.0,0.0,0.0
+stage7_label_only_classification,maize healthy,1,0.0,0.0,0.0
+stage7_label_only_classification,mango powdery mildew,1,0.0,0.0,0.0
+stage7_label_only_classification,medicinal plants potassium deficiency,1,0.0,0.0,0.0
+stage7_label_only_classification,miridae,7,0.0,0.0,0.0
+stage7_label_only_classification,moko disease,5,0.0,0.0,0.0
+stage7_label_only_classification,mole cricket,2,0.0,0.0,0.0
+stage7_label_only_classification,narrow brown spot,8,0.0,0.0,0.0
+stage7_label_only_classification,nitrogen deficiency,3,0.0,0.0,0.0
+stage7_label_only_classification,odontothrips loti,1,0.0,0.0,0.0
+stage7_label_only_classification,orange haunglongbing citrus greening,12,0.0,0.0,0.0
+stage7_label_only_classification,panonchus citri mcgregor,2,0.0,0.0,0.0
+stage7_label_only_classification,papaya papaya mealybug,1,0.0,0.0,0.0
+stage7_label_only_classification,peach bacterial spot,4,0.038461538461538464,1.0,0.07407407407407407
+stage7_label_only_classification,peach leaf,1,0.047619047619047616,1.0,0.0909090909090909
+stage7_label_only_classification,pepper bell bacterial spot,2,0.0,0.0,0.0
+stage7_label_only_classification,pepper bell healthy,1,0.0,0.0,0.0
+stage7_label_only_classification,phyllocnistis citrella stainton,1,0.0,0.0,0.0
+stage7_label_only_classification,polyphagotars onemus latus,1,0.0,0.0,0.0
+stage7_label_only_classification,potato aphids,1,0.0,0.0,0.0
+stage7_label_only_classification,potato early blight,2,0.0,0.0,0.0
+stage7_label_only_classification,potato healthy,1,0.0,0.0,0.0
+stage7_label_only_classification,potato late blight,4,0.0,0.0,0.0
+stage7_label_only_classification,potato leaf early blight,2,0.0,0.0,0.0
+stage7_label_only_classification,potato leaf late blight,1,0.0,0.0,0.0
+stage7_label_only_classification,potosiabre vitarsis,1,0.0,0.0,0.0
+stage7_label_only_classification,pseudococcus comstocki kuwana,2,0.0,0.0,0.0
+stage7_label_only_classification,raspberry healthy,1,0.0,0.0,0.0
+stage7_label_only_classification,red leaf spot,2,0.0,0.0,0.0
+stage7_label_only_classification,rhytidodera bowrinii white,2,0.0,0.0,0.0
+stage7_label_only_classification,rice gall midge,6,0.0,0.0,0.0
+stage7_label_only_classification,rice leaf and neck blast,2,0.0,0.0,0.0
+stage7_label_only_classification,rice leaf caterpillar,1,0.0,0.0,0.0
+stage7_label_only_classification,rice leaf folder,2,0.0,0.0,0.0
+stage7_label_only_classification,rice leaf roller,1,0.0,0.0,0.0
+stage7_label_only_classification,rice shell pest,2,0.0,0.0,0.0
+stage7_label_only_classification,rice skipper,4,0.0,0.0,0.0
+stage7_label_only_classification,rice stemfly,1,0.0,0.0,0.0
+stage7_label_only_classification,rice water weevil,1,0.0,0.0,0.0
+stage7_label_only_classification,rice yellow stem borer,3,0.0,0.0,0.0
+stage7_label_only_classification,sheath blight,5,0.0,0.0,0.0
+stage7_label_only_classification,soybean healthy,12,0.0,0.0,0.0
+stage7_label_only_classification,squash powdery mildew,2,0.0,0.0,0.0
+stage7_label_only_classification,squash powdery mildew leaf,2,0.0,0.0,0.0
+stage7_label_only_classification,strawberry healthy,1,0.0,0.0,0.0
+stage7_label_only_classification,strawberry leaf scorch,1,0.0,0.0,0.0
+stage7_label_only_classification,tarnished plant bug,2,0.0,0.0,0.0
+stage7_label_only_classification,tetradacus c bactrocera minax,1,0.0,0.0,0.0
+stage7_label_only_classification,therioaphis maculata buckton,2,0.0,0.0,0.0
+stage7_label_only_classification,thrips,6,0.0,0.0,0.0
+stage7_label_only_classification,tobacco healthy,1,0.0,0.0,0.0
+stage7_label_only_classification,tomato bacterial spot,4,0.0,0.0,0.0
+stage7_label_only_classification,tomato early blight,4,0.0,0.0,0.0
+stage7_label_only_classification,tomato healthy,5,0.0,0.0,0.0
+stage7_label_only_classification,tomato late blight,4,0.0,0.0,0.0
+stage7_label_only_classification,tomato leaf bacterial spot,3,0.0,0.0,0.0
+stage7_label_only_classification,tomato leaf late blight,1,0.0,0.0,0.0
+stage7_label_only_classification,tomato leaf mold,3,0.0,0.0,0.0
+stage7_label_only_classification,tomato mold leaf,3,0.0,0.0,0.0
+stage7_label_only_classification,tomato potassium deficiency,1,0.0,0.0,0.0
+stage7_label_only_classification,tomato septoria leaf spot,3,0.0,0.0,0.0
+stage7_label_only_classification,tomato spider mites two spotted spider mite,2,0.0,0.0,0.0
+stage7_label_only_classification,tomato target spot,2,0.0,0.0,0.0
+stage7_label_only_classification,tomato tomato yellow leaf curl virus,11,0.0,0.0,0.0
+stage7_label_only_classification,tungro virus,7,0.0,0.0,0.0
+stage7_label_only_classification,viteus vitifoliae,1,0.0,0.0,0.0
+stage7_label_only_classification,wheat blossom midge,2,0.0,0.0,0.0
+stage7_label_only_classification,wheat phloeothrips,1,0.0,0.0,0.0
+stage7_label_only_classification,wheat sawfly,2,0.0,0.0,0.0
+stage7_label_only_classification,white backed plant hopper,1,0.0,0.0,0.0
+stage7_label_only_classification,white margined moth,2,0.0,0.0,0.0
+stage7_label_only_classification,white spot,2,0.0,0.0,0.0
+stage7_label_only_classification,wireworm,1,0.0,0.0,0.0
+stage7_label_only_classification,xylotrechus,2,0.0,0.0,0.0
+stage7_label_only_classification,yellow cutworm,1,0.0,0.0,0.0
+stage7_label_only_classification,yellow rice borer,1,0.0,0.0,0.0
+stage7_label_only_classification,yellow sigatoka,2,0.0,0.0,0.0

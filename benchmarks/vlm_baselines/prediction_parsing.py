@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections import Counter
 from dataclasses import dataclass
+import json
 import math
 import re
 from typing import Any
@@ -11,6 +12,7 @@ from typing import Any
 
 SECTION_HEADERS = ["Diagnosis", "Evidence", "Uncertainty", "Management", "Follow-up"]
 PLACEHOLDER_PATH_MARKERS = {"", "todo", "tbd", "change_me", "changeme", "none", "null", "/path/to/checkpoint"}
+ANSWER_JSON_KEYS = ("answer", "label", "prediction", "class", "canonical_label", "diagnosis")
 
 
 def normalize_text(text: str | None) -> str:
@@ -29,18 +31,58 @@ def normalize_label(text: str | None) -> str:
     return normalized.strip()
 
 
+def _clean_extracted_field(text: str | None) -> str:
+    value = (text or "").strip()
+    value = re.sub(r"^(?:\*\*|__|`)+\s*", "", value)
+    value = re.sub(r"\s*(?:\*\*|__|`)+$", "", value)
+    return value.strip()
+
+
+def _json_candidates(text: str) -> list[str]:
+    fenced = re.findall(r"(?is)```(?:json)?\s*(.*?)\s*```", text)
+    candidates = fenced + [text.strip()]
+    compact = text.strip()
+    if "{" in compact and "}" in compact:
+        candidates.append(compact[compact.find("{") : compact.rfind("}") + 1])
+    return [candidate for candidate in candidates if candidate]
+
+
+def _answer_from_json(text: str) -> str | None:
+    for candidate in _json_candidates(text):
+        try:
+            payload = json.loads(candidate)
+        except json.JSONDecodeError:
+            continue
+        if not isinstance(payload, dict):
+            continue
+        for key in ANSWER_JSON_KEYS:
+            value = payload.get(key)
+            if isinstance(value, str) and value.strip():
+                return value.strip()
+            if isinstance(value, (int, float)):
+                return str(value)
+    return None
+
+
 def extract_answer_field(raw_output: str | None) -> tuple[str, str]:
     """Return explicit Answer field text and parse status."""
     text = raw_output or ""
     pattern = re.compile(
-        r"(?im)^\s*(?:final\s+)?answer\s*:\s*(?P<answer>.*?)(?=\n\s*(?:decision|diagnosis|evidence|uncertainty|management|follow-up|explanation|confidence)\s*:|\Z)",
+        r"(?im)^\s*(?:[-*+]\s*)?(?:>\s*)?(?:\*\*|__)?(?:final\s+)?answer(?:\*\*|__)?\s*[:：]\s*(?P<answer>.*?)(?=\n\s*(?:[-*+]\s*)?(?:>\s*)?(?:\*\*|__)?(?:choice|decision|diagnosis|evidence|uncertainty|management|follow-up|explanation|confidence)(?:\*\*|__)?\s*[:：]|\Z)",
         re.DOTALL,
     )
     match = pattern.search(text)
-    if not match:
-        return text.strip(), "raw"
-    answer = match.group("answer").strip()
-    return answer, "exact" if answer else "failed"
+    if match:
+        answer = _clean_extracted_field(match.group("answer"))
+        return answer, "exact" if answer else "failed"
+
+    json_answer = _answer_from_json(text)
+    if json_answer is not None:
+        answer = _clean_extracted_field(json_answer)
+        return answer, "json" if answer else "failed"
+
+    answer = text.strip()
+    return answer, "raw" if answer else "failed"
 
 
 def extract_decision_field(raw_output: str | None) -> tuple[str, str]:

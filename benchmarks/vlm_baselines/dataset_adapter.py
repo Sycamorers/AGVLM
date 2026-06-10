@@ -24,6 +24,7 @@ ACTIVE_TRAIN_MANIFEST = Path(
 ACTIVE_SPLIT_SUMMARY = Path(
     os.environ.get("AGRI_VLM_SFT_SPLIT_SUMMARY", "data/manifests/full/sft_train_eval_phi4_max3_summary.json")
 )
+CLASSIFICATION_PROMPT_FORMAT = os.environ.get("AGRI_VLM_CLASSIFICATION_PROMPT_FORMAT", "answer_evidence").strip().lower()
 FALLBACK_SOURCE_MANIFESTS = [
     Path("data/manifests/full/sft_manifest.decode_aspect_valid_images.jsonl"),
     Path("data/manifests/full/sft_manifest.valid_images.jsonl"),
@@ -140,6 +141,28 @@ def _classification_label_space(row: dict[str, Any], label_space: list[str] | No
     return _dedupe_labels(label_space or [])
 
 
+def _classification_choice_options(row: dict[str, Any]) -> list[dict[str, str]]:
+    metadata = row.get("metadata") or {}
+    raw_options = metadata.get("classification_choice_options") or []
+    if not isinstance(raw_options, list):
+        return []
+    options: list[dict[str, str]] = []
+    seen_letters: set[str] = set()
+    seen_labels: set[str] = set()
+    for raw_option in raw_options:
+        if not isinstance(raw_option, dict):
+            return []
+        letter = str(raw_option.get("letter") or "").strip().upper()
+        label = str(raw_option.get("label") or "").strip()
+        label_key = normalize_text(label)
+        if not letter or len(letter) > 2 or not label or letter in seen_letters or label_key in seen_labels:
+            return []
+        seen_letters.add(letter)
+        seen_labels.add(label_key)
+        options.append({"letter": letter, "label": label})
+    return options
+
+
 def output_instruction(row: dict[str, Any], label_space: list[str] | None = None) -> str:
     task_type = str(row.get("task_type") or "")
     mode = str(_verifier(row).get("mode") or "")
@@ -159,6 +182,34 @@ def output_instruction(row: dict[str, Any], label_space: list[str] | None = None
             "Respond in this format:\nDecision: <clarify or respond>\nAnswer: <short answer or clarifying question>"
         )
     if mode == "label" or target.get("canonical_label"):
+        if CLASSIFICATION_PROMPT_FORMAT == "label_only":
+            allowed_labels = _classification_label_space(row, label_space)
+            label_instruction = ""
+            if len(allowed_labels) > 1:
+                label_instruction = (
+                    "Choose exactly one label from this allowed label set:\n"
+                    f"Allowed labels: {'; '.join(allowed_labels)}\n"
+                )
+            return (
+                f"{label_instruction}"
+                "Respond with only the selected label text.\n"
+                "Do not include Answer:, Evidence:, option letters, punctuation, Markdown, JSON, or explanations."
+            )
+        choice_options = _classification_choice_options(row)
+        if choice_options:
+            rendered_options = "\n".join(
+                "%s. %s" % (option["letter"], option["label"]) for option in choice_options
+            )
+            return (
+                "Choose exactly one option from this list:\n"
+                "%s\n"
+                "Respond in this format:\n"
+                "Choice: <option letter>\n"
+                "Answer: <label text from the selected option>\n"
+                "Evidence: <brief visible symptom evidence>\n"
+                "Do not leave Choice or Answer blank, invent labels, or copy the placeholder text."
+                % rendered_options
+            )
         allowed_labels = _classification_label_space(row, label_space)
         label_instruction = ""
         answer_placeholder = "<canonical agricultural label>"
@@ -221,6 +272,7 @@ def semantic_prompt(row: dict[str, Any], label_space: list[str] | None = None) -
         "respond using exactly",
         "respond using these line start",
         "respond using these line-start",
+        "choice:",
     ]
     if any(marker in normalized_base for marker in output_contract_markers):
         return base

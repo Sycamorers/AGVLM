@@ -1,0 +1,22 @@
+train_source_manifest_path: data/manifests/full/sft_train_phi4_max3_stage5_closed_label_datafix.jsonl
+eval_source_manifest_path: data/manifests/full/sft_eval_phi4_max3_stage5_closed_label_stratified1024.jsonl
+train_output_path: data/manifests/full/sft_classification_probe_stage6_mc_train.jsonl
+eval_output_path: data/manifests/full/sft_classification_probe_stage6_mc_eval.jsonl
+summary_output_path: data/manifests/full/sft_classification_probe_stage6_mc_summary.json
+seed: 53
+sources:
+  - plantvillage
+  - plantdoc
+  - ip102
+  - rice_disease
+  - digigreen_crop_disease
+  - banana_disease
+  - tea_sickness
+strip_leading_numeric_prefix_sources:
+  - ip102
+choice_format: multiple_choice
+train_per_label: 8
+eval_per_label: 4
+max_labels_per_source: 5
+min_train_per_label: 1
+min_eval_per_label: 1

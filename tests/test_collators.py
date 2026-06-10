@@ -239,6 +239,64 @@ def test_instructional_sft_format_adds_closed_classification_label_space() -> No
     assert "Answer: <one allowed label>" in prompt_text
 
 
+def test_classification_label_only_format_keeps_label_contract_clean() -> None:
+    from agri_vlm.data.conversation_format import sample_to_prompt_messages, sample_to_training_messages
+    from agri_vlm.schemas.dataset_schema import UnifiedSample
+
+    payload = _sample()
+    payload["metadata"] = {"classification_label_space": ["apple scab", "late blight", "healthy"]}
+    sample = UnifiedSample.model_validate(payload)
+
+    prompt_messages = sample_to_prompt_messages(sample, prompt_format="classification_label_only")
+    training_messages = sample_to_training_messages(
+        sample,
+        prompt_format="classification_label_only",
+        target_format="classification_label_only",
+    )
+
+    prompt_text = prompt_messages[-1]["content"][-1]["text"]
+    assert "Choose exactly one label from this allowed label set:" in prompt_text
+    assert "Respond with only the selected label text." in prompt_text
+    assert "Do not include Answer:" in prompt_text
+    assert "Evidence: <brief visible symptom evidence>" not in prompt_text
+    assert training_messages[-1]["content"][0]["text"] == "apple scab"
+
+
+def test_instructional_sft_format_renders_multiple_choice_classification() -> None:
+    from agri_vlm.data.conversation_format import sample_to_prompt_messages, sample_to_training_messages
+    from agri_vlm.schemas.dataset_schema import UnifiedSample
+
+    payload = _sample()
+    payload["metadata"] = {
+        "classification_format": "multiple_choice",
+        "classification_choice_options": [
+            {"letter": "A", "label": "apple scab"},
+            {"letter": "B", "label": "late blight"},
+            {"letter": "C", "label": "healthy"},
+        ],
+        "classification_choice_answer": {"letter": "A", "label": "apple scab"},
+    }
+    sample = UnifiedSample.model_validate(payload)
+
+    prompt_messages = sample_to_prompt_messages(sample, prompt_format="instructional")
+    training_messages = sample_to_training_messages(
+        sample,
+        prompt_format="instructional",
+        target_format="instructional",
+    )
+
+    prompt_text = prompt_messages[-1]["content"][-1]["text"]
+    assert "Choose exactly one option from this list:" in prompt_text
+    assert "A. apple scab" in prompt_text
+    assert "Choice: <option letter>" in prompt_text
+    assert "Answer: <label text from the selected option>" in prompt_text
+    assert training_messages[-1]["content"][0]["text"] == (
+        "Choice: A\n"
+        "Answer: apple scab\n"
+        "Evidence: Visible agricultural symptoms or pest features support this label."
+    )
+
+
 def test_instructional_sft_format_renders_clarify_decision_target() -> None:
     from agri_vlm.data.conversation_format import sample_to_training_messages
     from agri_vlm.schemas.dataset_schema import UnifiedSample

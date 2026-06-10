@@ -25,6 +25,12 @@ RL_DEFAULT_FORBIDDEN_CLAIMS = [
     "100% certain diagnosis from image alone",
 ]
 
+CLASSIFICATION_LABEL_ALIASES = {
+    "gray light": "gray blight",
+}
+CLASSIFICATION_CHOICE_LETTERS = tuple("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
+CLASSIFICATION_PROBE_CHOICE_FORMATS = {"label_list", "multiple_choice"}
+
 
 def build_sft_manifest(
     source_paths: Sequence[Path],
@@ -472,6 +478,7 @@ def _clean_classification_label(value: Any, *, strip_leading_numeric_prefix: boo
     label = re.sub(r"\s+", " ", str(value or "").replace("_", " ").replace("-", " ")).strip()
     if strip_leading_numeric_prefix:
         label = re.sub(r"^\d+\s+", "", label).strip()
+    label = CLASSIFICATION_LABEL_ALIASES.get(normalize_label(label), label)
     return label
 
 
@@ -569,6 +576,26 @@ def _classification_label_spaces_by_source(rows: Sequence[Dict[str, Any]]) -> Di
         source: [items[key] for key in sorted(items)]
         for source, items in sorted(labels.items())
     }
+
+
+def _classification_labels_outside_label_space(
+    rows: Sequence[Dict[str, Any]],
+    *,
+    label_spaces_by_source: Dict[str, List[str]],
+) -> Dict[str, Dict[str, int]]:
+    missing: Dict[str, Counter[str]] = defaultdict(Counter)
+    normalized_spaces = {
+        source: {normalize_label(label) for label in labels}
+        for source, labels in label_spaces_by_source.items()
+    }
+    for row in rows:
+        if row.get("task_type") != "classification":
+            continue
+        source = str(row.get("source_dataset") or "")
+        label = _classification_target_label(row)
+        if normalize_label(label) not in normalized_spaces.get(source, set()):
+            missing[source][label] += 1
+    return {source: dict(sorted(counts.items())) for source, counts in sorted(missing.items())}
 
 
 def _attach_classification_label_space(
@@ -819,6 +846,15 @@ def build_closed_label_eval_manifest(
             "Missing classification label spaces for eval sources: %s"
             % missing_label_space_sources
         )
+    labels_outside_space = _classification_labels_outside_label_space(
+        output_rows,
+        label_spaces_by_source=label_spaces_by_source,
+    )
+    if labels_outside_space:
+        raise ValueError(
+            "Eval classification labels are missing from their source label spaces: %s"
+            % labels_outside_space
+        )
 
     validated = write_manifest(output_manifest_path, output_rows)
     validated_rows = [sample.model_dump(mode="json") for sample in validated]
@@ -844,6 +880,266 @@ def build_closed_label_eval_manifest(
                 if row.get("task_type") == "classification"
             ).most_common(100)
         ),
+    }
+    if summary_output_path:
+        write_json(summary_output_path, summary)
+    return summary
+
+
+def _classification_groups_by_source_label(rows: Sequence[Dict[str, Any]]) -> Dict[Tuple[str, str], List[Dict[str, Any]]]:
+    groups: Dict[Tuple[str, str], List[Dict[str, Any]]] = defaultdict(list)
+    for row in rows:
+        if row.get("task_type") != "classification":
+            continue
+        source = str(row.get("source_dataset") or "")
+        label_key = normalize_label(_classification_target_label(row))
+        if not source or not label_key:
+            raise ValueError("Classification row %s has an empty source or label." % row.get("sample_id"))
+        groups[(source, label_key)].append(row)
+    return groups
+
+
+def _classification_probe_rows(
+    rows: Sequence[Dict[str, Any]],
+    *,
+    label_spaces_by_source: Dict[str, List[str]],
+    choice_format: str,
+    seed: int,
+) -> List[Dict[str, Any]]:
+    if choice_format not in CLASSIFICATION_PROBE_CHOICE_FORMATS:
+        raise ValueError(
+            "Unsupported choice_format=%r; expected one of %s."
+            % (choice_format, sorted(CLASSIFICATION_PROBE_CHOICE_FORMATS))
+        )
+    output_rows = []
+    for row in rows:
+        payload = _attach_classification_label_space(row, label_spaces_by_source=label_spaces_by_source)
+        metadata = dict(payload.get("metadata") or {})
+        metadata["classification_probe"] = True
+        payload["metadata"] = metadata
+        if choice_format == "multiple_choice":
+            payload = _attach_classification_choice_options(payload, seed=seed)
+        output_rows.append(payload)
+    return output_rows
+
+
+def _attach_classification_choice_options(row: Dict[str, Any], *, seed: int) -> Dict[str, Any]:
+    if row.get("task_type") != "classification":
+        return dict(row)
+    metadata = dict(row.get("metadata") or {})
+    label_space = _dedupe_nonempty(str(label) for label in metadata.get("classification_label_space") or [])
+    target_label = _classification_target_label(row)
+    target_key = normalize_label(target_label)
+    if len(label_space) < 2:
+        raise ValueError("Multiple-choice classification row %s needs at least two options." % row.get("sample_id"))
+    if len(label_space) > len(CLASSIFICATION_CHOICE_LETTERS):
+        raise ValueError(
+            "Multiple-choice classification row %s has too many options: %s"
+            % (row.get("sample_id"), len(label_space))
+        )
+    label_by_key = {normalize_label(label): label for label in label_space}
+    if target_key not in label_by_key:
+        raise ValueError(
+            "Multiple-choice classification target %r is not in the option label space for sample %s."
+            % (target_label, row.get("sample_id"))
+        )
+
+    ordered_labels = sorted(
+        label_space,
+        key=lambda label: _stable_hex(
+            "%s::%s::%s" % (row.get("sample_id"), seed, normalize_label(label)),
+            "classification-choice-option",
+        ),
+    )
+    options = [
+        {"letter": letter, "label": label}
+        for letter, label in zip(CLASSIFICATION_CHOICE_LETTERS, ordered_labels)
+    ]
+    answer = next(option for option in options if normalize_label(option["label"]) == target_key)
+
+    payload = copy.deepcopy(row)
+    metadata = dict(payload.get("metadata") or {})
+    metadata["classification_format"] = "multiple_choice"
+    metadata["classification_choice_options"] = options
+    metadata["classification_choice_answer"] = dict(answer)
+    metadata["classification_choice_count"] = len(options)
+    payload["metadata"] = metadata
+    return payload
+
+
+def build_classification_probe_manifests(
+    *,
+    train_source_manifest_path: Path,
+    eval_source_manifest_path: Path,
+    train_output_path: Path,
+    eval_output_path: Path,
+    train_per_label: int,
+    eval_per_label: int,
+    max_labels_per_source: int,
+    seed: int,
+    sources: Sequence[str] = (),
+    min_train_per_label: int = 1,
+    min_eval_per_label: int = 1,
+    strip_leading_numeric_prefix_sources: Sequence[str] = (),
+    choice_format: str = "label_list",
+    summary_output_path: Path = None,
+) -> Dict[str, Any]:
+    """Build small closed-label classification-only train/eval manifests for overfit probes."""
+    if choice_format not in CLASSIFICATION_PROBE_CHOICE_FORMATS:
+        raise ValueError(
+            "Unsupported choice_format=%r; expected one of %s."
+            % (choice_format, sorted(CLASSIFICATION_PROBE_CHOICE_FORMATS))
+        )
+    if train_per_label < 1:
+        raise ValueError("train_per_label must be positive.")
+    if eval_per_label < 1:
+        raise ValueError("eval_per_label must be positive.")
+    if max_labels_per_source < 1:
+        raise ValueError("max_labels_per_source must be positive.")
+    if min_train_per_label < 1 or min_eval_per_label < 1:
+        raise ValueError("min_train_per_label and min_eval_per_label must be positive.")
+
+    source_filter = {str(source) for source in sources}
+    strip_sources = {str(source) for source in strip_leading_numeric_prefix_sources}
+
+    train_rows = [
+        _repair_classification_label(row, strip_leading_numeric_prefix_sources=strip_sources)[0]
+        for row in read_jsonl(train_source_manifest_path)
+        if row.get("task_type") == "classification" and (not source_filter or row.get("source_dataset") in source_filter)
+    ]
+    eval_rows = [
+        _repair_classification_label(row, strip_leading_numeric_prefix_sources=strip_sources)[0]
+        for row in read_jsonl(eval_source_manifest_path)
+        if row.get("task_type") == "classification" and (not source_filter or row.get("source_dataset") in source_filter)
+    ]
+    if not train_rows:
+        raise ValueError("No classification train rows selected from %s" % train_source_manifest_path)
+    if not eval_rows:
+        raise ValueError("No classification eval rows selected from %s" % eval_source_manifest_path)
+
+    train_groups = _classification_groups_by_source_label(train_rows)
+    eval_groups = _classification_groups_by_source_label(eval_rows)
+    label_values: Dict[Tuple[str, str], str] = {}
+    for row in train_rows + eval_rows:
+        source = str(row.get("source_dataset") or "")
+        label = _classification_target_label(row)
+        label_values.setdefault((source, normalize_label(label)), label)
+
+    eligible_by_source: Dict[str, List[str]] = defaultdict(list)
+    for source, label_key in sorted(set(train_groups) & set(eval_groups)):
+        if len(train_groups[(source, label_key)]) < min_train_per_label:
+            continue
+        if len(eval_groups[(source, label_key)]) < min_eval_per_label:
+            continue
+        eligible_by_source[source].append(label_key)
+
+    selected_label_keys_by_source: Dict[str, List[str]] = {}
+    for source, label_keys in sorted(eligible_by_source.items()):
+        ordered = sorted(
+            label_keys,
+            key=lambda label_key: _stable_hex(
+                "%s::%s::%s" % (source, label_key, seed),
+                "classification-probe-label",
+            ),
+        )
+        selected_label_keys_by_source[source] = sorted(ordered[:max_labels_per_source])
+    if not any(selected_label_keys_by_source.values()):
+        raise ValueError("No classification labels have enough train and eval rows for the probe.")
+
+    label_spaces_by_source = {
+        source: [label_values[(source, label_key)] for label_key in label_keys]
+        for source, label_keys in selected_label_keys_by_source.items()
+        if label_keys
+    }
+    selected_train: List[Dict[str, Any]] = []
+    selected_eval: List[Dict[str, Any]] = []
+    group_plan: Dict[str, Any] = {}
+    for source, label_keys in sorted(selected_label_keys_by_source.items()):
+        for label_key in label_keys:
+            label = label_values[(source, label_key)]
+            train_sampled = _repeat_rows_to_size(
+                train_groups[(source, label_key)],
+                target_size=train_per_label,
+                salt="%s::probe::train::%s::%s" % (seed, source, label_key),
+            )
+            eval_sampled = sorted(
+                eval_groups[(source, label_key)],
+                key=lambda row: _stable_manifest_row_key(
+                    row,
+                    "%s::probe::eval::%s::%s" % (seed, source, label_key),
+                ),
+            )[:eval_per_label]
+            selected_train.extend(train_sampled)
+            selected_eval.extend(eval_sampled)
+            group_plan["%s::%s" % (source, label)] = {
+                "train_input_rows": len(train_groups[(source, label_key)]),
+                "eval_input_rows": len(eval_groups[(source, label_key)]),
+                "train_output_rows": len(train_sampled),
+                "eval_output_rows": len(eval_sampled),
+                "train_repeated_rows_added": max(0, len(train_sampled) - len(train_groups[(source, label_key)])),
+            }
+
+    train_output_rows = sorted(
+        _classification_probe_rows(
+            selected_train,
+            label_spaces_by_source=label_spaces_by_source,
+            choice_format=choice_format,
+            seed=seed,
+        ),
+        key=lambda row: _stable_manifest_row_key(row, "%s::classification-probe-train" % seed),
+    )
+    eval_output_rows = sorted(
+        _classification_probe_rows(
+            selected_eval,
+            label_spaces_by_source=label_spaces_by_source,
+            choice_format=choice_format,
+            seed=seed,
+        ),
+        key=lambda row: _stable_manifest_row_key(row, "%s::classification-probe-eval" % seed),
+    )
+    labels_outside_space = _classification_labels_outside_label_space(
+        train_output_rows + eval_output_rows,
+        label_spaces_by_source=label_spaces_by_source,
+    )
+    if labels_outside_space:
+        raise ValueError(
+            "Classification probe labels are missing from their source label spaces: %s"
+            % labels_outside_space
+        )
+
+    validated_train = write_manifest(train_output_path, train_output_rows)
+    validated_eval = write_manifest(eval_output_path, eval_output_rows)
+    train_payloads = [sample.model_dump(mode="json") for sample in validated_train]
+    eval_payloads = [sample.model_dump(mode="json") for sample in validated_eval]
+    summary = {
+        "train_source_manifest_path": str(train_source_manifest_path),
+        "eval_source_manifest_path": str(eval_source_manifest_path),
+        "train_output_path": str(train_output_path),
+        "eval_output_path": str(eval_output_path),
+        "train_output_rows": len(train_payloads),
+        "eval_output_rows": len(eval_payloads),
+        "seed": seed,
+        "sources": sorted(source_filter),
+        "train_per_label": train_per_label,
+        "eval_per_label": eval_per_label,
+        "max_labels_per_source": max_labels_per_source,
+        "min_train_per_label": min_train_per_label,
+        "min_eval_per_label": min_eval_per_label,
+        "choice_format": choice_format,
+        "strip_leading_numeric_prefix_sources": sorted(strip_sources),
+        "eligible_label_count_by_source": {
+            source: len(label_keys) for source, label_keys in sorted(eligible_by_source.items())
+        },
+        "selected_labels_by_source": {
+            source: [label_values[(source, label_key)] for label_key in label_keys]
+            for source, label_keys in sorted(selected_label_keys_by_source.items())
+        },
+        "classification_label_space_sizes_by_source": {
+            source: len(labels) for source, labels in sorted(label_spaces_by_source.items())
+        },
+        "group_plan": group_plan,
+        "train_output_by_source": _counter_dict(train_payloads, "source_dataset"),
+        "eval_output_by_source": _counter_dict(eval_payloads, "source_dataset"),
     }
     if summary_output_path:
         write_json(summary_output_path, summary)

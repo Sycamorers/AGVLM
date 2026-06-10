@@ -231,6 +231,33 @@ def is_oom_error(exc: BaseException) -> bool:
     return "out of memory" in message or "cuda error: out of memory" in message or "cublas_status_alloc_failed" in message
 
 
+def _generated_token_prefix(input_ids: Any, prompt_length: int) -> list[int]:
+    ids = input_ids.tolist() if hasattr(input_ids, "tolist") else list(input_ids)
+    if ids and isinstance(ids[0], list):
+        ids = ids[0]
+    return [int(token_id) for token_id in ids[int(prompt_length) :]]
+
+
+def _next_allowed_label_tokens(
+    generated_token_ids: list[int],
+    label_token_sequences: list[list[int]],
+    eos_token_ids: list[int],
+) -> list[int]:
+    allowed: set[int] = set()
+    for sequence in label_token_sequences:
+        if len(generated_token_ids) > len(sequence):
+            continue
+        if sequence[: len(generated_token_ids)] != generated_token_ids:
+            continue
+        if len(generated_token_ids) == len(sequence):
+            allowed.update(eos_token_ids)
+        else:
+            allowed.add(sequence[len(generated_token_ids)])
+    if not allowed:
+        allowed.update(eos_token_ids)
+    return sorted(allowed)
+
+
 class HuggingFaceVLMAdapter:
     def __init__(
         self,
@@ -613,6 +640,9 @@ class HuggingFaceVLMAdapter:
 
         prepared = self.preprocess(sample)
         inputs = prepared["inputs"]
+        classification_decode_mode = str(generation_config.get("classification_decode_mode") or "free").strip().lower()
+        if classification_decode_mode not in {"free", "constrained"}:
+            raise ValueError("Unsupported classification_decode_mode=%r" % classification_decode_mode)
         generate_kwargs = {
             "max_new_tokens": int(generation_config.get("max_new_tokens", 128)),
             "do_sample": bool(generation_config.get("do_sample", False)),
@@ -625,11 +655,21 @@ class HuggingFaceVLMAdapter:
         if generate_kwargs["do_sample"]:
             generate_kwargs["temperature"] = float(generation_config.get("temperature", 1.0))
             generate_kwargs["top_p"] = float(generation_config.get("top_p", 1.0))
-        raw_output = self._generate_text(inputs, prepared["prompt"], generate_kwargs, torch)
+        constrained_classification = classification_decode_mode == "constrained" and self._is_classification_sample(sample)
+        if constrained_classification:
+            raw_output = self._generate_constrained_label_text(
+                inputs,
+                prepared["prompt"],
+                sample.label_space,
+                generate_kwargs,
+                torch,
+            )
+        else:
+            raw_output = self._generate_text(inputs, prepared["prompt"], generate_kwargs, torch)
         postprocessed = self.postprocess(self._strip_prompt_echo(raw_output, prepared["prompt"]))
         format_retry_used = False
         raw_output_before_retry = None
-        if self._needs_format_retry(sample, postprocessed):
+        if not constrained_classification and self._needs_format_retry(sample, postprocessed):
             retry_kwargs = dict(generate_kwargs)
             retry_kwargs["min_new_tokens"] = min(
                 int(retry_kwargs.get("max_new_tokens", 128)),
@@ -641,7 +681,7 @@ class HuggingFaceVLMAdapter:
             if retry_postprocessed.strip():
                 postprocessed = retry_postprocessed
                 format_retry_used = True
-        return {
+        result = {
             "raw_output": postprocessed,
             "prompt": prepared["prompt"],
             "images_used": prepared["images_used"],
@@ -649,6 +689,14 @@ class HuggingFaceVLMAdapter:
             "format_retry_used": format_retry_used,
             "raw_output_before_format_retry": raw_output_before_retry,
         }
+        if constrained_classification:
+            result.update(
+                {
+                    "classification_decode_mode": "constrained",
+                    "constrained_label_space_size": len(sample.label_space),
+                }
+            )
+        return result
 
     def _generate_text(self, inputs: Any, prompt: str, generate_kwargs: dict[str, Any], torch: Any) -> str:
         with torch.no_grad(), self._generation_autocast_context(torch):
@@ -663,6 +711,90 @@ class HuggingFaceVLMAdapter:
         if not raw_output.strip() and sliced:
             raw_output = self._strip_prompt_echo(self._decode(output_ids), prompt)
         return raw_output
+
+    def _generate_constrained_label_text(
+        self,
+        inputs: Any,
+        prompt: str,
+        label_space: list[str],
+        generate_kwargs: dict[str, Any],
+        torch: Any,
+    ) -> str:
+        label_token_sequences = self._label_token_sequences(label_space)
+        if not label_token_sequences:
+            raise ValueError("Constrained classification decoding requires a non-empty label token space.")
+        eos_token_ids = self._eos_token_ids()
+        if not eos_token_ids:
+            raise ValueError("Constrained classification decoding requires an EOS token id.")
+        if "input_ids" not in inputs:
+            raise ValueError("Constrained classification decoding requires tokenized input_ids.")
+
+        prompt_length = int(inputs["input_ids"].shape[-1])
+        constrained_kwargs = dict(generate_kwargs)
+        constrained_kwargs.pop("min_new_tokens", None)
+        constrained_kwargs["max_new_tokens"] = max(
+            int(constrained_kwargs.get("max_new_tokens", 1)),
+            max(len(sequence) for sequence in label_token_sequences) + 1,
+        )
+
+        def prefix_allowed_tokens_fn(batch_id: int, input_ids: Any) -> list[int]:
+            del batch_id
+            generated = _generated_token_prefix(input_ids, prompt_length)
+            return _next_allowed_label_tokens(generated, label_token_sequences, eos_token_ids)
+
+        constrained_kwargs["prefix_allowed_tokens_fn"] = prefix_allowed_tokens_fn
+        return self._generate_text(inputs, prompt, constrained_kwargs, torch)
+
+    def _label_token_sequences(self, label_space: list[str]) -> list[list[int]]:
+        tokenizer = getattr(self.processor, "tokenizer", None) or self.processor
+        sequences: list[list[int]] = []
+        seen: set[tuple[int, ...]] = set()
+        for label in label_space:
+            clean_label = str(label or "").strip()
+            if not clean_label:
+                continue
+            for candidate in (clean_label, " " + clean_label):
+                token_ids = self._tokenize_text(tokenizer, candidate)
+                key = tuple(token_ids)
+                if key and key not in seen:
+                    sequences.append(token_ids)
+                    seen.add(key)
+        return sequences
+
+    def _tokenize_text(self, tokenizer: Any, text: str) -> list[int]:
+        if not callable(tokenizer):
+            raise ValueError("Processor/tokenizer is not callable; cannot tokenize constrained labels.")
+        encoded = tokenizer(text, add_special_tokens=False)
+        if isinstance(encoded, dict):
+            token_ids = encoded.get("input_ids") or []
+        else:
+            token_ids = getattr(encoded, "input_ids", encoded)
+        if token_ids and isinstance(token_ids[0], list):
+            token_ids = token_ids[0]
+        return [int(token_id) for token_id in token_ids]
+
+    def _eos_token_ids(self) -> list[int]:
+        tokenizer = getattr(self.processor, "tokenizer", None) or self.processor
+        candidates = [
+            getattr(getattr(self.model, "generation_config", None), "eos_token_id", None),
+            getattr(getattr(self.model, "config", None), "eos_token_id", None),
+            getattr(tokenizer, "eos_token_id", None),
+        ]
+        eos_ids: list[int] = []
+        seen: set[int] = set()
+        for value in candidates:
+            values = value if isinstance(value, (list, tuple, set)) else [value]
+            for item in values:
+                if item is None:
+                    continue
+                token_id = int(item)
+                if token_id not in seen:
+                    eos_ids.append(token_id)
+                    seen.add(token_id)
+        return eos_ids
+
+    def _is_classification_sample(self, sample: BenchmarkSample) -> bool:
+        return sample.task_type in {"classification", "label_diagnosis"} or sample.verifier_mode == "label"
 
     def _needs_format_retry(self, sample: BenchmarkSample, raw_output: str) -> bool:
         task_type = sample.task_type

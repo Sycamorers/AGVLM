@@ -1,0 +1,449 @@
+task_name,task_type,source_dataset,label,train_count,val_count,test_count,original_label_variants
+banana_disease:classification,classification,banana_disease,banana healthy leaf,64,0,3,banana_healthy_leaf
+banana_disease:classification,classification,banana_disease,black sigatoka,64,0,2,black_sigatoka
+banana_disease:classification,classification,banana_disease,bract mosaic virus,64,0,2,bract_mosaic_virus
+banana_disease:classification,classification,banana_disease,insect pest,64,0,3,insect_pest
+banana_disease:classification,classification,banana_disease,moko disease,64,0,5,moko_disease
+banana_disease:classification,classification,banana_disease,panama disease,64,0,0,panama_disease
+banana_disease:classification,classification,banana_disease,yellow sigatoka,64,0,2,yellow_sigatoka
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,aparajita healthy,24,0,0,aparajita healthy
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,arhar aphids,24,0,0,arhar aphids
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,arhar healthy,24,0,0,arhar healthy
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,arhar pod borer,24,0,0,arhar pod borer
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,arhar sterility mosaic,24,0,0,arhar sterility mosaic
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,banana banana aphid,24,0,0,banana banana aphid
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,banana banana weevil,24,0,0,banana banana weevil
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,banana healthy,24,0,0,banana healthy
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,banana panama wilt,24,0,0,banana banana weevil; banana panama wilt
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,banana sigatoka leaf spot,24,0,0,banana banana weevil; banana sigatoka leaf spot
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,bean aphids,24,0,0,bean aphids
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,bean bacterial blight,24,0,0,bean bacterial blight
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,bean bean beetle,24,0,0,bean bean beetle; bean pod borer
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,bean healthy,24,0,0,bean healthy
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,bean iron deficiency,24,0,0,bean iron deficiency
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,bean leaf miner,24,0,0,bean leaf miner
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,bean mites,24,0,0,bean mites
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,bean mosaic virus,24,0,0,bean mosaic virus
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,bean nitrogen deficiency,24,0,0,bean nitrogen deficiency
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,bean pod borer,24,0,0,bean pod borer
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,bean powdery mildew,24,0,0,bean mosaic virus; bean powdery mildew
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,bean root rot,24,0,0,bean root rot
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,bhindi aphids,24,0,0,bhindi aphids; bhindi jassids
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,bhindi healthy,24,0,0,bhindi healthy
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,bhindi shoot and fruit borer,24,0,0,bhindi shoot and fruit borer
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,bitter gourd downy mildew,24,0,0,bitter gourd downy mildew
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,bitter gourd healthy,24,0,0,bitter gourd healthy
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,bitter gourd mosaic virus,24,0,0,bitter gourd mosaic virus; bitter gourd whiteflies
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,bitter gourd powdery mildew,24,0,0,bitter gourd aphids; bitter gourd powdery mildew
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,bitter gourd whiteflies,24,0,0,bitter gourd whiteflies
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,bottle gourd aphids,24,0,0,bottle gourd aphids
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,bottle gourd fruit fly,24,0,0,bottle gourd fruit fly
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,bottle gourd healthy,24,0,0,bottle gourd healthy
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,bottle gourd mosaic virus,24,0,0,bottle gourd aphids; bottle gourd mosaic virus
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,bottle gourd powdery mildew,24,0,0,bottle gourd powdery mildew
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,bottle gourd red pumpkin beetle,24,0,0,bottle gourd red pumpkin beetle
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,brinjal healthy,24,0,0,brinjal healthy
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,brinjal mites,24,0,1,brinjal mites; brinjal shoot and fruit borer
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,brinjal phomopsis blight,24,0,0,brinjal mites; brinjal phomopsis blight; brinjal shoot and fruit borer
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,brinjal potassium deficiency,24,0,0,brinjal potassium deficiency
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,brinjal shoot and fruit borer,24,0,0,brinjal shoot and fruit borer
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,brinjal wilt,24,0,0,brinjal mites; brinjal shoot and fruit borer; brinjal wilt
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,broad bean healthy,24,0,0,broad bean healthy
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,cabbage alternaria leaf spot,24,0,0,cabbage alternaria leaf spot; cabbage cabbage looper; cabbage diamondback moth
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,cabbage cabbage looper,24,0,0,cabbage cabbage looper
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,cabbage diamondback moth,24,0,0,cabbage diamondback moth
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,cabbage downy mildew,24,0,0,cabbage diamondback moth; cabbage downy mildew
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,cabbage healthy,24,0,0,cabbage healthy
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,cabbage nitrogen deficiency,24,0,0,cabbage nitrogen deficiency
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,canola downy mildew,24,0,0,canola downy mildew
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,canola healthy,24,0,0,canola healthy
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,capsicum healthy,24,0,0,capsicum healthy
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,carrot healthy,24,0,0,carrot healthy
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,cauliflower black rot,24,0,0,cauliflower black rot
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,cauliflower boron deficiency,24,0,0,cauliflower boron deficiency
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,cauliflower cutworms,24,0,0,cauliflower cutworms
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,cauliflower downy mildew,24,0,0,cauliflower downy mildew
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,cauliflower healthy,24,0,0,cauliflower healthy
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,chickpea ascochyta blight,24,0,0,chickpea ascochyta blight; chickpea botrytis gray mold
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,chickpea botrytis gray mold,24,0,1,chickpea botrytis gray mold; chickpea dry root rot; chickpea fusarium wilt
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,chickpea dry root rot,24,0,0,chickpea dry root rot
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,chickpea fusarium wilt,24,0,0,chickpea fusarium wilt
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,chickpea healthy,24,0,0,chickpea healthy
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,chickpea nitrogen deficiency,24,0,0,chickpea nitrogen deficiency
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,chickpea thrips,24,0,0,chickpea thrips
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,chikoo cutworms,24,0,0,chikoo cutworms
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,chili bacterial leaf spot,24,0,0,chili bacterial leaf spot
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,chili mosaic virus,24,0,0,chili mosaic virus; chili whiteflies
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,chili thrips,24,0,0,chili thrips
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,chilli anthracnose,24,0,0,chilli anthracnose; chilli thrips
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,chilli healthy,24,0,0,chilli healthy
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,chilli leaf curl virus,24,0,1,chilli leaf curl virus; chilli mites; chilli thrips
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,chilli mites,24,0,0,chilli mites; chilli thrips
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,chilli nitrogen deficiency,24,0,0,chilli nitrogen deficiency
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,chilli thrips,24,0,1,chilli nitrogen deficiency; chilli thrips
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,citrus citrus canker,24,0,0,citrus citrus canker; citrus citrus psyllid
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,citrus citrus psyllid,24,0,0,citrus citrus psyllid
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,citrus healthy,24,0,0,citrus healthy
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,citrus leaf miner,24,0,0,citrus leaf miner
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,citrus scale insects,24,0,0,citrus scale insects
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,coriander healthy,0,0,1,coriander healthy
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,coriander powdery mildew,24,0,0,coriander powdery mildew
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,cotton aphids,24,0,0,cotton aphids
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,cotton bollworm,24,0,0,cotton bollworm
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,cotton jassids,24,0,0,cotton jassids
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,cowpea aphids,24,0,0,cowpea aphids
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,cowpea healthy,24,0,0,cowpea healthy
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,cowpea leaf hopper,24,0,0,cowpea leaf hopper
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,cowpea mosaic virus,24,0,0,cowpea mosaic virus
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,crossandra healthy,24,0,0,crossandra healthy
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,cucumber downy mildew,24,0,0,cucumber downy mildew
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,cucumber healthy,24,0,0,cucumber healthy
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,cucumber powdery mildew,24,0,0,cucumber mosaic virus; cucumber powdery mildew
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,cucumber squash bug,0,0,1,cucumber squash bug
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,curry leaf sooty mold,24,0,0,curry leaf scale insects; curry leaf sooty mold
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,custard apple powdery mildew,24,0,0,custard apple powdery mildew
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,fruit trees healthy,24,0,0,fruit trees healthy
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,garlic healthy,24,0,0,garlic healthy
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,garlic thrips,24,0,0,garlic thrips
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,gram powdery mildew,24,0,0,gram powdery mildew
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,gram scale insects,24,0,0,gram scale insects
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,gram whiteflies,24,0,0,gram whiteflies
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,green gram healthy,24,0,0,green gram healthy
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,groundnut aphids,24,0,0,groundnut aphids
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,groundnut collar rot,24,0,0,groundnut collar rot; groundnut leaf spot
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,groundnut healthy,24,0,0,groundnut healthy
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,groundnut leaf miner,24,0,0,groundnut leaf miner
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,groundnut leaf spot,24,0,0,groundnut aphids; groundnut leaf miner; groundnut leaf spot
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,guava anthracnose,24,0,0,guava anthracnose; guava fruit fly
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,guava bark eating caterpillar,24,0,0,guava bark eating caterpillar; guava potassium deficiency
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,guava fruit fly,24,0,0,guava fruit fly
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,guava healthy,24,0,1,guava healthy
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,guava mealybugs,24,0,0,guava mealybugs
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,guava phosphorus deficiency,24,0,0,guava phosphorus deficiency
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,guava rust,24,0,0,guava rust
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,gum healthy,24,0,0,gum healthy
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,jamun leaf spot,24,0,0,jamun aphids; jamun leaf spot
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,kidney bean aphids,24,0,0,kidney bean aphids
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,kidney bean cutworms,24,0,0,kidney bean bean beetle; kidney bean cutworms
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,kidney bean healthy,24,0,0,kidney bean healthy
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,lemon healthy,24,0,0,lemon healthy
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,lemon leaf miner,24,0,0,lemon leaf miner
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,lemon melanose,24,0,0,lemon leaf miner; lemon melanose
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,lemon scab,24,0,0,lemon citrus psyllid; lemon scab
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,lemongrass healthy,24,0,0,lemongrass healthy
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,maize banded leaf and sheath blight,24,0,0,maize banded leaf and sheath blight
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,maize downy mildew,24,0,0,maize downy mildew; maize fall armyworm
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,maize fall armyworm,24,0,2,maize fall armyworm; maize phosphorus deficiency; maize stem borer
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,maize healthy,24,0,1,maize healthy
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,maize nitrogen deficiency,24,0,0,maize nitrogen deficiency
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,maize stem borer,24,0,0,maize fall armyworm; maize stem borer
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,maize turcicum leaf blight,24,0,0,maize stem borer; maize turcicum leaf blight
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,mango anthracnose,24,0,0,mango anthracnose; mango boron deficiency; mango mango hopper
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,mango bacterial canker,24,0,0,mango bacterial canker; mango mango hopper; mango mealybugs
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,mango healthy,24,0,0,mango healthy
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,mango mango hopper,24,0,0,mango mango hopper
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,mango mealybugs,24,0,0,mango mealybugs
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,mango potassium deficiency,24,0,0,mango potassium deficiency
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,mango powdery mildew,24,0,1,mango mealybugs; mango powdery mildew
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,marigold healthy,24,0,0,marigold healthy
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,medicinal plants potassium deficiency,0,0,1,medicinal plants potassium deficiency
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,moong cercospora leaf spot,24,0,0,moong cercospora leaf spot
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,moringa aphids,24,0,0,moringa aphids
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,moringa healthy,24,0,0,moringa healthy
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,mustard alternaria blight,24,0,0,mustard alternaria blight
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,mustard aphids,24,0,0,mustard aphids; mustard nitrogen deficiency
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,mustard downy mildew,24,0,0,mustard downy mildew
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,mustard healthy,24,0,0,mustard healthy
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,mustard white rust,24,0,0,mustard white rust
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,okra thrips,24,0,0,okra thrips
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,onion downy mildew,24,0,0,onion downy mildew
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,onion healthy,24,0,0,onion healthy
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,onion purple blotch,24,0,0,onion onion maggot; onion purple blotch; onion stemphylium blight
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,onion thrips,24,0,0,onion thrips
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,paddy blast,24,0,0,paddy blast
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,paddy healthy,24,0,0,paddy healthy
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,paddy potassium deficiency,24,0,0,paddy potassium deficiency
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,paddy stem borer,24,0,0,paddy stem borer
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,papaya anthracnose,24,0,0,papaya anthracnose
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,papaya healthy,24,0,0,papaya healthy
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,papaya nitrogen deficiency,24,0,0,papaya nitrogen deficiency
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,papaya papaya mealybug,24,0,1,papaya papaya mealybug
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,papaya papaya ring spot virus,24,0,0,papaya fruit fly; papaya papaya mealybug; papaya papaya ring spot virus
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,papaya powdery mildew,24,0,0,papaya powdery mildew
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,pea healthy,24,0,0,pea healthy
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,pea powdery mildew,24,0,0,pea powdery mildew
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,pea rust,24,0,0,pea rust
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,pearl millet healthy,24,0,0,pearl millet healthy
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,peas healthy,24,0,0,peas healthy
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,pepper healthy,24,0,0,pepper healthy
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,pigeon pea phytophthora blight,24,0,0,pigeon pea phytophthora blight
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,pigeon pea pod borer,24,0,0,pigeon pea boron deficiency; pigeon pea pod borer
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,pomegranate healthy,24,0,0,pomegranate healthy
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,pomegranate scale insects,24,0,0,pomegranate scale insects
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,potato aphids,24,0,1,potato aphids; potato potassium deficiency
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,potato bacterial wilt,24,0,0,potato bacterial wilt; potato cutworms
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,potato calcium deficiency,24,0,0,potato calcium deficiency
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,potato common scab,24,0,0,potato aphids; potato common scab
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,potato cutworms,24,0,0,potato cutworms
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,potato early blight,24,0,0,potato early blight
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,potato healthy,24,0,1,potato healthy
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,potato late blight,24,0,0,potato aphids; potato late blight
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,potato magnesium deficiency,24,0,0,potato magnesium deficiency
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,potato phosphorus deficiency,24,0,0,potato phosphorus deficiency
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,potato potato tuber moth,24,0,0,potato cutworms; potato potato tuber moth
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,pumpkin anthracnose,24,0,0,pumpkin anthracnose
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,pumpkin aphids,24,0,0,pumpkin aphids
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,pumpkin cucumber beetle,24,0,0,pumpkin cucumber beetle
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,pumpkin healthy,24,0,0,pumpkin healthy
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,pumpkin mosaic virus,24,0,0,pumpkin mosaic virus
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,pumpkin nitrogen deficiency,24,0,0,pumpkin nitrogen deficiency
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,pumpkin powdery mildew,24,0,0,pumpkin mosaic virus; pumpkin powdery mildew
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,radish healthy,24,0,0,radish healthy
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,rahi healthy,24,0,0,rahi healthy
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,red gram healthy,24,0,0,red gram healthy
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,red gram powdery mildew,24,0,0,red gram powdery mildew
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,rice blast,24,0,0,rice blast; rice thrips
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,rice brown spot,24,0,0,rice brown spot
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,rice healthy,24,0,0,rice healthy
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,rice nitrogen deficiency,24,0,0,rice nitrogen deficiency
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,rice rice bug,24,0,0,rice rice bug
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,rice sheath blight,24,0,0,rice rice bug; rice sheath blight; rice thrips
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,rice stem borer,24,0,0,rice stem borer
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,ridge gourd aphids,24,0,0,ridge gourd aphids
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,ridge gourd downy mildew,24,0,0,ridge gourd downy mildew
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,ridge gourd mosaic virus,24,0,0,ridge gourd mosaic virus
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,ridge gourd powdery mildew,24,0,0,ridge gourd powdery mildew
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,ridge gourd red pumpkin beetle,24,0,0,ridge gourd red pumpkin beetle
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,rose healthy,24,0,0,rose healthy
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,rose powdery mildew,24,0,0,rose powdery mildew
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,rose thrips,24,0,0,rose spider mites; rose thrips
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,sorghum grain mold,24,0,0,sorghum grain mold; sorghum stem borer
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,soybean bacterial blight,24,0,0,soybean aphids; soybean bacterial blight
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,soybean girdle beetle,24,0,0,soybean girdle beetle
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,soybean healthy,24,0,0,soybean healthy
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,spinach aphids,24,0,0,spinach aphids
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,sponge gourd powdery mildew,24,0,0,sponge gourd powdery mildew
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,sponge gourd scale insects,24,0,0,sponge gourd scale insects
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,squash powdery mildew,24,0,0,squash powdery mildew
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,strawberry healthy,24,0,0,strawberry healthy
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,strawberry thrips,24,0,0,strawberry thrips
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,tobacco healthy,24,0,1,tobacco healthy
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,tobacco potassium deficiency,24,0,0,tobacco potassium deficiency
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,tobacco tobacco caterpillar,24,0,0,tobacco tobacco caterpillar
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,tobacco tobacco mosaic virus,24,0,0,tobacco tobacco mosaic virus; tobacco whiteflies
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,tomato bacterial wilt,24,0,0,tomato bacterial wilt; tomato whiteflies
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,tomato early blight,24,0,0,tomato early blight; tomato fruit borer; tomato thrips
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,tomato fruit borer,24,0,0,tomato fruit borer
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,tomato healthy,24,0,1,tomato healthy
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,tomato late blight,24,0,0,tomato late blight; tomato leaf miner
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,tomato leaf curl virus,24,0,0,tomato fruit borer; tomato leaf curl virus; tomato nitrogen deficiency; tomato thrips; tomato whiteflies
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,tomato leaf miner,24,0,0,tomato leaf miner
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,tomato nitrogen deficiency,24,0,0,tomato nitrogen deficiency
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,tomato potassium deficiency,0,0,1,tomato potassium deficiency
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,tomato whiteflies,24,0,0,tomato whiteflies
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,turmeric healthy,24,0,0,turmeric healthy
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,turmeric scale insects,24,0,0,turmeric scale insects
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,watermelon healthy,24,0,0,watermelon healthy
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,watermelon mosaic virus,24,0,0,watermelon mosaic virus; watermelon nitrogen deficiency
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,wheat armyworm,24,0,0,wheat armyworm
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,wheat healthy,24,0,0,wheat healthy
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,wheat nitrogen deficiency,24,0,0,wheat nitrogen deficiency
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,wheat phosphorus deficiency,24,0,0,wheat phosphorus deficiency
+digigreen_crop_disease:classification,classification,digigreen_crop_disease,wheat stripe rust,24,0,0,wheat stripe rust
+ip102:classification,classification,ip102,adristyrannus,128,1,0,images
+ip102:classification,classification,ip102,aleurocanthus spiniferus,128,3,1,images
+ip102:classification,classification,ip102,alfalfa plant bug,128,0,2,images
+ip102:classification,classification,ip102,alfalfa seed chalcid,128,0,1,images
+ip102:classification,classification,ip102,alfalfa weevil,128,2,0,images
+ip102:classification,classification,ip102,ampelophaga,128,3,0,images
+ip102:classification,classification,ip102,aphids,128,11,6,images
+ip102:classification,classification,ip102,aphis citricola vander goot,128,1,0,images
+ip102:classification,classification,ip102,apolygus lucorum,128,0,0,images
+ip102:classification,classification,ip102,army worm,128,3,3,images
+ip102:classification,classification,ip102,asiatic rice borer,128,1,0,images
+ip102:classification,classification,ip102,bactrocera tsuneonis,128,0,1,images
+ip102:classification,classification,ip102,beet army worm,128,3,4,images
+ip102:classification,classification,ip102,beet fly,128,0,0,images
+ip102:classification,classification,ip102,beet spot flies,128,1,0,images
+ip102:classification,classification,ip102,beet weevil,128,0,0,images
+ip102:classification,classification,ip102,bird cherry oataphid,128,4,3,images
+ip102:classification,classification,ip102,black cutworm,128,0,2,images
+ip102:classification,classification,ip102,blister beetle,128,4,4,images
+ip102:classification,classification,ip102,brevipoalpus lewisi mcgregor,128,0,0,images
+ip102:classification,classification,ip102,brown plant hopper,128,1,3,images
+ip102:classification,classification,ip102,cabbage army worm,128,1,0,images
+ip102:classification,classification,ip102,cerodonta denticornis,128,0,0,images
+ip102:classification,classification,ip102,ceroplastes rubens,128,0,0,images
+ip102:classification,classification,ip102,chlumetia transversa,128,0,2,images
+ip102:classification,classification,ip102,chrysomphalus aonidum,128,1,0,images
+ip102:classification,classification,ip102,cicadella viridis,128,1,1,images
+ip102:classification,classification,ip102,cicadellidae,128,13,9,images
+ip102:classification,classification,ip102,colomerus vitis,128,0,0,images
+ip102:classification,classification,ip102,corn borer,128,1,2,images
+ip102:classification,classification,ip102,dacus dorsalis hendel,128,2,1,images
+ip102:classification,classification,ip102,dasineura sp,128,1,1,images
+ip102:classification,classification,ip102,deporaus marginatus pascoe,128,0,0,images
+ip102:classification,classification,ip102,english grain aphid,128,0,1,images
+ip102:classification,classification,ip102,erythroneura apicalis,128,0,0,images
+ip102:classification,classification,ip102,flax budworm,128,4,1,images
+ip102:classification,classification,ip102,flea beetle,128,0,1,images
+ip102:classification,classification,ip102,grain spreader thrips,128,1,0,images
+ip102:classification,classification,ip102,green bug,128,1,2,images
+ip102:classification,classification,ip102,grub,128,3,2,images
+ip102:classification,classification,ip102,icerya purchasi maskell,128,2,1,images
+ip102:classification,classification,ip102,large cutworm,128,0,2,images
+ip102:classification,classification,ip102,lawana imitata melichar,128,0,0,images
+ip102:classification,classification,ip102,legume blister beetle,128,1,0,images
+ip102:classification,classification,ip102,limacodidae,128,3,1,images
+ip102:classification,classification,ip102,locustoidea,128,2,2,images
+ip102:classification,classification,ip102,longlegged spider mite,128,0,2,images
+ip102:classification,classification,ip102,lycorma delicatula,128,12,10,images
+ip102:classification,classification,ip102,lytta polita,128,1,1,images
+ip102:classification,classification,ip102,mango flat beak leafhopper,128,0,0,images
+ip102:classification,classification,ip102,meadow moth,128,0,0,images
+ip102:classification,classification,ip102,miridae,128,11,7,images
+ip102:classification,classification,ip102,mole cricket,128,2,2,images
+ip102:classification,classification,ip102,nipaecoccus vastalor,128,0,0,images
+ip102:classification,classification,ip102,odontothrips loti,128,0,1,images
+ip102:classification,classification,ip102,oides decempunctata,128,0,0,images
+ip102:classification,classification,ip102,paddy stem maggot,128,0,0,images
+ip102:classification,classification,ip102,panonchus citri mcgregor,128,0,2,images
+ip102:classification,classification,ip102,papilio xuthus,128,1,0,images
+ip102:classification,classification,ip102,parathrene regalis,128,1,0,images
+ip102:classification,classification,ip102,parlatoria zizyphus lucus,128,1,0,images
+ip102:classification,classification,ip102,peach borer,128,1,0,images
+ip102:classification,classification,ip102,penthaleus major,128,1,0,images
+ip102:classification,classification,ip102,phyllocnistis citrella stainton,128,2,1,images
+ip102:classification,classification,ip102,phyllocoptes oleiverus ashmead,128,1,0,images
+ip102:classification,classification,ip102,pieris canidia,128,0,0,images
+ip102:classification,classification,ip102,polyphagotars onemus latus,128,1,1,images
+ip102:classification,classification,ip102,potosiabre vitarsis,128,2,1,images
+ip102:classification,classification,ip102,prodenia litura,128,3,0,images
+ip102:classification,classification,ip102,pseudococcus comstocki kuwana,128,0,2,images
+ip102:classification,classification,ip102,red spider,128,1,0,images
+ip102:classification,classification,ip102,rhytidodera bowrinii white,128,1,2,images
+ip102:classification,classification,ip102,rice gall midge,128,1,3,images
+ip102:classification,classification,ip102,rice leaf caterpillar,128,0,1,images
+ip102:classification,classification,ip102,rice leaf roller,128,5,1,images
+ip102:classification,classification,ip102,rice leafhopper,128,1,0,images
+ip102:classification,classification,ip102,rice shell pest,128,0,2,images
+ip102:classification,classification,ip102,rice stemfly,128,2,1,images
+ip102:classification,classification,ip102,rice water weevil,128,0,1,images
+ip102:classification,classification,ip102,salurnis marginella guerr,128,1,0,images
+ip102:classification,classification,ip102,scirtothrips dorsalis hood,128,4,0,images
+ip102:classification,classification,ip102,sericaorient alismots chulsky,128,0,0,images
+ip102:classification,classification,ip102,small brown plant hopper,128,0,0,images
+ip102:classification,classification,ip102,sternochetus frigidus,128,1,0,images
+ip102:classification,classification,ip102,tarnished plant bug,128,3,2,images
+ip102:classification,classification,ip102,tetradacus c bactrocera minax,128,0,1,images
+ip102:classification,classification,ip102,therioaphis maculata buckton,128,0,2,images
+ip102:classification,classification,ip102,thrips,128,1,4,images
+ip102:classification,classification,ip102,toxoptera aurantii,128,0,0,images
+ip102:classification,classification,ip102,toxoptera citricidus,128,0,0,images
+ip102:classification,classification,ip102,trialeurodes vaporariorum,128,3,0,images
+ip102:classification,classification,ip102,unaspis yanonensis,128,0,0,images
+ip102:classification,classification,ip102,viteus vitifoliae,128,1,1,images
+ip102:classification,classification,ip102,wheat blossom midge,128,1,2,images
+ip102:classification,classification,ip102,wheat phloeothrips,128,0,1,images
+ip102:classification,classification,ip102,wheat sawfly,128,1,2,images
+ip102:classification,classification,ip102,white backed plant hopper,128,0,1,images
+ip102:classification,classification,ip102,white margined moth,128,0,2,images
+ip102:classification,classification,ip102,wireworm,128,3,1,images
+ip102:classification,classification,ip102,xylotrechus,128,4,2,images
+ip102:classification,classification,ip102,yellow cutworm,128,1,1,images
+ip102:classification,classification,ip102,yellow rice borer,128,2,1,images
+plantdoc:classification,classification,plantdoc,apple leaf,512,0,0,Apple leaf
+plantdoc:classification,classification,plantdoc,apple rust leaf,512,0,0,Apple rust leaf
+plantdoc:classification,classification,plantdoc,apple scab leaf,512,0,1,Apple Scab Leaf
+plantdoc:classification,classification,plantdoc,bell pepper leaf,512,0,0,Bell_pepper leaf
+plantdoc:classification,classification,plantdoc,bell pepper leaf spot,512,0,0,Bell_pepper leaf spot
+plantdoc:classification,classification,plantdoc,blueberry leaf,512,0,1,Blueberry leaf
+plantdoc:classification,classification,plantdoc,cherry leaf,512,0,0,Cherry leaf
+plantdoc:classification,classification,plantdoc,corn gray leaf spot,512,0,1,Corn Gray leaf spot
+plantdoc:classification,classification,plantdoc,corn leaf blight,512,0,2,Corn leaf blight
+plantdoc:classification,classification,plantdoc,corn rust leaf,512,0,0,Corn rust leaf
+plantdoc:classification,classification,plantdoc,grape leaf,512,0,0,grape leaf
+plantdoc:classification,classification,plantdoc,grape leaf black rot,512,0,1,grape leaf black rot
+plantdoc:classification,classification,plantdoc,peach leaf,512,0,1,Peach leaf
+plantdoc:classification,classification,plantdoc,potato leaf early blight,512,0,2,Potato leaf; Potato leaf early blight
+plantdoc:classification,classification,plantdoc,potato leaf late blight,512,0,1,Potato leaf early blight; Potato leaf late blight
+plantdoc:classification,classification,plantdoc,raspberry leaf,512,0,0,Raspberry leaf
+plantdoc:classification,classification,plantdoc,soyabean leaf,512,0,0,Soyabean leaf
+plantdoc:classification,classification,plantdoc,squash powdery mildew leaf,512,0,2,Squash Powdery mildew leaf
+plantdoc:classification,classification,plantdoc,strawberry leaf,512,0,0,Strawberry leaf
+plantdoc:classification,classification,plantdoc,tomato early blight leaf,512,0,0,Potato leaf early blight; Tomato Early blight leaf; Tomato leaf
+plantdoc:classification,classification,plantdoc,tomato leaf,512,0,0,Tomato leaf; Tomato leaf bacterial spot; Tomato leaf late blight
+plantdoc:classification,classification,plantdoc,tomato leaf bacterial spot,512,0,3,Tomato leaf bacterial spot
+plantdoc:classification,classification,plantdoc,tomato leaf late blight,512,0,1,Tomato leaf late blight
+plantdoc:classification,classification,plantdoc,tomato leaf mosaic virus,512,0,0,Tomato leaf mosaic virus
+plantdoc:classification,classification,plantdoc,tomato leaf yellow virus,512,0,0,Tomato leaf yellow virus
+plantdoc:classification,classification,plantdoc,tomato mold leaf,512,0,3,Tomato mold leaf
+plantdoc:classification,classification,plantdoc,tomato septoria leaf spot,512,0,2,Tomato Septoria leaf spot
+plantdoc:classification,classification,plantdoc,tomato two spotted spider mites leaf,512,0,0,Tomato Early blight leaf; Tomato leaf bacterial spot; Tomato two spotted spider mites leaf
+plantvillage:classification,classification,plantvillage,apple apple scab,512,0,2,Apple__Apple_scab
+plantvillage:classification,classification,plantvillage,apple black rot,512,0,1,Apple__Black_rot
+plantvillage:classification,classification,plantvillage,apple cedar apple rust,512,0,0,Apple__Cedar_apple_rust
+plantvillage:classification,classification,plantvillage,apple healthy,512,0,4,Apple___healthy
+plantvillage:classification,classification,plantvillage,blueberry healthy,512,0,2,Blueberry___healthy
+plantvillage:classification,classification,plantvillage,cherry including sour healthy,512,0,3,Cherry_(including_sour)___healthy
+plantvillage:classification,classification,plantvillage,cherry including sour powdery mildew,512,0,0,Cherry_(including_sour)___Powdery_mildew
+plantvillage:classification,classification,plantvillage,corn maize cercospora leaf spot gray leaf spot,512,0,3,Corn_(maize)___Cercospora_leaf_spot Gray_leaf_spot
+plantvillage:classification,classification,plantvillage,corn maize common rust,512,0,3,Corn_(maize)___Common_rust_
+plantvillage:classification,classification,plantvillage,corn maize healthy,512,0,2,Corn_(maize)___healthy
+plantvillage:classification,classification,plantvillage,corn maize northern leaf blight,512,0,3,Corn_(maize)___Northern_Leaf_Blight
+plantvillage:classification,classification,plantvillage,grape black rot,512,0,0,Grape___Black_rot
+plantvillage:classification,classification,plantvillage,grape esca black measles,512,0,3,Grape___Esca_(Black_Measles)
+plantvillage:classification,classification,plantvillage,grape healthy,512,0,0,Grape___healthy
+plantvillage:classification,classification,plantvillage,grape leaf blight isariopsis leaf spot,512,0,1,Grape___Leaf_blight_(Isariopsis_Leaf_Spot)
+plantvillage:classification,classification,plantvillage,orange haunglongbing citrus greening,512,0,12,Orange___Haunglongbing_(Citrus_greening)
+plantvillage:classification,classification,plantvillage,peach bacterial spot,512,0,4,Peach___Bacterial_spot
+plantvillage:classification,classification,plantvillage,peach healthy,512,0,0,Peach___healthy
+plantvillage:classification,classification,plantvillage,pepper bell bacterial spot,512,0,2,"Pepper,_bell___Bacterial_spot"
+plantvillage:classification,classification,plantvillage,pepper bell healthy,512,0,1,"Pepper,_bell___healthy"
+plantvillage:classification,classification,plantvillage,potato early blight,512,0,2,Potato___Early_blight
+plantvillage:classification,classification,plantvillage,potato healthy,512,0,0,Potato___healthy
+plantvillage:classification,classification,plantvillage,potato late blight,512,0,4,Potato___Late_blight
+plantvillage:classification,classification,plantvillage,raspberry healthy,512,0,1,Raspberry___healthy
+plantvillage:classification,classification,plantvillage,soybean healthy,512,0,12,Soybean___healthy
+plantvillage:classification,classification,plantvillage,squash powdery mildew,512,0,2,Squash___Powdery_mildew
+plantvillage:classification,classification,plantvillage,strawberry healthy,512,0,1,Strawberry___healthy
+plantvillage:classification,classification,plantvillage,strawberry leaf scorch,512,0,1,Strawberry___Leaf_scorch
+plantvillage:classification,classification,plantvillage,tomato bacterial spot,512,0,4,Tomato___Bacterial_spot
+plantvillage:classification,classification,plantvillage,tomato early blight,512,0,4,Tomato___Early_blight
+plantvillage:classification,classification,plantvillage,tomato healthy,512,0,4,Tomato___healthy
+plantvillage:classification,classification,plantvillage,tomato late blight,512,0,4,Tomato___Late_blight
+plantvillage:classification,classification,plantvillage,tomato leaf mold,512,0,3,Tomato___Leaf_Mold
+plantvillage:classification,classification,plantvillage,tomato septoria leaf spot,512,0,1,Tomato___Septoria_leaf_spot
+plantvillage:classification,classification,plantvillage,tomato spider mites two spotted spider mite,512,0,2,Tomato___Spider_mites Two-spotted_spider_mite
+plantvillage:classification,classification,plantvillage,tomato target spot,512,0,2,Tomato___Target_Spot
+plantvillage:classification,classification,plantvillage,tomato tomato mosaic virus,512,0,0,Tomato___Tomato_mosaic_virus
+plantvillage:classification,classification,plantvillage,tomato tomato yellow leaf curl virus,512,0,11,Tomato___Tomato_Yellow_Leaf_Curl_Virus
+rice_disease:classification,classification,rice_disease,bacterial leaf blight,384,7,7,Bacterial leaf blight
+rice_disease:classification,classification,rice_disease,brown plant hopper,384,4,1,Brown Plant Hopper
+rice_disease:classification,classification,rice_disease,brown spot,384,8,12,Brown spot
+rice_disease:classification,classification,rice_disease,chilo suppressalis,384,10,3,Chilo suppressalis
+rice_disease:classification,classification,rice_disease,false smut,384,1,0,False Smut
+rice_disease:classification,classification,rice_disease,healthy,384,9,6,Healthy
+rice_disease:classification,classification,rice_disease,hispa,384,11,4,Hispa
+rice_disease:classification,classification,rice_disease,leaf scald,384,13,10,Leaf scald
+rice_disease:classification,classification,rice_disease,narrow brown spot,384,5,8,Narrow Brown Spot
+rice_disease:classification,classification,rice_disease,nitrogen deficiency,384,2,3,nitrogen deficiency
+rice_disease:classification,classification,rice_disease,phosphorus deficiency,384,1,0,phosphorus deficiency
+rice_disease:classification,classification,rice_disease,potassium deficiency,384,4,0,potassium deficiency
+rice_disease:classification,classification,rice_disease,rice bakanae disease,384,0,0,Rice bakanae disease
+rice_disease:classification,classification,rice_disease,rice gall midge,384,2,3,Rice Gall Midge
+rice_disease:classification,classification,rice_disease,rice leaf and neck blast,384,6,2,Rice leaf and neck blast
+rice_disease:classification,classification,rice_disease,rice leaf folder,384,1,2,Rice leaf folder
+rice_disease:classification,classification,rice_disease,rice skipper,384,3,4,Rice skipper
+rice_disease:classification,classification,rice_disease,rice yellow stem borer,384,6,3,Rice yellow stem borer
+rice_disease:classification,classification,rice_disease,sheath blight,384,10,5,Sheath Blight
+rice_disease:classification,classification,rice_disease,thrips,384,4,2,Thrips
+rice_disease:classification,classification,rice_disease,tungro virus,384,12,7,Tungro virus
+tea_sickness:classification,classification,tea_sickness,algal leaf,64,2,2,algal_leaf
+tea_sickness:classification,classification,tea_sickness,anthracnose,64,2,0,Anthracnose
+tea_sickness:classification,classification,tea_sickness,bird eye spot,64,1,2,bird_eye_spot
+tea_sickness:classification,classification,tea_sickness,brown blight,64,4,5,brown_blight
+tea_sickness:classification,classification,tea_sickness,gray light,64,3,1,gray_light
+tea_sickness:classification,classification,tea_sickness,healthy,64,1,3,healthy
+tea_sickness:classification,classification,tea_sickness,red leaf spot,64,2,2,red_leaf_spot
+tea_sickness:classification,classification,tea_sickness,white spot,64,2,2,white_spot

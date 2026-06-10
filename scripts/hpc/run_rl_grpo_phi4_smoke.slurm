@@ -13,7 +13,8 @@
 
 set -euo pipefail
 
-cd /blue/hmedeiros/qinruoyao/agvlm
+REPO_ROOT="${AGRI_VLM_REPO_ROOT:-${SLURM_SUBMIT_DIR:-$PWD}}"
+cd "$REPO_ROOT"
 
 export MODEL_CONFIG="${MODEL_CONFIG:-configs/model/phi4_reasoning_vision_15b_turin_24g.yaml}"
 export TRAIN_CONFIG="${TRAIN_CONFIG:-configs/train/rl_grpo_phi4_smoke.yaml}"

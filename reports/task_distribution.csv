@@ -1,0 +1,13 @@
+task_name,task_type,num_train,num_val,num_test,num_classes,min_class_count,max_class_count,avg_input_words,avg_output_words,output_format,major_risk
+agbase:consultation,consultation,20413,0,0,,,,12,23.88,structured_sections=20413,needs_generation_or_qualitative_metrics
+agrillava:consultation,consultation,741,0,0,,,,10.76,1.92,structured_sections=741,needs_generation_or_qualitative_metrics
+banana_disease:classification,classification,448,0,17,7,64,64,10,2.29,bare_canonical_label_manifest=465,none_observed
+digigreen_crop_disease:classification,classification,5760,0,18,240,24,24,10,2.79,bare_canonical_label_manifest=5778,large_label_space; eval_labels_missing_from_train=4
+ip102:classification,classification,13056,152,123,102,128,128,10,2.35,bare_canonical_label_manifest=13331,large_label_space
+mirage:clarify_or_respond,clarify_or_respond,6482,0,32,,,,140.13,80.12,decision_plus_answer_or_question=6514,needs_generation_or_qualitative_metrics
+mirage:consultation,consultation,3846,0,0,,,,67.62,173.57,structured_sections=3846,needs_generation_or_qualitative_metrics
+plantdoc:classification,classification,14336,0,21,28,512,512,10,3.21,bare_canonical_label_manifest=14357,large_label_space
+plantvillage:classification,classification,19456,0,104,38,512,512,10,3.47,bare_canonical_label_manifest=19560,large_label_space
+plantvillage_vqa:vqa,vqa,50000,0,322,,,,9.09,5.14,short_answer=50322,needs_generation_or_qualitative_metrics
+rice_disease:classification,classification,8064,119,82,21,384,384,10,2.38,bare_canonical_label_manifest=8265,large_label_space
+tea_sickness:classification,classification,512,17,17,8,64,64,10,2.0,bare_canonical_label_manifest=546,none_observed

@@ -1,8 +1,11 @@
 from collections import Counter
 from pathlib import Path
 
+import pytest
+
 from agri_vlm.data.builders import (
     build_balanced_sft_v2_manifest,
+    build_classification_probe_manifests,
     build_closed_label_eval_manifest,
     build_closed_label_sft_manifest,
     build_eval_manifests,
@@ -317,3 +320,163 @@ def test_build_closed_label_eval_manifest_repairs_labels_and_adds_source_label_s
     assert repaired.metadata["classification_label_space_size"] == 2
     assert summary["repaired_rows_by_source"]["ip102"] == 1
     assert summary_path.exists()
+
+
+def test_build_closed_label_eval_manifest_repairs_gray_light_alias(tmp_path: Path) -> None:
+    eval_path = tmp_path / "eval.jsonl"
+    label_space_path = tmp_path / "label_space.jsonl"
+    output_path = tmp_path / "eval_closed.jsonl"
+
+    eval_row = sample_row("eval-tea", "tea_sickness", "classification", "validation")
+    eval_row["target"]["canonical_label"] = "gray light"
+    eval_row["target"]["answer_text"] = "gray light"
+    eval_row["verifier"]["accepted_labels"] = ["gray light"]
+    label_row = sample_row("train-tea", "tea_sickness", "classification", "train")
+    label_row["target"]["canonical_label"] = "gray light"
+    label_row["target"]["answer_text"] = "gray light"
+    label_row["verifier"]["accepted_labels"] = ["gray light"]
+    write_manifest(eval_path, [eval_row])
+    write_manifest(label_space_path, [label_row])
+
+    build_closed_label_eval_manifest(
+        input_manifest_path=eval_path,
+        label_space_manifest_path=label_space_path,
+        output_manifest_path=output_path,
+    )
+
+    repaired = read_manifest(output_path)[0]
+    assert repaired.target.canonical_label == "gray blight"
+    assert repaired.metadata["classification_label_space"] == ["gray blight"]
+    assert "gray light" in repaired.verifier.accepted_labels
+
+
+def test_build_closed_label_eval_manifest_fails_when_eval_label_missing_from_space(tmp_path: Path) -> None:
+    eval_path = tmp_path / "eval.jsonl"
+    label_space_path = tmp_path / "label_space.jsonl"
+    output_path = tmp_path / "eval_closed.jsonl"
+
+    eval_row = sample_row("eval-a", "digigreen_crop_disease", "classification", "validation")
+    eval_row["target"]["canonical_label"] = "coriander healthy"
+    eval_row["target"]["answer_text"] = "coriander healthy"
+    eval_row["verifier"]["accepted_labels"] = ["coriander healthy"]
+    label_row = sample_row("train-a", "digigreen_crop_disease", "classification", "train")
+    label_row["target"]["canonical_label"] = "maize healthy"
+    label_row["target"]["answer_text"] = "maize healthy"
+    label_row["verifier"]["accepted_labels"] = ["maize healthy"]
+    write_manifest(eval_path, [eval_row])
+    write_manifest(label_space_path, [label_row])
+
+    with pytest.raises(ValueError, match="missing from their source label spaces"):
+        build_closed_label_eval_manifest(
+            input_manifest_path=eval_path,
+            label_space_manifest_path=label_space_path,
+            output_manifest_path=output_path,
+        )
+
+
+def test_build_classification_probe_manifests_selects_shared_labels(tmp_path: Path) -> None:
+    train_path = tmp_path / "train.jsonl"
+    eval_path = tmp_path / "eval.jsonl"
+    train_output_path = tmp_path / "probe_train.jsonl"
+    eval_output_path = tmp_path / "probe_eval.jsonl"
+    summary_path = tmp_path / "probe_summary.json"
+
+    train_rows = []
+    eval_rows = []
+    for label in ["apple scab", "late blight"]:
+        for index in range(2):
+            row = sample_row("train-%s-%s" % (label.replace(" ", "-"), index), "plantdoc", "classification", "train")
+            row["target"]["canonical_label"] = label
+            row["target"]["answer_text"] = label
+            row["verifier"]["accepted_labels"] = [label]
+            train_rows.append(row)
+        eval_row = sample_row("eval-%s" % label.replace(" ", "-"), "plantdoc", "classification", "validation")
+        eval_row["target"]["canonical_label"] = label
+        eval_row["target"]["answer_text"] = label
+        eval_row["verifier"]["accepted_labels"] = [label]
+        eval_rows.append(eval_row)
+    missing_eval = sample_row("eval-only", "plantdoc", "classification", "validation")
+    missing_eval["target"]["canonical_label"] = "powdery mildew"
+    missing_eval["target"]["answer_text"] = "powdery mildew"
+    missing_eval["verifier"]["accepted_labels"] = ["powdery mildew"]
+    eval_rows.append(missing_eval)
+    write_manifest(train_path, train_rows)
+    write_manifest(eval_path, eval_rows)
+
+    summary = build_classification_probe_manifests(
+        train_source_manifest_path=train_path,
+        eval_source_manifest_path=eval_path,
+        train_output_path=train_output_path,
+        eval_output_path=eval_output_path,
+        summary_output_path=summary_path,
+        train_per_label=3,
+        eval_per_label=1,
+        max_labels_per_source=2,
+        seed=31,
+        sources=["plantdoc"],
+    )
+
+    train_output_rows = read_manifest(train_output_path)
+    eval_output_rows = read_manifest(eval_output_path)
+    assert Counter(row.target.canonical_label for row in train_output_rows) == {
+        "apple scab": 3,
+        "late blight": 3,
+    }
+    assert Counter(row.target.canonical_label for row in eval_output_rows) == {
+        "apple scab": 1,
+        "late blight": 1,
+    }
+    for row in train_output_rows + eval_output_rows:
+        assert row.metadata["classification_probe"] is True
+        assert row.metadata["classification_label_space"] == ["apple scab", "late blight"]
+    assert summary["eligible_label_count_by_source"]["plantdoc"] == 2
+    assert summary_path.exists()
+
+
+def test_build_classification_probe_manifests_can_emit_multiple_choice_options(tmp_path: Path) -> None:
+    train_path = tmp_path / "train.jsonl"
+    eval_path = tmp_path / "eval.jsonl"
+    train_output_path = tmp_path / "probe_mc_train.jsonl"
+    eval_output_path = tmp_path / "probe_mc_eval.jsonl"
+
+    train_rows = []
+    eval_rows = []
+    for label in ["apple scab", "late blight"]:
+        for index in range(2):
+            row = sample_row("train-%s-%s" % (label.replace(" ", "-"), index), "plantdoc", "classification", "train")
+            row["target"]["canonical_label"] = label
+            row["target"]["answer_text"] = label
+            row["verifier"]["accepted_labels"] = [label]
+            train_rows.append(row)
+        eval_row = sample_row("eval-%s" % label.replace(" ", "-"), "plantdoc", "classification", "validation")
+        eval_row["target"]["canonical_label"] = label
+        eval_row["target"]["answer_text"] = label
+        eval_row["verifier"]["accepted_labels"] = [label]
+        eval_rows.append(eval_row)
+    write_manifest(train_path, train_rows)
+    write_manifest(eval_path, eval_rows)
+
+    summary = build_classification_probe_manifests(
+        train_source_manifest_path=train_path,
+        eval_source_manifest_path=eval_path,
+        train_output_path=train_output_path,
+        eval_output_path=eval_output_path,
+        train_per_label=1,
+        eval_per_label=1,
+        max_labels_per_source=2,
+        seed=41,
+        sources=["plantdoc"],
+        choice_format="multiple_choice",
+    )
+
+    output_rows = read_manifest(train_output_path) + read_manifest(eval_output_path)
+    assert summary["choice_format"] == "multiple_choice"
+    for row in output_rows:
+        assert row.metadata["classification_format"] == "multiple_choice"
+        assert row.metadata["classification_choice_count"] == 2
+        options = row.metadata["classification_choice_options"]
+        assert {option["letter"] for option in options} == {"A", "B"}
+        assert {option["label"] for option in options} == {"apple scab", "late blight"}
+        answer = row.metadata["classification_choice_answer"]
+        assert answer in options
+        assert answer["label"] == row.target.canonical_label

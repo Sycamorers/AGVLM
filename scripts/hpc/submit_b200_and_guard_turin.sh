@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-REPO_ROOT="/blue/hmedeiros/qinruoyao/agvlm"
+REPO_ROOT="${AGRI_VLM_REPO_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)}"
 B200_SCRIPT="scripts/hpc/run_sft_b200_4gpu_phi4_reasoning_vision_15b_full_max3.slurm"
 GUARD_SCRIPT="scripts/hpc/guard_cancel_turin_after_b200_ready.slurm"
 B200_RUN_DIR="outputs/sft/phi4-reasoning-vision-15b-full-max3-b200-4gpu"

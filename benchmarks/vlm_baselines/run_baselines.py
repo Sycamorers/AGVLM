@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 from pathlib import Path
 import sys
 import time
@@ -52,11 +53,22 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--split-dir", default=str(BENCHMARK_ROOT / "splits"))
     parser.add_argument("--max-samples", type=int, default=0)
     parser.add_argument("--smoke-test", action="store_true")
-    parser.add_argument("--quantization", choices=["none", "4bit"], default="none")
+    parser.add_argument(
+        "--quantization",
+        choices=["none", "4bit"],
+        default=None,
+        help="Optional override. Defaults to the selected model config quantization, or none when unset.",
+    )
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--device", default="cuda:0")
     parser.add_argument("--attn-implementation", default=None)
     parser.add_argument("--disable-oom-fallback", action="store_true")
+    parser.add_argument(
+        "--classification-decode-mode",
+        choices=["free", "constrained"],
+        default=os.environ.get("AGRI_VLM_CLASSIFICATION_DECODE_MODE", "free"),
+        help="Use constrained closed-label decoding for classification rows. Default keeps free generation.",
+    )
     parser.add_argument("--dry-run", action="store_true", help="Validate config and samples without loading a model.")
     parser.add_argument("--skip-model-load", action="store_true", help="Alias for --dry-run.")
     parser.add_argument("--allow-fallback-split", action="store_true")
@@ -72,6 +84,18 @@ def _manifest_path(args: argparse.Namespace) -> Path:
     if args.manifest_path:
         return Path(args.manifest_path)
     return Path(args.split_dir) / ("%s_%s_manifest.jsonl" % (args.phase, args.split))
+
+
+def _resolved_quantization(args: argparse.Namespace, model_entry: dict[str, Any]) -> str:
+    value = getattr(args, "quantization", None)
+    if value is None:
+        value = model_entry.get("quantization")
+    if value is None or value == "":
+        value = "none"
+    value = str(value).strip().lower()
+    if value not in {"none", "4bit"}:
+        raise ValueError("Unsupported quantization value %r; expected one of: none, 4bit" % value)
+    return value
 
 
 def _ground_truth_for_metrics(sample: BenchmarkSample) -> str:
@@ -108,6 +132,10 @@ def _generation_config(args: argparse.Namespace, sample: BenchmarkSample) -> dic
     }
     if args.min_new_tokens:
         config["min_new_tokens"] = args.min_new_tokens
+    classification_decode_mode = str(getattr(args, "classification_decode_mode", "free") or "free").strip().lower()
+    is_classification = sample.task_type in {"classification", "label_diagnosis"} or sample.verifier_mode == "label"
+    if classification_decode_mode != "free" and is_classification:
+        config["classification_decode_mode"] = classification_decode_mode
     return config
 
 
@@ -230,6 +258,9 @@ def _prediction_record(
             "error_message": None,
         }
     )
+    for optional_key in ("classification_decode_mode", "constrained_label_space_size"):
+        if result.get(optional_key) is not None:
+            record[optional_key] = result[optional_key]
     return record
 
 
@@ -307,13 +338,20 @@ def _run_once(
         adapter.unload_model()
 
 
-def _dry_run_payload(args: argparse.Namespace, model_entry: dict[str, Any], samples: list[BenchmarkSample]) -> dict[str, Any]:
+def _dry_run_payload(
+    args: argparse.Namespace,
+    model_entry: dict[str, Any],
+    samples: list[BenchmarkSample],
+    *,
+    quantization: str,
+) -> dict[str, Any]:
     return {
         "dry_run": True,
         "phase": _phase_name(args.phase),
         "split": args.split,
         "manifest_path": str(_manifest_path(args)),
         "num_selected_samples": len(samples),
+        "quantization": quantization,
         "model_key": model_entry.get("model_key"),
         "model_name": model_entry.get("model_name"),
         "checkpoint_type": model_entry.get("checkpoint_type"),
@@ -376,8 +414,10 @@ def main() -> int:
     if not samples:
         raise ValueError("No samples selected from %s" % manifest_path)
 
+    quantization = _resolved_quantization(args, model_entry)
+    quantization_overridden = args.quantization is not None
     if args.dry_run:
-        payload = _dry_run_payload(args, model_entry, samples)
+        payload = _dry_run_payload(args, model_entry, samples, quantization=quantization)
         print(json.dumps(payload, indent=2, sort_keys=True))
         return 0
 
@@ -390,7 +430,6 @@ def main() -> int:
     predictions_path = predictions_dir / ("%s.jsonl" % slug)
     metadata_path = metadata_dir / ("%s_run.json" % slug)
 
-    quantization = args.quantization
     fallback_reason = None
     oom_fallback_used = False
     try:
@@ -405,7 +444,7 @@ def main() -> int:
     except RestartWithQuantization as exc:
         spec = MODEL_SPECS.get(str(model_entry.get("model_name") or ""))
         fallback = spec.fallback_quantization if spec is not None else "4bit"
-        if fallback != "4bit" or args.quantization != "none" or args.disable_oom_fallback:
+        if fallback != "4bit" or quantization_overridden or args.disable_oom_fallback:
             raise
         fallback_reason = str(exc)
         oom_fallback_used = True
@@ -434,6 +473,7 @@ def main() -> int:
     build_summary_table(metrics_dir, summary_path)
     metadata = {
         "args": vars(args),
+        "resolved_quantization": quantization,
         "model_entry": model_entry,
         "split_manifest": str(manifest_path),
         "num_samples": len(samples),

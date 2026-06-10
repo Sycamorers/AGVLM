@@ -1,0 +1,7 @@
+manifest_path: data/manifests/full/sft_classification_only_stage7_label_only_train.jsonl
+json_output_path: reports/sft_stage7_label_only/sft_classification_only_label_only_format_audit.json
+markdown_output_path: reports/sft_stage7_label_only/sft_classification_only_label_only_format_audit.md
+prompt_format: classification_label_only
+target_format: classification_label_only
+samples_per_task: 32
+seed: 57

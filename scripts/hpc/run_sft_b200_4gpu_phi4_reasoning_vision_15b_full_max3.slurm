@@ -4,15 +4,16 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --gpus=4
-#SBATCH --cpus-per-task=56
-#SBATCH --mem=800G
+#SBATCH --cpus-per-task=32
+#SBATCH --mem=256G
 #SBATCH --time=3-00:00:00
 #SBATCH --output=logs/slurm/%x-%j.out
 #SBATCH --error=logs/slurm/%x-%j.err
 
 set -euo pipefail
 
-cd /blue/hmedeiros/qinruoyao/agvlm
+REPO_ROOT="${AGRI_VLM_REPO_ROOT:-${SLURM_SUBMIT_DIR:-$PWD}}"
+cd "$REPO_ROOT"
 
 module load conda
 module load cuda/12.9.1
@@ -28,7 +29,7 @@ disable_core_dumps
 export AGRI_VLM_DATA_ROOT="$PWD/data"
 export HF_HOME="$PWD/.cache/huggingface"
 export HF_TOKEN_PATH="${HF_TOKEN_PATH:-$HOME/.cache/huggingface/token}"
-export HUGGINGFACE_HUB_CACHE="$HF_HOME/transformers"
+export HUGGINGFACE_HUB_CACHE="${HUGGINGFACE_HUB_CACHE:-$HF_HOME/hub}"
 export HF_XET_CACHE="$HF_HOME/xet"
 export TRANSFORMERS_CACHE="$HUGGINGFACE_HUB_CACHE"
 export TMPDIR="$PWD/.tmp"
@@ -59,12 +60,13 @@ export MASTER_ADDR="$(scontrol show hostnames "$SLURM_JOB_NODELIST" | head -n 1)
 export MASTER_PORT="${MASTER_PORT:-$((28600 + SLURM_JOB_ID % 1000))}"
 
 DATA_CONFIG="${DATA_CONFIG:-configs/data/sft_train_eval_phi4_max3.yaml}"
+EXTRA_DATA_CONFIGS="${EXTRA_DATA_CONFIGS:-}"
 MODEL_CONFIG="${MODEL_CONFIG:-configs/model/phi4_reasoning_vision_15b_b200.yaml}"
 PREFLIGHT_CONFIG="${PREFLIGHT_CONFIG:-configs/train/sft_phi4_reasoning_vision_15b_b200_4gpu_full_max3_preflight.yaml}"
 TRAIN_CONFIG="${TRAIN_CONFIG:-configs/train/sft_phi4_reasoning_vision_15b_b200_4gpu_full_max3.yaml}"
 TENSORBOARD_PORT="${TENSORBOARD_PORT:-6008}"
 B200_GPUS_PER_NODE="${B200_GPUS_PER_NODE:-4}"
-export DATA_CONFIG MODEL_CONFIG PREFLIGHT_CONFIG TRAIN_CONFIG TENSORBOARD_PORT B200_GPUS_PER_NODE
+export DATA_CONFIG EXTRA_DATA_CONFIGS MODEL_CONFIG PREFLIGHT_CONFIG TRAIN_CONFIG TENSORBOARD_PORT B200_GPUS_PER_NODE
 
 TENSORBOARD_PID=""
 
@@ -106,8 +108,12 @@ import yaml
 payload = yaml.safe_load(Path(sys.argv[1]).read_text()) or {}
 if "source_manifest_path" in payload:
     print("scripts/data/build_sft_train_eval_manifests.py")
+elif "train_source_manifest_path" in payload and "eval_source_manifest_path" in payload:
+    print("scripts/data/build_classification_probe_manifests.py")
 elif "classification_per_label_target" in payload:
     print("scripts/data/build_closed_label_sft_manifest.py")
+elif "input_manifest_path" in payload and "output_manifest_path" in payload and "allowed_task_types" in payload:
+    print("scripts/data/build_filtered_sft_manifest.py")
 elif "input_manifest_path" in payload and "task_targets" in payload:
     print("scripts/data/build_balanced_sft_v2_manifest.py")
 else:
@@ -221,6 +227,15 @@ fi
 
 python scripts/verify_environment.py
 run_data_prep "$DATA_CONFIG"
+if [[ -n "$EXTRA_DATA_CONFIGS" ]]; then
+  IFS=',' read -r -a extra_data_configs <<< "$EXTRA_DATA_CONFIGS"
+  for extra_data_config in "${extra_data_configs[@]}"; do
+    extra_data_config="$(echo "$extra_data_config" | xargs)"
+    [[ -n "$extra_data_config" ]] || continue
+    [[ -f "$extra_data_config" ]] || fail_fast "extra data config missing: $extra_data_config"
+    run_data_prep "$extra_data_config"
+  done
+fi
 
 echo "Running B200 Phi-4 reasoning vision SFT preflight: $PREFLIGHT_CONFIG"
 set +e

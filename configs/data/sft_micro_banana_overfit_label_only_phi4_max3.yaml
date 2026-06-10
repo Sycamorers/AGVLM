@@ -1,0 +1,15 @@
+train_source_manifest_path: data/manifests/full/sft_train_phi4_max3_stage5_closed_label_datafix.jsonl
+eval_source_manifest_path: data/manifests/full/sft_eval_phi4_max3_stage5_closed_label_stratified1024.jsonl
+train_output_path: data/manifests/full/sft_micro_banana_overfit_label_only_train.jsonl
+eval_output_path: data/manifests/full/sft_micro_banana_overfit_label_only_eval.jsonl
+summary_output_path: data/manifests/full/sft_micro_banana_overfit_label_only_summary.json
+seed: 61
+sources:
+  - banana_disease
+strip_leading_numeric_prefix_sources: []
+choice_format: label_list
+train_per_label: 8
+eval_per_label: 3
+max_labels_per_source: 7
+min_train_per_label: 8
+min_eval_per_label: 2

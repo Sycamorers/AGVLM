@@ -1,0 +1,8 @@
+source_dataset,num_classification_examples,top_predicted_label,top_predicted_count,top_predicted_share
+banana_disease,17,black sigatoka,17,1.0
+digigreen_crop_disease,18,healthy,18,1.0
+ip102,123,alfalfa weevil,123,1.0
+plantdoc,21,bell pepper leaf spot,21,1.0
+plantvillage,104,corn maize northern leaf blight,104,1.0
+rice_disease,82,bacterial leaf blight,82,1.0
+tea_sickness,17,gray blight,17,1.0

@@ -31,6 +31,23 @@ def test_answer_field_and_label_parse():
     assert parsed["invalid_prediction"] is False
 
 
+def test_markdown_and_json_answer_field_parse():
+    answer, status = extract_answer_field("- **Answer:** tomato late blight\n- **Evidence:** spots")
+    assert answer == "tomato late blight"
+    assert status == "exact"
+
+    answer, status = extract_answer_field('{"answer": "tomato late blight", "evidence": "spots"}')
+    assert answer == "tomato late blight"
+    assert status == "json"
+
+    parsed = extract_label_from_answer(
+        "```json\n{\"label\": \"tomato late blight\"}\n```",
+        ["tomato late blight", "tomato early blight"],
+    )
+    assert parsed["normalized_prediction"] == "tomato late blight"
+    assert parsed["invalid_prediction"] is False
+
+
 def test_conflicting_labels_are_ambiguous():
     parsed = extract_label_from_answer(
         "This could be tomato late blight or tomato early blight.",

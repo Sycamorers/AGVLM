@@ -88,3 +88,21 @@ def test_semantic_prompt_adds_closed_classification_label_space():
     assert "Choose exactly one label from this allowed label set:" in prompt
     assert "Allowed labels: late blight; early blight; healthy" in prompt
     assert "Answer: <one allowed label>" in prompt
+
+
+def test_semantic_prompt_adds_multiple_choice_classification_options():
+    row = _row("a", "missing/a.jpg")
+    row["metadata"]["classification_format"] = "multiple_choice"
+    row["metadata"]["classification_choice_options"] = [
+        {"letter": "A", "label": "late blight"},
+        {"letter": "B", "label": "early blight"},
+        {"letter": "C", "label": "healthy"},
+    ]
+    row["metadata"]["classification_choice_answer"] = {"letter": "A", "label": "late blight"}
+
+    prompt = semantic_prompt(row)
+
+    assert "Choose exactly one option from this list:" in prompt
+    assert "A. late blight" in prompt
+    assert "Choice: <option letter>" in prompt
+    assert "Answer: <label text from the selected option>" in prompt

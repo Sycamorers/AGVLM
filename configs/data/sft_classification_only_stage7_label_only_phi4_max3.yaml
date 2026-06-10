@@ -1,0 +1,18 @@
+input_manifest_path: data/manifests/full/sft_train_phi4_max3_stage5_closed_label_datafix.jsonl
+output_manifest_path: data/manifests/full/sft_classification_only_stage7_label_only_train.jsonl
+summary_output_path: data/manifests/full/sft_classification_only_stage7_label_only_train_summary.json
+seed: 57
+shuffle: true
+allowed_task_types:
+  - classification
+required_task_types:
+  - classification
+sources:
+  - plantvillage
+  - plantdoc
+  - ip102
+  - rice_disease
+  - digigreen_crop_disease
+  - banana_disease
+  - tea_sickness
+max_images_per_sample: 3

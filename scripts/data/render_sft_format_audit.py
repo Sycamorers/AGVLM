@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Any, Dict, Iterable, List
 
 from agri_vlm.data.conversation_format import (
+    CLASSIFICATION_LABEL_ONLY_FORMAT,
     INSTRUCTIONAL_FORMAT,
     MANIFEST_PROMPT_FORMAT,
     PLAIN_FORMAT,
@@ -74,14 +75,40 @@ def _first_user_text(messages: List[Dict[str, Any]]) -> str:
     return ""
 
 
-def _validation_failures(sample: UnifiedSample, prompt: str, target: str) -> List[str]:
+def _validation_failures(
+    sample: UnifiedSample,
+    prompt: str,
+    target: str,
+    *,
+    prompt_format: str,
+    target_format: str,
+) -> List[str]:
     failures = []
     prompt_lower = prompt.lower()
-    if "answer:" not in prompt_lower and "decision:" not in prompt_lower and "diagnosis:" not in prompt_lower:
+    is_label_only_classification = (
+        sample.task_type == "classification"
+        and prompt_format == CLASSIFICATION_LABEL_ONLY_FORMAT
+        and target_format == CLASSIFICATION_LABEL_ONLY_FORMAT
+    )
+    if (
+        not is_label_only_classification
+        and "answer:" not in prompt_lower
+        and "decision:" not in prompt_lower
+        and "diagnosis:" not in prompt_lower
+    ):
         failures.append("prompt_missing_output_contract")
 
-    if sample.task_type in {"classification", "vqa"} and not target.startswith("Answer: "):
+    if (
+        sample.task_type in {"classification", "vqa"}
+        and not is_label_only_classification
+        and not target.startswith("Answer: ")
+    ):
         failures.append("target_missing_answer_prefix")
+    if is_label_only_classification:
+        if re.search(r"(?im)^\s*(answer|evidence|choice)\s*:", target):
+            failures.append("label_only_target_contains_structured_prefix")
+        if "\n" in target:
+            failures.append("label_only_target_contains_newline")
     if sample.task_type == "clarify_or_respond":
         if target.startswith("Decision: clarify"):
             if "\nClarifying question: " not in target:
@@ -173,9 +200,9 @@ def render_audit(config_path: Path) -> Dict[str, Any]:
     prompt_format = str(config.get("prompt_format", INSTRUCTIONAL_FORMAT))
     target_format = str(config.get("target_format", INSTRUCTIONAL_FORMAT))
 
-    if prompt_format not in {MANIFEST_PROMPT_FORMAT, INSTRUCTIONAL_FORMAT}:
+    if prompt_format not in {MANIFEST_PROMPT_FORMAT, INSTRUCTIONAL_FORMAT, CLASSIFICATION_LABEL_ONLY_FORMAT}:
         raise ValueError("Unsupported prompt_format: %s" % prompt_format)
-    if target_format not in {PLAIN_FORMAT, INSTRUCTIONAL_FORMAT}:
+    if target_format not in {PLAIN_FORMAT, INSTRUCTIONAL_FORMAT, CLASSIFICATION_LABEL_ONLY_FORMAT}:
         raise ValueError("Unsupported target_format: %s" % target_format)
     if samples_per_task < 1:
         raise ValueError("samples_per_task must be >= 1")
@@ -195,7 +222,13 @@ def render_audit(config_path: Path) -> Dict[str, Any]:
             prompt_messages = sample_to_prompt_messages(sample, prompt_format=prompt_format)
             prompt = _first_user_text(prompt_messages)
             target = target_to_text(sample, target_format=target_format)
-            failures = _validation_failures(sample, prompt, target)
+            failures = _validation_failures(
+                sample,
+                prompt,
+                target,
+                prompt_format=prompt_format,
+                target_format=target_format,
+            )
             validation_failures.update(failures)
             rendered_by_task[task_type] += 1
             examples.append(

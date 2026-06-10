@@ -22,6 +22,10 @@ Full rerun mode:
 Automatic partial download:
 - PlantVillage
 - PlantDoc
+- Rice disease
+- Digital Green crop disease images
+- Banana disease classification
+- Tea sickness
 - PlantVillageVQA
 - MIRAGE
 
@@ -57,3 +61,4 @@ The local holdout stays conservative:
 
 - IP102, AgBase resources, and Agri-LLaVA still need manual staging
 - PlantDoc currently reduces multi-label annotations to one deterministic primary label per image
+- Full Stage5/Stage6/Stage7 rebuilds should use the strict commands in `docs/cluster_reproduction.md`; missing manual inputs must fail instead of being accepted as a partial dataset
